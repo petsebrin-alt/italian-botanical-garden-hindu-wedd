@@ -79,23 +79,35 @@ Finished section photos (portraits, story, gallery and so on) go in with `python
 - `/calendar/<eventId>` and `/calendar/all`: RFC 5545 `.ics` files in UTC (the ceremony is 08:00Z, which is 10:00 in Italy).
 - `/studio`: after signing in with `STUDIO_TOKEN`, shows totals per celebration, the response table, CSV export, and approve / hide / pin / delete for wishes.
 
-Data is stored as JSON in `./data` (gitignored). `src/lib/store.ts` is the only storage module, so it can be swapped for Supabase or Postgres in production.
+### Storage
+RSVPs, wishes and rate limits go through one interface (`src/lib/stores/types.ts`) with two implementations. `src/lib/store.ts` picks one:
+
+| Where | Storage |
+|---|---|
+| `DATABASE_URL` (or `POSTGRES_URL`) is set | **Postgres** ([`src/lib/stores/postgres.ts`](src/lib/stores/postgres.ts)): Neon, Supabase or any host. The three tables (`rsvps`, `wishes`, `rate_limits`) are created automatically on the first request; the same SQL can be run by hand. |
+| On Vercel without a database | Nothing is saved: guests get a polite "try again" and the log names the missing variable. |
+| Locally without a database | JSON files in `./data` (gitignored), for development. |
+
+```bash
+npm test          # the same storage checks against the file store and a real Postgres engine (PGlite)
+npm run db:local  # an in-memory Postgres on port 5433, to try the database path locally:
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5433/postgres npm run dev
+```
 
 ## Deploying
 
 ### GitHub
 This folder is its own repository, `italian-botanical-garden-wedding`, with no link to any other wedding project. Never use `git push --force`: if the GitHub repository already has commits, the push is refused instead of overwriting them.
 
-### Vercel: not ready yet
-The site builds on Vercel as it is: framework preset Next.js, build command `npm run build`, Node 20.9 or newer (set in `package.json` → `engines`). **RSVPs and wishes need a hosted database first, though.** `src/lib/store.ts` saves them as JSON files in `./data`. Vercel's servers can't keep files: the disk is read-only apart from a temporary folder that is wiped and not shared between instances. Every RSVP, wish and studio action would therefore fail or be lost.
-
-Before the first deployment:
-1. Replace `src/lib/store.ts` with a hosted store (Supabase, Neon Postgres or Upstash Redis from the Vercel Marketplace). The API routes only use `readAll` and `mutate`, so nothing else changes.
-2. Move the rate limiter (`allow`) to the same store; in-memory counters reset on every serverless instance.
-3. In Vercel → Project → Settings → Environment Variables, set:
-   - `NEXT_PUBLIC_SITE_URL`: the site's public address.
-   - `STUDIO_TOKEN`: 12+ characters; it enables `/studio`.
-   - `HASH_SALT`: a random string.
-   - The database's connection variables.
+### Vercel
+1. In Vercel, choose **Add New → Project** and import `italian-botanical-garden-wedding` from GitHub. The defaults are right: framework Next.js, build `npm run build`, and Node 20.9 or newer (from `package.json` → `engines`).
+2. Add a Postgres database, using either option:
+   - **Neon (simplest):** in the project's **Storage** tab, create a Neon Postgres database and connect it to the project. Vercel adds `DATABASE_URL` for you.
+   - **Supabase:** create a project, then copy the **Transaction pooler** connection string (Project Settings → Database, port 6543). Add it in Vercel as `DATABASE_URL`, with your database password filled in. Add `?sslmode=require` to the end if it isn't there already.
+3. In **Settings → Environment Variables**, add:
+   - `NEXT_PUBLIC_SITE_URL`: the site's public address, for example `https://italian-botanical-garden-wedding.vercel.app`, or your own domain later.
+   - `STUDIO_TOKEN`: a long secret, 12+ characters; it enables `/studio`.
+   - `HASH_SALT`: any random string.
+4. Deploy, or redeploy after adding variables. Then sign in at `/studio`: it should show no "local files" storage line and no database warning. Send one test RSVP and one wish, check they appear in the studio, then delete the wish there.
 
 The Python tools in `tools/` run only on your computer; Vercel never needs them.

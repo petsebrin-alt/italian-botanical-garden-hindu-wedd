@@ -15,3 +15,4 @@
 .studio-wish--hidden { opacity: 0.6; }
 .studio-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .studio-actions .btn { min-height: 38px; padding: 0 16px; font-size: 0.75rem; }
+.studio-alert { padding: 14px 18px; border-color: var(--error); color: var(--error); }

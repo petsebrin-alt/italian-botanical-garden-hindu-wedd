@@ -1,9 +1,10 @@
 import { timingSafeEqual } from "crypto";
 import { publishedEvents } from "@/content/wedding";
 import { COOKIE, isStudio, studioEnabled } from "@/lib/studio";
-import { allow, clientIp, hash, mutate, readAll } from "@/lib/store";
+import { clientIp, getStore, hash, storeError } from "@/lib/store";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const back = (req: Request, q = "", cookie?: string) => {
   const headers = new Headers({ Location: new URL(`/studio${q}`, req.url).toString() });
@@ -18,7 +19,12 @@ export async function POST(req: Request) {
 
   if (action === "login") {
     if (!studioEnabled()) return back(req);
-    if (!allow(`studio:${hash(clientIp(req))}`, 10, 15 * 60 * 1000)) return back(req, "?e=limit");
+    try {
+      if (!(await (await getStore()).hit(`studio:${hash(clientIp(req))}`, 10, 15 * 60 * 1000))) return back(req, "?e=limit");
+    } catch (e) {
+      storeError(e);
+      return back(req, "?e=store");
+    }
     const given = Buffer.from(String(form.get("token") || ""));
     const want = Buffer.from(process.env.STUDIO_TOKEN!);
     if (given.length !== want.length || !timingSafeEqual(given, want)) return back(req, "?e=token");
@@ -29,15 +35,15 @@ export async function POST(req: Request) {
 
   if (action === "logout") return back(req, "", `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`);
   const id = String(form.get("id") || "");
-  if (["approve", "hide", "pin", "unpin", "delete"].includes(action)) {
-    await mutate("wishes", (rows) => {
-      const i = rows.findIndex((w) => w.id === id);
-      if (i < 0) return;
-      if (action === "delete") rows.splice(i, 1);
-      else if (action === "approve") rows[i].status = "approved";
-      else if (action === "hide") rows[i].status = "hidden";
-      else rows[i].pinned = action === "pin";
-    });
+  try {
+    const store = await getStore();
+    if (action === "delete") await store.deleteWish(id);
+    else if (action === "approve") await store.updateWish(id, { status: "approved" });
+    else if (action === "hide") await store.updateWish(id, { status: "hidden" });
+    else if (action === "pin" || action === "unpin") await store.updateWish(id, { pinned: action === "pin" });
+  } catch (e) {
+    storeError(e);
+    return back(req, "?e=store");
   }
   return back(req, "#wishes");
 }
@@ -46,8 +52,17 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   if (!(await isStudio())) return back(req, "?e=auth");
   const events = publishedEvents();
-  const rows = await readAll("rsvps");
-  const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  let rows;
+  try {
+    rows = await (await getStore()).listRsvps();
+  } catch (e) {
+    return storeError(e);
+  }
+  // guests type these values: a leading = + - @ must not become a spreadsheet formula
+  const cell = (v: unknown) => {
+    const s = String(v ?? "");
+    return `"${(/^[=+\-@\t\r]/.test(s) ? "'" + s : s).replace(/"/g, '""')}"`;
+  };
   const head = ["Name", "Attending", "Guests", ...events.map((e) => e.name), "Diet", "Contact", "Message", "Submitted", "Updated"];
   const lines = rows.map((r) => [r.name, r.attending ? "Yes" : "No", r.guests, ...events.map((e) => (r.events.includes(e.id) ? "Yes" : "")), r.diet, r.contact, r.message, r.createdAt, r.updatedAt].map(cell).join(","));
   return new Response("﻿" + [head.map(cell).join(","), ...lines].join("\r\n"), {

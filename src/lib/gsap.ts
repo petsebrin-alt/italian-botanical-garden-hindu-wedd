@@ -11,6 +11,9 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, Flip, useGSAP);
   // the iOS / Android URL bar showing and hiding must not re-layout every pin
   ScrollTrigger.config({ ignoreMobileResize: true });
+  // always open at the top (in the sky): restoring a scroll position mid-pin lands guests mid-scene.
+  // Links to a section (#rsvp) still jump there.
+  ScrollTrigger.clearScrollMemory("manual");
   gsap.defaults({ ease: "power3.out", duration: 0.9 });
 }
 

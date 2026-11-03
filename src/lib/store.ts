@@ -1,66 +1,47 @@
 import "server-only";
 import { createHash, randomBytes } from "crypto";
-import { promises as fs } from "fs";
 import path from "path";
+import type { Store } from "./stores/types";
+
+export type { Rsvp, Wish } from "./stores/types";
 
 /**
- * Minimal durable store: one JSON file per collection under DATA_DIR (default ./data).
- * Writes are serialised and atomic (temp file + rename). Swap this module for a
- * Supabase/Postgres adapter in production; the API routes only use these functions.
+ * Picks the storage for RSVPs, wishes and rate limits:
+ *   DATABASE_URL (or POSTGRES_URL) set  → Postgres (Neon, Supabase, any host)
+ *   otherwise, on Vercel                → refuse: its disk can't keep data
+ *   otherwise                           → JSON files in DATA_DIR (default ./data), for local development
  */
-const DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
+let store: Store | null = null;
 
-export interface Rsvp {
-  id: string;
-  name: string;
-  attending: boolean;
-  guests: number;
-  events: string[];
-  diet?: string;
-  contact?: string;
-  message?: string;
-  editTokenHash: string;
-  ipHash: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export class StoreUnavailable extends Error {}
 
-export interface Wish {
-  id: string;
-  name: string;
-  relation?: string;
-  message: string;
-  status: "pending" | "approved" | "hidden";
-  pinned?: boolean;
-  ipHash: string;
-  createdAt: string;
-}
-
-type Collections = { rsvps: Rsvp; wishes: Wish };
-
-const file = (c: keyof Collections) => path.join(DIR, `${c}.json`);
-let queue: Promise<unknown> = Promise.resolve();
-
-export async function readAll<C extends keyof Collections>(c: C): Promise<Collections[C][]> {
-  try {
-    return JSON.parse(await fs.readFile(file(c), "utf8"));
-  } catch {
-    return [];
+export async function getStore(): Promise<Store> {
+  if (store) return store;
+  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  if (url) {
+    const [{ Pool }, { createPostgresStore }] = await Promise.all([import("pg"), import("./stores/postgres")]);
+    const pool = new Pool({ connectionString: url, max: 3, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 8_000 });
+    pool.on("error", (e) => console.error("[store] idle database connection failed:", e.message));
+    store = createPostgresStore({
+      query: async (text, params) => ({ rows: (await pool.query(text, params)).rows }),
+      exec: (sql) => pool.query(sql),
+    });
+  } else if (process.env.VERCEL) {
+    throw new StoreUnavailable("DATABASE_URL is not set. On Vercel, RSVPs and wishes need a hosted Postgres database.");
+  } else {
+    const { createFileStore } = await import("./stores/file");
+    store = createFileStore(process.env.DATA_DIR || path.join(process.cwd(), "data"));
   }
+  return store;
 }
 
-export function mutate<C extends keyof Collections, R>(c: C, fn: (rows: Collections[C][]) => R): Promise<R> {
-  const run = queue.then(async () => {
-    await fs.mkdir(DIR, { recursive: true });
-    const rows = await readAll(c);
-    const result = fn(rows);
-    const tmp = `${file(c)}.${process.pid}.tmp`;
-    await fs.writeFile(tmp, JSON.stringify(rows, null, 2));
-    await fs.rename(tmp, file(c));
-    return result;
-  });
-  queue = run.catch(() => undefined);
-  return run;
+/** The answer guests see when storage is down or not configured; details go to the server log. */
+export function storeError(e: unknown) {
+  console.error("[store]", e instanceof Error ? e.message : e);
+  return Response.json(
+    { ok: false, error: "We couldn't save that just now. Please try again in a few minutes." },
+    { status: 503 },
+  );
 }
 
 const SALT = process.env.HASH_SALT || "janvi-rohit-2027";
@@ -70,17 +51,6 @@ export const newToken = () => randomBytes(24).toString("base64url");
 
 export function clientIp(req: Request) {
   return (req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip") || "local").trim();
-}
-
-const hits = new Map<string, number[]>();
-/** Sliding-window limiter, per process. Returns false when the caller is over the limit. */
-export function allow(key: string, limit: number, windowMs: number) {
-  const now = Date.now();
-  const list = (hits.get(key) || []).filter((t) => now - t < windowMs);
-  if (list.length >= limit) return false;
-  list.push(now);
-  hits.set(key, list);
-  return true;
 }
 
 export const clean = (v: unknown, max: number) =>

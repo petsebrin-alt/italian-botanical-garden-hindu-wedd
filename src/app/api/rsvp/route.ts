@@ -1,7 +1,8 @@
 import { publishedEvents, wedding } from "@/content/wedding";
-import { allow, clean, clientIp, hash, mutate, newId, newToken, readAll, type Rsvp } from "@/lib/store";
+import { clean, clientIp, getStore, hash, newId, newToken, storeError, type Rsvp } from "@/lib/store";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const bad = (fields: Record<string, string>) => Response.json({ ok: false, fields }, { status: 422 });
 
@@ -15,10 +16,6 @@ export async function POST(req: Request) {
   // honeypot: real guests never see this field
   if (clean(body.website, 200)) return Response.json({ ok: true, summary: null });
 
-  const ipHash = hash(clientIp(req));
-  if (!allow(`rsvp:${ipHash}`, 8, 60 * 60 * 1000)) {
-    return Response.json({ ok: false, error: "Too many responses from this connection. Please try again later." }, { status: 429 });
-  }
   if (wedding.rsvp.deadline && new Date() > new Date(`${wedding.rsvp.deadline}T23:59:59Z`)) {
     return Response.json({ ok: false, error: "RSVPs are now closed." }, { status: 410 });
   }
@@ -36,38 +33,45 @@ export async function POST(req: Request) {
   if (contact && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) && !/^\+?[\d\s()-]{7,20}$/.test(contact)) fields.contact = "Enter an email address or a phone number.";
   if (Object.keys(fields).length) return bad(fields);
 
-  const now = new Date().toISOString();
-  const editToken = clean(body.editToken, 64);
   const record = {
     name, attending: attending!, guests: attending ? guests : 0, events: attending ? events : [],
     diet: attending ? clean(body.diet, 40) || undefined : undefined,
     contact: contact || undefined, message: clean(body.message, 500) || undefined,
   };
+  const now = new Date().toISOString();
+  const editToken = clean(body.editToken, 64);
 
-  const result = await mutate("rsvps", (rows) => {
+  try {
+    const store = await getStore();
+    const ipHash = hash(clientIp(req));
+    if (!(await store.hit(`rsvp:${ipHash}`, 8, 60 * 60 * 1000))) {
+      return Response.json({ ok: false, error: "Too many responses from this connection. Please try again later." }, { status: 429 });
+    }
     // the same guest updating: by their private edit token, or by name + contact
-    const byToken = editToken ? rows.find((r) => r.editTokenHash === hash(editToken)) : undefined;
-    const byIdentity = contact ? rows.find((r) => r.name.toLowerCase() === name.toLowerCase() && r.contact === contact) : undefined;
-    const existing = byToken || byIdentity;
+    const existing = (editToken && (await store.findRsvpByToken(hash(editToken)))) || (contact && (await store.findRsvpByIdentity(name, contact))) || null;
     if (existing) {
-      Object.assign(existing, record, { updatedAt: now });
-      return { updated: true, token: editToken || null };
+      await store.updateRsvp(existing.id, record, now);
+      return Response.json({ ok: true, updated: true, editToken: editToken || null, summary: record });
     }
     const token = newToken();
     const row: Rsvp = { id: newId(), ...record, editTokenHash: hash(token), ipHash, createdAt: now, updatedAt: now };
-    rows.push(row);
-    return { updated: false, token };
-  });
-
-  return Response.json({ ok: true, updated: result.updated, editToken: result.token, summary: record });
+    await store.insertRsvp(row);
+    return Response.json({ ok: true, updated: false, editToken: token, summary: record });
+  } catch (e) {
+    return storeError(e);
+  }
 }
 
 /** Lets a guest reload their own response with the private token kept on their device. */
 export async function GET(req: Request) {
   const token = new URL(req.url).searchParams.get("token");
   if (!token) return Response.json({ ok: false }, { status: 400 });
-  const row = (await readAll("rsvps")).find((r) => r.editTokenHash === hash(token));
-  if (!row) return Response.json({ ok: false }, { status: 404 });
-  const { name, attending, guests, events, diet, contact, message } = row;
-  return Response.json({ ok: true, rsvp: { name, attending, guests, events, diet, contact, message } });
+  try {
+    const row = await (await getStore()).findRsvpByToken(hash(token));
+    if (!row) return Response.json({ ok: false }, { status: 404 });
+    const { name, attending, guests, events, diet, contact, message } = row;
+    return Response.json({ ok: true, rsvp: { name, attending, guests, events, diet, contact, message } });
+  } catch (e) {
+    return storeError(e);
+  }
 }
