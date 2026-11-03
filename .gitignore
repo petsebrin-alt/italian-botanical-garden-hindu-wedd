@@ -1,0 +1,23 @@
+# dependencies and builds
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets: only the example env file is committed
+.env*
+!.env.example
+
+# RSVPs and wishes collected locally, and importer backups
+data/
+assets-src/backups/
+public/scenes/hero.staging/
+
+# local tooling
+.claude/
+.vercel/
+__pycache__/
+*.pyc
+*.log
+.DS_Store

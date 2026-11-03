@@ -1,0 +1,203 @@
+/* S01 · Immersive opening screen (docs/OPENING-SCREEN-PLAN.md)
+ *
+ * Geometry is pure CSS so the server render is already composed:
+ *   --ar     canvas height / source width   (from manifest.json, set inline)
+ *   --ex     mirrored extension / source width
+ *   --tt     title top / source width
+ *   --Wc     width of the source on screen
+ *   --Hw     height of the world
+ *   --yStart world top at the start of the descent (extra sky on phones)
+ * Layers carry their source box as unitless fractions of the source width.
+ */
+.hero { position: relative; z-index: 1; }
+
+.hero-stage {
+  position: relative;
+  height: 100vh;
+  height: 100lvh;
+  overflow: clip;
+  container-type: size;
+  background: var(--sky-horizon);
+
+  /* wide screens: grow until the mirrored garden reaches both edges */
+  --Wc: max(min(100cqw, 100cqh), calc(100cqw / (1 + 2 * var(--ex))));
+  --Hw: calc(var(--Wc) * var(--ar));
+  --yEnd: calc(100cqh - var(--Hw));
+  --yStart: max(0px, calc(var(--yEnd) + 42cqh));
+  --worldLeft: calc((100cqw - var(--Wc)) / 2 - var(--Wc) * var(--ex));
+}
+@media (max-aspect-ratio: 3/4) {
+  .hero-stage { --Wc: max(122cqw, calc(100cqh / var(--ar))); }
+}
+
+.hero-probe {
+  position: absolute;
+  left: 0; top: 0;
+  width: var(--Wc);
+  height: 100cqh;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ sky */
+.hero-sky {
+  position: absolute;
+  inset: 0 0 -32% 0;
+  background:
+    linear-gradient(180deg,
+      var(--sky-top) 0%,
+      #85b6e2 14%,
+      var(--sky-mid) 30%,
+      #c2dcef 44%,
+      var(--sky-low) 56%,
+      var(--sky-horizon) 70%,
+      #f2efe7 100%);
+  will-change: transform;
+}
+.hero-sun {
+  position: absolute;
+  left: -14%;
+  top: -18%;
+  width: 78%;
+  height: 62%;
+  background: radial-gradient(closest-side, rgb(255 251 236 / 0.72), rgb(255 251 236 / 0.18) 55%, rgb(255 251 236 / 0));
+}
+
+.hero-clouds { position: absolute; inset: 0; will-change: transform; }
+.hero-cloud { position: absolute; display: block; opacity: 0.92; animation: hero-drift 80s linear infinite alternate; }
+.hero-cloud img { width: 100%; height: auto; }
+.hero-cloud--1 { left: 54%; top: 7%; width: calc(var(--Wc) * 0.5); animation-duration: 92s; }
+.hero-cloud--2 { left: -6%; top: 22%; width: calc(var(--Wc) * 0.36); animation-duration: 76s; opacity: 0.8; }
+.hero-cloud--3 { left: 30%; top: 33%; width: calc(var(--Wc) * 0.26); animation-duration: 64s; opacity: 0.7; }
+@keyframes hero-drift { to { transform: translateX(-5cqw); } }
+
+/* ------------------------------------------------------------------ layers */
+.hl {
+  position: absolute;
+  left: calc(var(--worldLeft) + var(--Wc) * var(--fx));
+  width: calc(var(--Wc) * var(--fw));
+  height: calc(var(--Wc) * var(--fh));
+  will-change: transform;
+  pointer-events: none;
+}
+.hl--world { top: calc(var(--yStart) + var(--Wc) * var(--fy)); }
+.hl--screen { top: calc(var(--Wc) * var(--fy)); }
+.hl picture, .hl img { display: block; width: 100%; height: 100%; }
+
+/* very-near flowers frame the desktop corners (pre-blurred in the asset) */
+.hl--near {
+  position: absolute;
+  bottom: -3%;
+  width: calc((100cqw - var(--Wc)) / 2 + var(--Wc) * 0.14);
+  max-width: 46cqw;
+  display: none;
+  pointer-events: none;
+  will-change: transform;
+}
+.hl--near img { width: 100%; height: auto; }
+.hl--near-l { left: -2%; }
+.hl--near-r { right: -2%; }
+@media (min-aspect-ratio: 3/4) { .hl--near { display: block; } }
+
+/* ------------------------------------------------------------------ title */
+.hero-title {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  top: calc(var(--yStart) + var(--Wc) * var(--tt));
+  width: min(92cqw, calc(var(--Wc) * 0.66));
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--Wc) * 0.012);
+  text-align: center;
+  color: var(--gold-ink);
+  will-change: transform, opacity;
+}
+@media (max-aspect-ratio: 3/4) {
+  .hero-title {
+    width: 92cqw;
+    top: max(9cqh, calc(var(--yStart) + var(--Wc) * var(--tt) - 0.55 * (var(--yStart) - var(--yEnd))));
+  }
+}
+/* a soft ivory haze keeps small type legible over bright sky */
+.hero-title::before {
+  content: "";
+  position: absolute;
+  inset: -8% -14%;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(248 244 233 / 0.42), rgb(248 244 233 / 0.16) 62%, rgb(248 244 233 / 0));
+}
+
+.hero-mono {
+  width: clamp(76px, calc(var(--Wc) * 0.15), 150px);
+  height: auto;
+  color: var(--gold-ink);
+}
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--forest);
+  font-size: clamp(0.75rem, calc(var(--Wc) * 0.0145), 0.95rem);
+}
+.hero-eyebrow .rule { width: 22px; background: var(--gold-ink); }
+
+.hero-names { display: grid; justify-items: center; line-height: 0.92; }
+.hero-name {
+  display: block;
+  font-size: clamp(2.6rem, calc(var(--Wc) * 0.098), 6.2rem);
+  letter-spacing: 0.04em;
+  color: var(--gold-ink);
+}
+.hero-amp {
+  display: block;
+  font-family: var(--font-script), var(--font-names), serif;
+  font-size: clamp(2.2rem, calc(var(--Wc) * 0.078), 5rem);
+  line-height: 0.72;
+  margin: 0.02em 0 0.06em;
+  color: var(--gold-ink);
+}
+.hero-ornament { color: var(--gold-ink); }
+.hero-ornament .rule { width: clamp(36px, calc(var(--Wc) * 0.08), 86px); background: var(--gold-ink); opacity: 0.7; }
+.hero-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--forest);
+  font-size: clamp(1.15rem, calc(var(--Wc) * 0.03), 2rem);
+}
+.hero-date .sprig { width: clamp(28px, calc(var(--Wc) * 0.045), 44px); height: auto; color: var(--gold-ink); }
+.hero-place {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: var(--forest);
+  font-size: clamp(0.75rem, calc(var(--Wc) * 0.015), 0.95rem);
+  letter-spacing: 0.32em;
+}
+.hero-place-icon { color: var(--botanical); }
+
+/* ------------------------------------------------------------------ cue */
+.hero-cue {
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, 3cqh);
+  translate: -50% 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: var(--forest);
+  text-decoration: none;
+  z-index: 3;
+}
+.hero-cue .caption {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgb(248 244 233 / 0.82);
+  box-shadow: 0 6px 20px -10px rgb(41 69 53 / 0.4);
+}
+.hero-cue-arrow { color: var(--forest); }
+
+/* ------------------------------------------------------------------ reduced motion: one tall, still composition */
+[data-tier="C"] .hero-stage { height: calc(var(--yStart) + var(--Hw)); }
+[data-tier="C"] .hl--near { display: none; }

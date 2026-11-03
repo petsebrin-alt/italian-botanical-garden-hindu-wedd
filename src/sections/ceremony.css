@@ -1,0 +1,100 @@
+/* S08 · Ceremony */
+.cer { position: relative; background: var(--ivory); }
+.cer-stage {
+  position: relative;
+  height: 100vh;
+  height: 100lvh;
+  overflow: clip;
+  background: linear-gradient(180deg, #9fc8ea 0%, #c9e1f2 34%, #eef3f2 58%, #f6efe0 100%);
+}
+.cer-garden { position: absolute; inset: 0; will-change: transform; }
+.cer-cypress { bottom: 14%; height: 84%; width: auto; }
+.cer-cypress--l { left: -8vw; }
+.cer-cypress--r { right: -5vw; }
+@media (min-width: 1024px) { .cer-cypress--l { left: 4vw; } .cer-cypress--r { right: 5vw; } }
+.cer-lawn {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 18%;
+  background: linear-gradient(180deg, #a6c06a, #8daa52 40%, #7c9a49);
+}
+
+.cer-mandap {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  width: min(88vw, 62vh, 620px);
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.mandap { width: 100%; height: auto; display: block; filter: drop-shadow(0 18px 30px rgb(41 69 53 / 0.25)); }
+
+.cer-diyas {
+  position: absolute;
+  left: 50%;
+  bottom: 3.6%;
+  translate: -50% 0;
+  display: flex;
+  gap: clamp(14px, 4vw, 34px);
+}
+.diya { position: relative; display: block; width: 40px; }
+.diya svg { position: relative; display: block; }
+.diya-glow {
+  position: absolute;
+  left: 50%; top: -22px;
+  width: 70px; height: 70px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 214 128 / 0.85), rgb(255 190 90 / 0.25) 55%, rgb(255 190 90 / 0));
+  animation: flicker 0.24s steps(2) infinite alternate;
+  animation-delay: calc(var(--i) * 0.07s);
+}
+.diya-flame { transform-origin: 50% 100%; animation: flame 0.9s ease-in-out infinite alternate; }
+@keyframes flicker { from { opacity: 0.82; } to { opacity: 1; } }
+@keyframes flame { from { transform: scaleY(0.92) rotate(-2deg); } to { transform: scaleY(1.06) rotate(2deg); } }
+.motion-paused .diya-glow, .motion-paused .diya-flame, .motion-paused .jas-strand { animation-play-state: paused; }
+
+.cer-text {
+  position: absolute;
+  left: 50%;
+  top: clamp(18px, 5vh, 56px);
+  translate: -50% 0;
+  width: min(92vw, 640px);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  padding: 14px 24px;
+  background: radial-gradient(closest-side, rgb(248 244 233 / 0.85), rgb(248 244 233 / 0.4) 70%, rgb(248 244 233 / 0));
+}
+.cer-text .eyebrow { color: var(--forest); }
+.cer-when { font-size: clamp(1rem, 0.8rem + 1vw, 1.5rem); color: var(--forest); }
+@media (min-width: 1280px) {
+  .cer-text { left: 5vw; right: auto; top: auto; bottom: 24vh; translate: none; width: 340px; }
+}
+
+.cer-petals { position: absolute; inset: 0; pointer-events: none; }
+.cer-petal { position: absolute; top: 0; will-change: transform; }
+
+.jas { position: absolute; top: 0; height: 100%; width: 52%; will-change: transform; transform-origin: 50% 0%; }
+.jas--l { left: 0; }
+.jas--r { right: 0; }
+.jas-strand { transform-box: fill-box; transform-origin: 50% 0%; animation: strand 4.6s ease-in-out infinite alternate; }
+@keyframes strand { from { rotate: -0.8deg; } to { rotate: 0.8deg; } }
+[data-tier="C"] .jas { display: none; }
+
+/* ritual guide */
+.cer-guide-head { display: grid; gap: 8px; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+.cer-rituals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 700px) { .cer-rituals { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .cer-rituals { grid-template-columns: repeat(3, 1fr); gap: 22px; } }
+.cer-ritual { padding: 24px 24px 26px; display: grid; gap: 6px; }
+.cer-num { font-size: 1.6rem; color: var(--gold-ink); }
+.cer-ritual .body-s { color: var(--botanical); }
+.cer-note { margin-top: clamp(2rem, 5vw, 3rem); color: var(--botanical); }

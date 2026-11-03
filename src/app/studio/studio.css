@@ -1,0 +1,17 @@
+.studio { padding-block: 48px 80px; display: grid; gap: 36px; }
+.studio-head, .studio-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.studio-login { max-width: 420px; padding: 28px; display: grid; gap: 16px; }
+.studio-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.studio-stats .card { padding: 16px; display: grid; gap: 2px; }
+.studio-stats strong { font-family: var(--font-names), serif; font-size: 2rem; color: var(--forest); }
+.studio-stats span { font-size: 0.8125rem; color: var(--botanical); }
+.studio-table-wrap { overflow-x: auto; margin-top: 12px; }
+.studio-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.studio-table th, .studio-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgb(196 166 106 / 0.4); vertical-align: top; }
+.studio-table th { font-weight: 600; color: var(--gold-ink); white-space: nowrap; }
+.studio-wishes { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 12px; }
+.studio-wish { padding: 16px 18px; display: grid; gap: 8px; }
+.studio-wish--pending { border-color: var(--rose-ink); }
+.studio-wish--hidden { opacity: 0.6; }
+.studio-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.studio-actions .btn { min-height: 38px; padding: 0 16px; font-size: 0.75rem; }

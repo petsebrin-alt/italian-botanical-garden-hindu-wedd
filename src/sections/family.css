@@ -1,0 +1,25 @@
+/* S09 · Family */
+.family { overflow: clip; }
+.fam-head { display: grid; gap: 6px; margin-bottom: clamp(3rem, 7vw, 4.5rem); }
+.fam-bloom { bottom: -50px; width: clamp(200px, 28vw, 440px); height: auto; }
+.fam-bloom--l { left: -9vw; }
+.fam-bloom--r { right: -9vw; }
+
+.fam-grid { position: relative; z-index: 1; display: grid; justify-items: center; gap: 0; }
+@media (min-width: 900px) { .fam-grid { grid-template-columns: 1fr minmax(80px, 160px) 1fr; align-items: center; } }
+
+.fam-card { position: relative; width: min(84vw, 360px); aspect-ratio: 4 / 5; display: grid; place-items: end center; color: var(--gold-ink); }
+.fam-frame { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fam-wisteria { top: 6%; left: 18%; width: 12%; }
+.fam-card--groom .fam-wisteria { left: auto; right: 16%; width: 15%; }
+.fam-body { position: relative; display: grid; justify-items: center; gap: 12px; padding: 0 20px 22%; text-align: center; }
+.fam-body .eyebrow { color: var(--botanical); }
+.fam-names { display: grid; justify-items: center; gap: 2px; font-size: clamp(2rem, 1.5rem + 2vw, 2.8rem); color: var(--forest); }
+.fam-amp { font-family: var(--font-script), serif; text-transform: none; font-size: 1.15em; color: var(--rose-ink); line-height: 0.8; }
+
+.fam-link { width: 2px; height: 90px; overflow: visible; }
+.fam-link path { fill: none; stroke: var(--gold-ink); stroke-width: 1.4; }
+@media (max-width: 899px) {
+  .fam-link { width: 60px; height: 110px; rotate: 90deg; margin-block: -10px; }
+}
+@media (min-width: 900px) { .fam-link { width: 100%; height: 60px; } }

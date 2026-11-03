@@ -1,0 +1,37 @@
+/* S03 · Couple */
+.couple { overflow: clip; }
+.couple-head { display: grid; gap: 4px; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
+.couple-corner { width: clamp(200px, 30vw, 460px); height: auto; bottom: -40px; z-index: 1; opacity: 0.95; }
+.couple-corner--l { left: -8vw; }
+.couple-corner--r { right: -8vw; }
+
+.couple-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(3rem, 8vw, 4rem);
+  justify-items: center;
+}
+@media (min-width: 1024px) {
+  .couple-grid { grid-template-columns: 1fr auto 1fr; align-items: start; gap: clamp(1.5rem, 3vw, 3.5rem); }
+}
+
+.person { display: grid; justify-items: center; text-align: center; gap: 6px; width: min(84vw, 400px); will-change: transform; }
+.person-frame { position: relative; width: 100%; }
+.person-arch {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  margin: 0;
+  box-shadow: var(--shadow-lift);
+  background: var(--beige);
+}
+.person-arch picture { position: absolute; inset: -8% 0; }
+.person-arch img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+.person-wisteria { top: -18px; left: 8%; width: 24%; z-index: 3; }
+.person--groom .person-wisteria { left: auto; right: 6%; width: 30%; }
+.person-name { margin-top: 18px; font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.5rem); color: var(--gold-ink); }
+.person-role { color: var(--rose-ink); margin-top: -4px; }
+.person-line { color: var(--botanical); }
+
+.couple-mono { color: var(--gold-ink); align-self: center; display: none; }
+@media (min-width: 1024px) { .couple-mono { display: block; } }
