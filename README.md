@@ -46,7 +46,9 @@ npm run layers                   # writes public/scenes/hero/* + manifest.json
 python3 tools/build_layers.py --debug /tmp/layers   # also writes inspection composites
 ```
 
-The layers are sky (CSS), clouds, distant hills, far avenue, cypress left/right, ground, couple, flowers left/right and arbour left/right. The script also cuts reusable sprites (wisteria, trees, near-flowers) that the other sections use, so the visual language stays consistent.
+The layers are sky (CSS), clouds, distant hills, far avenue, cypress left/right, ground, couple, flowers left/right and arbour left/right. The script also cuts reusable sprites (wisteria, trees) that the other sections use, so the visual language stays consistent.
+
+Wide screens are filled edge to edge at full sharpness. Nothing is blurred: the avenue, wall, lawn and flower beds continue past the photo's edges from the garden's own real pixels, and the arbour is pinned to the screen's corners.
 
 For final production photography, cut the new master into layers by hand and import them:
 
@@ -64,7 +66,7 @@ Finished section photos (portraits, story, gallery and so on) go in with `python
 
 ## Motion engine
 
-- `src/scenes/hero/`: the opening scene. It has a descend-from-the-sky phase, then a step-through-the-arch phase; geometry is pure CSS, so the server render is already composed.
+- `src/scenes/hero/`: the opening scene. The camera opens on the sky with the J|R monogram; scrolling writes in the names, descends as every layer rises at its own speed, then steps through the arch. Geometry is pure CSS, so the server render is already the opening frame.
 - `src/lib/scene.ts`: the shared engine. Sections opt in with `data-depth` (parallax), `data-inner` (inner image drift) and `data-reveal="lines|chars|up|fade|draw|mask|stagger"`.
 - Motion levels:
   - **A**: full motion.

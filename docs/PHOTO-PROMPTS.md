@@ -146,7 +146,7 @@ Export each layer as a transparent PNG at full master size. The names match [`pu
      - that the ground under the flowers is filled;
      - that the contact point sits on the couple.
   4. Import: `python3 tools/import_layers.py ~/hero-layers`. This:
-     - writes a desktop set (1800 px) and a phone set (1100 px), with the mirrored garden, trees, near-flowers and fallback;
+     - writes a desktop set (1800 px) and a phone set (1100 px), with the garden continued sharply past both edges, the trees and the fallback;
      - writes the manifest, with a new content version so no browser keeps the old layers;
      - backs up the previous layers to `assets-src/backups/`;
      - reports the weight against the PRD budgets (`--desktop` / `--phone` change the widths).

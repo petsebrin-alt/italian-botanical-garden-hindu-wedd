@@ -8,8 +8,10 @@ distant hills. Writes WebP + AVIF and a manifest to public/scenes/hero/.
                                                      # the template for hand-cut layers (import_layers.py)
 
 Layer geometry is expressed on a "wide canvas": the 941 x 1672 source with
-EXT px of mirrored garden added on each side, so desktop screens never see an
-edge. See docs/OPENING-SCREEN-PLAN.md for the hole-safety rules these cuts obey.
+EXT px of garden continued on each side at full sharpness (no blur), so wide
+screens are filled edge to edge. The arbour frames are not continued: the hero
+pins them to the screen's corners instead. See docs/OPENING-SCREEN-PLAN.md for
+the hole-safety rules these cuts obey.
 """
 import json
 import os
@@ -25,7 +27,7 @@ from layerlib import band, fbm, make_cloud, make_hills, smoothstep
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "assets-src", "ref-opening.webp")
 OUT = os.path.join(ROOT, "public", "scenes", "hero")
-EXT = 420  # mirrored extension each side (source px)
+EXT = round(lib.REF_W * lib.EXT_RATIO)  # garden continued on each side (source px)
 RNG = np.random.default_rng(15082027)
 
 EXPORT = sys.argv[sys.argv.index("--export-cuts") + 1] if "--export-cuts" in sys.argv else None
@@ -71,8 +73,11 @@ SKIP = 52   # edge vine strip (pergola post) is not repeated
 REAL = 150  # outer columns of the source that are real garden (not behind the couple)
 
 
-def mirror_extend(rgb, alpha, left=True, right=True, skip=None):
-    return lib.mirror_extend(rgb, alpha, EXT, SKIP if skip is None else skip, REAL, left, right)
+WALL_BASE = 1150  # where the stone wall meets the lawn: trees past the edge grow upward from here
+
+
+def mirror_extend(rgb, alpha, left=True, right=True, skip=None, grow=0.0, pivot=None):
+    return lib.mirror_extend(rgb, alpha, EXT, SKIP if skip is None else skip, REAL, left, right, grow=grow, pivot=pivot)
 
 
 def pad_wide(rgb, alpha):
@@ -82,8 +87,16 @@ def pad_wide(rgb, alpha):
 MANIFEST = {"canvas": {"w": 0, "h": 0, "ext": EXT, "srcW": 0}, "layers": {}}
 
 
-def save_layer(name, rgb, alpha, quality=86, offset=(0, 0), scale=1.0):
+def sharpen(rgb, amount=0.4, sigma=1.0):
+    """Gentle unsharp mask: the photo layers are shown enlarged on big screens."""
+    f = rgb.astype(np.float32)
+    return np.clip(f + amount * (f - cv2.GaussianBlur(f, (0, 0), sigma)), 0, 255).astype(np.uint8)
+
+
+def save_layer(name, rgb, alpha, quality=86, offset=(0, 0), scale=1.0, crisp=0.0):
     """Crops to the alpha bounding box, writes webp+avif, records geometry."""
+    if crisp:
+        rgb = sharpen(rgb, crisp)
     a = np.clip(alpha, 0, 1)
     ys, xs = np.where(a > 0.004)
     y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
@@ -95,7 +108,7 @@ def save_layer(name, rgb, alpha, quality=86, offset=(0, 0), scale=1.0):
         im = im.resize((round(im.width * scale), round(im.height * scale)), Image.LANCZOS)
     base = os.path.join(OUT, name)
     im.save(base + ".webp", quality=quality, method=6)
-    im.save(base + ".avif", quality=max(quality - 26, 45))
+    im.save(base + ".avif", quality=max(quality - 16, 55))
     MANIFEST["layers"][name] = {
         "x": int(x0 + offset[0]), "y": int(y0 + offset[1]),
         "w": int(x1 - x0), "h": int(y1 - y0),
@@ -224,6 +237,13 @@ def grab_bloom(rect, fg_boxes, bg_boxes):
     mm = cv2.morphologyEx(mm, cv2.MORPH_CLOSE, np.ones((7, 7), np.uint8))
     mm = cv2.morphologyEx(mm, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
     mm[couple_hard] = 0
+    # the pale petal path is never part of a flower bed, even inside the forced boxes
+    mm[(vmin > 192) & (sat < 0.10)] = 0
+    mm = cv2.morphologyEx(mm, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    n_, lab_, st_, _ = cv2.connectedComponentsWithStats(mm)
+    keep = np.zeros(n_, bool)
+    keep[1:] = st_[1:, cv2.CC_STAT_AREA] > 600      # loose petals on the path are not flowers
+    mm = keep[lab_].astype(np.uint8)
     return cv2.GaussianBlur(mm.astype(np.float32), (0, 0), 1.4)
 
 
@@ -310,33 +330,140 @@ hills_rgb, hills_a = make_hills(W + 2 * EXT, 320)
 save_layer("hills", hills_rgb, hills_a, quality=80, offset=(0, 760))
 
 wf_rgb, wf_a = pad_wide(far_rgb, far_a)
-save_layer("far", wf_rgb, wf_a, quality=84)
+save_layer("far", wf_rgb, wf_a, quality=86, crisp=0.3)
 
-l_rgb, l_a = mirror_extend(cl_rgb, cl_a, left=True, right=False)
-save_layer("cypress-l", l_rgb, l_a, quality=84)
-r_rgb, r_a = mirror_extend(cr_rgb, cr_a, left=False, right=True)
-save_layer("cypress-r", r_rgb, r_a, quality=84)
+# ---------------------------------------------------------------- side garden (wide screens)
+# Past the source's edges the avenue continues from the garden's own real, unoccluded pixels:
+# tree crowns rearranged at the gaps between trees, then hedge, stone wall and lawn quilted from
+# the clear strips beside the couple. Everything then grows steadily outward (nearer trees).
+SIDE_RNG = np.random.default_rng(1508)
+L_SEAM, R_SEAM = 66, 884      # where the continuation meets the real rows (just inside the vine posts)
+JOIN = 10                     # cross-fade at that join
+ones = np.ones((H, W), np.float32)
+# what sat behind the arbour is inpainted, not real: crowns never borrow it
+open_l = 1 - cv2.dilate((frame_l > 0.08).astype(np.uint8), np.ones((15, 15), np.uint8)).astype(np.float32)
+open_r = 1 - cv2.dilate((frame_r > 0.08).astype(np.uint8), np.ones((15, 15), np.uint8)).astype(np.float32)
+crown_src = [(cl_rgb, cl_a * open_l, lib.gap_slices(cl_a * open_l, 66, 212, 420, 900)),
+             (cr_rgb, cr_a * open_r, lib.gap_slices(cr_a * open_r, 720, R_SEAM, 420, 900))]
 
-gw_rgb, gw_a = mirror_extend(g_rgb, ground_a)
+
+def side_trees(n, base_parts):
+    """n columns of avenue: crowns over a hedge/wall/lawn base quilted from `base_parts`
+    [(rgb, alpha, x0, x1, row0, row1)], each used for its own rows (blended where they meet)."""
+    c_rgb, c_a = lib.tile_slices(crown_src, n, SIDE_RNG)
+    c_a = c_a * (1 - smoothstep(960, 1000, ys))[:, None]
+    b_rgb = np.zeros((H, n, 3), np.float32)
+    b_a = np.zeros((H, n), np.float32)
+    for (rgb_, a_, x0, x1, r0, r1) in base_parts:
+        q_rgb, q_a = lib.quilt(rgb_, a_, x0, x1, n, SIDE_RNG)
+        wv = (smoothstep(r0 - 20, r0 + 20, ys) * (1 - smoothstep(r1 - 20, r1 + 20, ys)))[:, None]
+        b_rgb += q_rgb.astype(np.float32) * (q_a * wv)[..., None]
+        b_a += q_a * wv
+    b_rgb = b_rgb / np.maximum(b_a[..., None], 1e-3)
+    b_a = np.clip(b_a, 0, 1) * smoothstep(930, 975, ys)[:, None] * (1 - smoothstep(1300, 1340, ys))[:, None]
+    # base over crowns (the wall stands in front of the tree trunks)
+    a = b_a + c_a * (1 - b_a)
+    rgb = (b_rgb * b_a[..., None] + c_rgb.astype(np.float32) * (c_a * (1 - b_a))[..., None]) / np.maximum(a[..., None], 1e-3)
+    return np.clip(rgb, 0, 255).astype(np.uint8), a
+
+
+nl = EXT + L_SEAM + JOIN
+# hedge from the right strip (the left one is all trunks), wall and lawn from the left strip,
+# and the lawn nearest the path from the clear far-left edge (the bench starts at row 1258)
+el_rgb, el_a = side_trees(nl, [(cr_rgb, cr_a, 800, R_SEAM, 930, 1062), (cl_rgb, cl_a, 66, 136, 1062, 1235),
+                               (cl_rgb, cl_a, 2, 45, 1235, 1340)])
+el_rgb, el_a = lib.grow_side(el_rgb, el_a, lib.GROW, WALL_BASE, seam_right=True)
+l_rgb, l_a = lib._crossfade_concat([(el_rgb, el_a), (cl_rgb[:, L_SEAM:], cl_a[:, L_SEAM:])], JOIN)
+l_rgb = np.concatenate([l_rgb, np.zeros((H, EXT, 3), np.uint8)], 1)
+l_a = np.concatenate([l_a, np.zeros((H, EXT), np.float32)], 1)
+save_layer("cypress-l", l_rgb, l_a, quality=86, crisp=0.35)
+
+nr = EXT + (W - R_SEAM) + JOIN
+er_rgb, er_a = side_trees(nr, [(cr_rgb, cr_a, 800, R_SEAM, 930, 1190), (cr_rgb, cr_a, 886, 930, 1190, 1340)])
+er_rgb, er_a = lib.grow_side(er_rgb, er_a, lib.GROW, WALL_BASE, seam_right=False)
+r_rgb, r_a = lib._crossfade_concat([(cr_rgb[:, :R_SEAM], cr_a[:, :R_SEAM]), (er_rgb, er_a)], JOIN)
+r_rgb = np.concatenate([np.zeros((H, EXT, 3), np.uint8), r_rgb], 1)
+r_a = np.concatenate([np.zeros((H, EXT), np.float32), r_a], 1)
+save_layer("cypress-r", r_rgb, r_a, quality=86, crisp=0.35)
+
+# ground across the whole wide canvas: real lawn (from the clear left edge, rows 1150-1390, moved
+# down to where the near lawn sits) and real petal path (between the flower beds), quilted
+WW = W + 2 * EXT
+# lawn texture from the clear patch left of the bench (rows 1160-1255), with its light falloff
+# taken out so it can repeat downward without bands, then a gentle darkening put back
+lawn_q, _ = lib.quilt(clean, ones, 2, 136, WW, SIDE_RNG, win=(28, 52))
+band_ = lawn_q[1160:1255].astype(np.float32)
+row_mean = band_.mean(1, keepdims=True)
+flat_ = band_ / np.maximum(row_mean, 1)
+tone = band_.reshape(-1, 3).mean(0)
+lawn_w = np.zeros((H, WW, 3), np.float32)
+y_, XF = 1100, 30
+lawn_w[y_:y_ + len(flat_)] = flat_
+y_ += len(flat_)
+while y_ < H:
+    n_ = min(len(flat_), H - y_ + XF)
+    t_ = np.clip(np.arange(n_, dtype=np.float32) / XF, 0, 1)[:, None, None]
+    lo = y_ - XF
+    lawn_w[lo:lo + n_] = lawn_w[lo:lo + n_] * (1 - t_) + flat_[:n_] * t_
+    y_ = lo + n_
+shade_ = (1.0 - 0.10 * smoothstep(1235, 1671, ys))[:, None, None]
+lawn_w[:1100] = lawn_w[1100]
+lawn_w = np.clip(lawn_w * tone * shade_, 0, 255).astype(np.uint8)
+path_q, _ = lib.quilt(clean, ones, 330, 650, WW, SIDE_RNG, win=(60, 120), blend=20)
+path_w = np.repeat(path_q[1545:1546], H, 0)
+path_w[1445:1545] = np.flip(path_q[1545:1645], 0)
+path_w[1545:] = path_q[1545:]
+# the petal path belongs to the middle; past the flower beds the lawn runs to the bottom
+xw = np.arange(WW, dtype=np.float32)
+path_x = smoothstep(EXT - 160, EXT + 40, xw) * (1 - smoothstep(EXT + W - 40, EXT + W + 160, xw))
+t_w = t_path * path_x[None, :, None]
+syn_w = lawn_w.astype(np.float32) * (1 - t_w) + path_w.astype(np.float32) * t_w
+gw_rgb = syn_w.copy()
+centre = real * (1 - wpath[..., 0])          # the real petal path, but not under the flower beds
+gw_rgb[:, EXT:EXT + W] = clean * centre[..., None] + syn_w[:, EXT:EXT + W] * (1 - centre[..., None])
+gw_rgb = np.clip(gw_rgb, 0, 255).astype(np.uint8)
+gw_a = np.repeat(ground_a[:, :1], WW, 1)
 save_layer("ground", gw_rgb, gw_a, quality=84)
 
 c_rgb, c_a = pad_wide(couple_rgb, couple_a)
-save_layer("couple", c_rgb, c_a, quality=88)
+save_layer("couple", c_rgb, c_a, quality=90, crisp=0.3)
 
-# frames and flowers continue past the source edge as softened garden too
-fl_rgb, fl_a = mirror_extend(rgbd, frame_l, left=True, right=False, skip=0)
-save_layer("frame-l", fl_rgb, fl_a, quality=84)
-fr_rgb, fr_a = mirror_extend(rgbd, frame_r, left=False, right=True, skip=0)
-save_layer("frame-r", fr_rgb, fr_a, quality=84)
-bl_rgb, bl_a = mirror_extend(clean, bloom_l, left=True, right=False, skip=0)
-save_layer("bloom-l", bl_rgb, bl_a, quality=84)
-br_rgb, br_a = mirror_extend(clean, bloom_r, left=False, right=True, skip=0)
-save_layer("bloom-r", br_rgb, br_a, quality=84)
-# very-near bokeh copies for the desktop screen corners (pre-blurred, never CSS-blurred)
-for name, a_ in [("bloom-l", bloom_l), ("bloom-r", bloom_r)]:
-    bl = cv2.GaussianBlur(clean, (0, 0), 2.6)
-    ba = cv2.GaussianBlur(a_, (0, 0), 2.6)
-    save_layer(name + "-near", np.ascontiguousarray(np.flip(bl, 1)), np.ascontiguousarray(np.flip(ba, 1)), quality=80)
+# the arbour is not continued: the hero pins each frame to its screen corner
+fl_rgb, fl_a = pad_wide(rgbd, frame_l)
+save_layer("frame-l", fl_rgb, fl_a, quality=86, crisp=0.3)
+fr_rgb, fr_a = pad_wide(rgbd, frame_r)
+save_layer("frame-r", fr_rgb, fr_a, quality=86, crisp=0.3)
+# the flower beds do continue, sharp, so the bottom corners stay full on wide screens
+# the flower beds continue as a row of different bushes (slices of both beds), growing outward
+# (the lush right-hand bed, mirrored: one period is wider than most screens' margins)
+JB = 30
+bed_rgb, bed_a = clean[:, 740:W], bloom_r[:, 740:W]   # (x 640-720 was a forced-background box)
+
+
+def side_blooms(n, seam_right):
+    if seam_right:   # left side: the bed is flipped so its fullest end meets the real bed
+        rgb_ = np.flip(lib.pingpong(bed_rgb, n, flip_first=False), 1)
+        a_ = np.flip(lib.pingpong(bed_a, n, flip_first=False), 1)
+    else:
+        rgb_ = lib.pingpong(np.flip(bed_rgb, 1), n, flip_first=False)
+        a_ = lib.pingpong(np.flip(bed_a, 1), n, flip_first=False)
+    return lib.grow_side(np.ascontiguousarray(rgb_), np.ascontiguousarray(a_), 0.45, H, seam_right)
+
+
+e_rgb, e_a = side_blooms(EXT + JB, seam_right=True)
+bl_rgb, bl_a = lib._crossfade_concat([(e_rgb, e_a), (clean, bloom_l)], JB)
+bl_rgb = np.concatenate([bl_rgb, np.zeros((H, EXT, 3), np.uint8)], 1)
+bl_a = np.concatenate([bl_a, np.zeros((H, EXT), np.float32)], 1)
+save_layer("bloom-l", bl_rgb, bl_a, quality=86)
+e_rgb, e_a = side_blooms(EXT + JB, seam_right=False)
+br_rgb, br_a = lib._crossfade_concat([(clean, bloom_r), (e_rgb, e_a)], JB)
+br_rgb = np.concatenate([np.zeros((H, EXT, 3), np.uint8), br_rgb], 1)
+br_a = np.concatenate([np.zeros((H, EXT), np.float32), br_a], 1)
+save_layer("bloom-r", br_rgb, br_a, quality=86)
+for stale in ("bloom-l-near", "bloom-r-near"):   # the old pre-blurred corner copies
+    for ext_ in (".webp", ".avif"):
+        if os.path.exists(os.path.join(OUT, stale + ext_)):
+            os.remove(os.path.join(OUT, stale + ext_))
 
 for i, (cw, ch, seed) in enumerate([(520, 170, 11), (380, 120, 23), (300, 96, 37)]):
     crgb, ca = make_cloud(cw, ch, seed)

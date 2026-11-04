@@ -4,11 +4,12 @@
 **Status:** Implemented in `src/scenes/hero/`. Layers are built by `tools/build_layers.py`.
 
 **Implementation notes (where the build differs from this plan):**
-- **Frames and flowers are world-anchored.** The arbour frames and flowers also receive the mirrored, progressively blurred garden extension, so wide screens never show a cut edge.
-- **Flowers stay in the world** at their source positions and rise into place. The ground under them is a synthesised pale-stone path, so the short reveal is clean.
-- **The ground layer is synthesised.** It is a lawn-and-path layer, with the real petal path kept in the centre. Mirroring the source ground repeated inpainting artefacts on desktop.
+- **The camera opens looking up at the sky** (revision of 4 Nov 2026). The garden starts parked below the screen; the monogram draws itself in the sky on load. The first scroll writes the names in beneath it, and further scrolling descends: sky, clouds, hills, avenue, cypress rows, couple and flower beds each rise at their own speed. Wide screens then fade the names behind the rising trees; phones keep them in the poster position. Then the visitor steps through the arch.
+- **Sharp edge to edge, never blurred.** Wide screens no longer see a mirrored, blurred copy past the source's edges. The cypress avenue continues from the garden's own real, unoccluded pixels: crowns rearranged at the gaps between trees, plus hedge, wall and lawn quilted from the clear strips beside the couple, all growing steadily outward like nearer trees. The flower beds continue the same way. The arbour frames are not continued at all; they are pinned to the screen's top corners, slightly larger on wide screens.
+- **Flowers stay in the world** at their source positions and rise into place. The ground under them is real path texture, so the reveal is clean.
+- **The ground layer is rebuilt from real texture.** Lawn comes from the clear patch left of the bench; the petal path is kept in the centre and quilted under the beds. Past the beds, lawn runs to the bottom.
 - **Decorative trees.** Other sections use dedicated `trees-l` / `trees-r` sprites: trees only, with no lawn and nothing that sat behind the couple.
-- **Hero layer weight:** 335 KB in AVIF (698 KB WebP fallback), against the 650 KB mobile budget.
+- **Hero layer weight:** 595 KB in AVIF, against the 650 KB mobile budget. The sharp continuation and gentler compression account for the increase from 335 KB.
 
 ---
 

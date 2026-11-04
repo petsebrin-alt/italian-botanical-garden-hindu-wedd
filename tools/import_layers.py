@@ -43,11 +43,14 @@ REQUIRED = ["far", "cypress-l", "cypress-r", "ground", "couple", "bloom-l", "blo
 SPRITES = ["wisteria-1", "wisteria-2", "wisteria-3", "cloud-1", "cloud-2", "cloud-3"]
 # layers the hero positions itself (these also get the phone-sized set)
 HERO = ["hills", "far", "cypress-l", "cypress-r", "ground", "couple", "bloom-l", "bloom-r", "frame-l", "frame-r"]
-# how each layer continues past the master's edge: (left, right, skip the vine-post strip)
+# how each layer continues past the master's edge, sharp (no blur):
+# (left, right, replace the vine-post strip, growth outward, growth pivot as a fraction of height)
+# The arbour frames are not continued: the hero pins them to the screen corners.
 EXTEND = {
-    "cypress-l": (True, False, True), "cypress-r": (False, True, True), "ground": (True, True, True),
-    "frame-l": (True, False, False), "frame-r": (False, True, False),
-    "bloom-l": (True, False, False), "bloom-r": (False, True, False), "hills": (True, True, False),
+    "cypress-l": (True, False, True, lib.GROW, 1150 / 1671), "cypress-r": (False, True, True, lib.GROW, 1150 / 1671),
+    "ground": (True, True, True, 0.0, None),
+    "bloom-l": (True, False, False, 0.45, 1.0), "bloom-r": (False, True, False, 0.45, 1.0),
+    "hills": (True, True, False, 0.0, None),
 }
 REF_ASPECT = 941 / 1671
 BUDGET = {"phone": 650 * 1024, "desktop": 1200 * 1024}  # PRD §19, AVIF bytes for the hero layers
@@ -144,8 +147,9 @@ def build_set(layers, extras, sw):
     wide = {}
     for n, (rgb, a) in sized.items():
         if n in EXTEND:
-            left, right, skips = EXTEND[n]
-            wide[n] = lib.mirror_extend(rgb, a, ext, skip if skips else 0, real, left, right, scale)
+            left, right, skips, grow, pivot = EXTEND[n]
+            wide[n] = lib.mirror_extend(rgb, a, ext, skip if skips else 0, real, left, right, scale,
+                                        grow=grow, pivot=None if pivot is None else pivot * sh)
         else:
             wide[n] = lib.pad_wide(rgb, a, ext)
     if "hills" not in wide:
@@ -168,11 +172,6 @@ def build_set(layers, extras, sw):
         else:
             rgb, a = sized["cypress-l" if n == "trees-l" else "cypress-r"]
             sprites[n] = (rgb, a * base_fade * x_fade[None, :])
-    for n in ("bloom-l", "bloom-r"):
-        rgb, a = sized[n]
-        sigma = 2.6 * scale
-        sprites[f"{n}-near"] = (np.ascontiguousarray(np.flip(cv2.GaussianBlur(rgb, (0, 0), sigma), 1)),
-                                np.ascontiguousarray(np.flip(cv2.GaussianBlur(a, (0, 0), sigma), 1)))
     return wide, sprites, (sw, sh, ext)
 
 
@@ -246,7 +245,7 @@ def main(argv):
     for n, (rgb, a) in sprites.items():
         box = lib.alpha_box(a)
         x0, y0, x1, y1 = box
-        lib.write_image(os.path.join(staging, n), rgb[y0:y1, x0:x1], a[y0:y1, x0:x1], 80 if n.endswith("-near") else 84)
+        lib.write_image(os.path.join(staging, n), rgb[y0:y1, x0:x1], a[y0:y1, x0:x1], 84)
         manifest["layers"][n] = {"x": x0, "y": y0, "w": x1 - x0, "h": y1 - y0}
 
     # sprites: supplied ones are trimmed and written, the rest carried over unchanged

@@ -13,9 +13,10 @@ import numpy as np
 from PIL import Image
 
 REF_W = 941          # width of the original reference, the unit for every ratio below
-EXT_RATIO = 420 / REF_W    # mirrored garden added on each side
-SKIP_RATIO = 52 / REF_W    # edge vine strip (pergola post) that is not repeated
+EXT_RATIO = 640 / REF_W    # sharp garden continued on each side (reaches the edges of a 21:9 screen)
+SKIP_RATIO = 52 / REF_W    # edge vine strip (pergola post) that is replaced, not repeated
 REAL_RATIO = 150 / REF_W   # outer columns that are real garden (not behind the couple)
+GROW = 0.3                 # trees continued past the edge grow this much by the far end (nearer in the avenue)
 
 
 def smoothstep(e0, e1, x):
@@ -29,26 +30,9 @@ def band(n, a0, a1, b0, b1):
     return smoothstep(a0, a1, x) * (1 - smoothstep(b0, b1, x))
 
 
-def soften(strip, alpha, seam_left, scale=1.0):
-    """Blur grows with distance from the seam: reads as lens fall-off, hides the mirror."""
-    w = strip.shape[1]
-    d = np.linspace(0, 1, w, dtype=np.float32)
-    if not seam_left:
-        d = d[::-1]
-    out_c = strip.astype(np.float32).copy()
-    out_a = alpha.astype(np.float32).copy()
-    for sigma, lo, hi in [(1.2, 0.0, 0.12), (3, 0.06, 0.28), (7, 0.2, 0.48), (14, 0.4, 0.72), (24, 0.65, 1.0)]:
-        bc = cv2.GaussianBlur(strip.astype(np.float32), (0, 0), sigma * scale)
-        ba = cv2.GaussianBlur(alpha.astype(np.float32), (0, 0), sigma * scale)
-        t = smoothstep(lo, hi, d)[None, :]
-        out_c = out_c * (1 - t[..., None]) + bc * t[..., None]
-        out_a = out_a * (1 - t) + ba * t
-    return np.clip(out_c, 0, 255).astype(np.uint8), out_a
-
-
-def pingpong(strip, n):
-    """Repeat a strip by alternating mirrors until it is n px wide (seam side first)."""
-    parts, cur, flip = [], 0, True
+def pingpong(strip, n, flip_first=True):
+    """Repeat a strip by alternating mirrors until it is n px wide."""
+    parts, cur, flip = [], 0, flip_first
     while cur < n:
         parts.append(np.flip(strip, 1) if flip else strip)
         cur += strip.shape[1]
@@ -56,25 +40,55 @@ def pingpong(strip, n):
     return np.concatenate(parts, 1)[:, :n]
 
 
-def mirror_extend(rgb, alpha, ext, skip, real, left=True, right=True, scale=1.0):
-    """Adds `ext` px of softened, mirrored garden on the chosen sides (zeros on the others)."""
+def _grow(rgb, alpha, grow, pivot, seam_right):
+    """Perspective continuation: content scales up steadily with distance from the seam, around
+    row `pivot`, so trees past the edge read as nearer, larger trees rather than repeats."""
+    h, n = alpha.shape
+    u = np.arange(n, dtype=np.float32)
+    if seam_right:
+        u = u[::-1]                      # distance from the seam, in output px
+    s = 1 + grow * u / max(n - 1, 1)
+    # source distance: integral of du / s(u), so the stretch is continuous (no steps)
+    g = max(grow, 1e-6)
+    u_src = (n - 1) / g * np.log1p(g * u / max(n - 1, 1))
+    x_src = (n - 1 - u_src) if seam_right else u_src
+    ys = np.arange(h, dtype=np.float32)[:, None]
+    map_x = np.repeat(x_src[None, :], h, 0).astype(np.float32)
+    map_y = (pivot + (ys - pivot) / s[None, :]).astype(np.float32)
+    a = alpha.astype(np.float32)
+    pre = cv2.remap(rgb.astype(np.float32) * a[..., None], map_x, map_y, cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT)
+    a2 = np.clip(cv2.remap(a, map_x, map_y, cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT), 0, 1)
+    out = np.where(a2[..., None] > 1e-3, pre / np.maximum(a2[..., None], 1e-3), 0)
+    return np.clip(out, 0, 255).astype(np.uint8), a2
+
+
+def mirror_extend(rgb, alpha, ext, skip, real, left=True, right=True, scale=1.0, grow=0.0, pivot=None):
+    """Continues the garden `ext` px past the chosen edges (zeros on the others), at full sharpness.
+
+    The `real` columns next to the edge are mirrored outward (mirroring keeps every row continuous
+    across the seam); the `skip` px edge strip (the vine post) is replaced rather than repeated, so
+    the layer keeps its width. With `grow`, the continuation also scales up steadily around row
+    `pivot`, the way a cypress avenue's trees get larger towards the viewer.
+    """
     W = rgb.shape[1]
+    n = ext + skip
+    pivot = alpha.shape[0] / 2 if pivot is None else pivot
     if left:
-        lc = np.flip(pingpong(rgb[:, skip:skip + real], ext), 1)
-        la = np.flip(pingpong(alpha[:, skip:skip + real], ext), 1)
-        lc, la = soften(lc, la, seam_left=False, scale=scale)
+        lc = np.ascontiguousarray(np.flip(pingpong(rgb[:, skip:skip + real], n, flip_first=False), 1))
+        la = np.ascontiguousarray(np.flip(pingpong(alpha[:, skip:skip + real], n, flip_first=False), 1))
+        if grow:
+            lc, la = _grow(lc, la, grow, pivot, seam_right=True)
     if right:
-        rc = pingpong(np.flip(rgb[:, W - (skip + real):W - skip], 1), ext)
-        ra = pingpong(np.flip(alpha[:, W - (skip + real):W - skip], 1), ext)
-        rc, ra = soften(np.ascontiguousarray(rc), np.ascontiguousarray(ra), seam_left=True, scale=scale)
-    rgb2 = np.concatenate(([lc] if left else []) + [rgb] + ([rc] if right else []), 1)
-    a2 = np.concatenate(([la] if left else []) + [alpha] + ([ra] if right else []), 1)
-    if not left:
-        rgb2 = np.concatenate([np.zeros_like(rgb[:, :ext]), rgb2], axis=1)
-        a2 = np.concatenate([np.zeros_like(alpha[:, :ext]), a2], axis=1)
-    if not right:
-        rgb2 = np.concatenate([rgb2, np.zeros_like(rgb[:, :ext])], axis=1)
-        a2 = np.concatenate([a2, np.zeros_like(alpha[:, :ext])], axis=1)
+        rc = np.ascontiguousarray(pingpong(np.flip(rgb[:, W - (skip + real):W - skip], 1), n, flip_first=False))
+        ra = np.ascontiguousarray(pingpong(np.flip(alpha[:, W - (skip + real):W - skip], 1), n, flip_first=False))
+        if grow:
+            rc, ra = _grow(rc, ra, grow, pivot, seam_right=False)
+    mid_rgb = rgb[:, (skip if left else 0):(W - skip if right else W)]
+    mid_a = alpha[:, (skip if left else 0):(W - skip if right else W)]
+    pad3 = np.zeros((rgb.shape[0], ext, 3), rgb.dtype)
+    pad1 = np.zeros((alpha.shape[0], ext), np.float32)
+    rgb2 = np.concatenate([lc if left else pad3, mid_rgb, rc if right else pad3], 1)
+    a2 = np.concatenate([la if left else pad1, mid_a.astype(np.float32), ra if right else pad1], 1)
     return rgb2, a2
 
 
@@ -184,3 +198,76 @@ def write_image(base, rgb, alpha=None, quality=84):
     im.save(base + ".webp", quality=quality, method=6)
     im.save(base + ".avif", quality=max(quality - 26, 45))
     return os.path.getsize(base + ".webp"), os.path.getsize(base + ".avif")
+
+
+def _crossfade_concat(pieces, blend):
+    """Joins (rgb, alpha) column pieces left to right, cross-fading `blend` px at every join."""
+    rgb, a = pieces[0][0].astype(np.float32), pieces[0][1].astype(np.float32)
+    for prgb, pa in pieces[1:]:
+        prgb, pa = prgb.astype(np.float32), pa.astype(np.float32)
+        b = min(blend, rgb.shape[1] - 1, prgb.shape[1] - 1)
+        if b > 0:
+            t = np.linspace(0, 1, b, dtype=np.float32)[None, :]
+            # premultiplied cross-fade so a join through open sky never leaves a pale seam
+            pre_l, pre_r = rgb[:, -b:] * a[:, -b:, None], prgb[:, :b] * pa[:, :b, None]
+            ja = a[:, -b:] * (1 - t) + pa[:, :b] * t
+            jc = (pre_l * (1 - t[..., None]) + pre_r * t[..., None]) / np.maximum(ja[..., None], 1e-3)
+            rgb = np.concatenate([rgb[:, :-b], jc, prgb[:, b:]], 1)
+            a = np.concatenate([a[:, :-b], ja, pa[:, b:]], 1)
+        else:
+            rgb, a = np.concatenate([rgb, prgb], 1), np.concatenate([a, pa], 1)
+    return np.clip(rgb, 0, 255).astype(np.uint8), np.clip(a, 0, 1)
+
+
+def gap_slices(alpha, x0, x1, y0, y1, min_w=34):
+    """Splits columns [x0, x1) at the most open columns of rows [y0, y1) (sky between tree
+    crowns), so slices can be rearranged without cutting through a tree."""
+    col = alpha[y0:y1, x0:x1].mean(0)
+    col = np.convolve(col, np.ones(5) / 5, "same")
+    cuts = [0]
+    for i in range(min_w, len(col) - min_w):
+        if col[i] == col[max(0, i - min_w // 2):i + min_w // 2].min() and i - cuts[-1] >= min_w:
+            cuts.append(i)
+    if len(col) - cuts[-1] < min_w:
+        cuts[-1] = len(col)
+    else:
+        cuts.append(len(col))
+    return [(x0 + a, x0 + b) for a, b in zip(cuts[:-1], cuts[1:]) if b > a]
+
+
+def tile_slices(sources, width, rng, blend=6):
+    """Fills `width` columns with slices drawn in random order (never the same twice running).
+    `sources` is a list of (rgb, alpha, [(x0, x1), ...]); slices keep their rows and lighting."""
+    pool = [(rgb, a, s) for rgb, a, sl in sources for s in sl]
+    pieces, total, last = [], 0, -1
+    while total < width + blend:
+        i = int(rng.integers(len(pool)))
+        if i == last and len(pool) > 1:
+            continue
+        last = i
+        rgb, a, (x0, x1) = pool[i]
+        pieces.append((rgb[:, x0:x1], a[:, x0:x1]))
+        total += (x1 - x0) - blend
+    rgb, a = _crossfade_concat(pieces, blend)
+    return rgb[:, :width], a[:, :width]
+
+
+def quilt(rgb, alpha, x0, x1, width, rng, win=(26, 44), blend=12):
+    """Texture continuation: random column windows of [x0, x1), some mirrored, cross-faded.
+    Good for stone, lawn and hedges, where a mirrored window is indistinguishable."""
+    pieces, total = [], 0
+    while total < width + blend:
+        w = int(rng.integers(win[0], min(win[1], x1 - x0) + 1))
+        s = int(rng.integers(x0, x1 - w + 1))
+        prgb, pa = rgb[:, s:s + w], alpha[:, s:s + w]
+        if rng.random() < 0.5:
+            prgb, pa = np.flip(prgb, 1), np.flip(pa, 1)
+        pieces.append((np.ascontiguousarray(prgb), np.ascontiguousarray(pa)))
+        total += w - blend
+    out, a = _crossfade_concat(pieces, blend)
+    return out[:, :width], a[:, :width]
+
+
+def grow_side(rgb, alpha, grow, pivot, seam_right):
+    """Public wrapper of the perspective growth used by mirror_extend."""
+    return _grow(rgb, alpha, grow, pivot, seam_right)

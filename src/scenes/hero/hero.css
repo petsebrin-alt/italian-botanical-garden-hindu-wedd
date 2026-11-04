@@ -1,12 +1,18 @@
 /* S01 · Immersive opening screen (docs/OPENING-SCREEN-PLAN.md)
  *
- * Geometry is pure CSS so the server render is already composed:
+ * The camera opens looking up at the sky, with the garden parked below the screen. Scrolling
+ * draws the monogram's names in, then descends: every layer rises at its own speed.
+ *
+ * Geometry is pure CSS so the server render is already the opening frame:
  *   --ar     canvas height / source width   (from manifest.json, set inline)
- *   --ex     mirrored extension / source width
- *   --tt     title top / source width
+ *   --ex     garden continued past each edge / source width
+ *   --tt     title top / source width (where the title sits in the poster composition)
+ *   --gt     top of the garden (the tallest trees) / source width
  *   --Wc     width of the source on screen
  *   --Hw     height of the world
- *   --yStart world top at the start of the descent (extra sky on phones)
+ *   --yStart world top where the descent's parallax begins
+ *   --S      how far below that the garden is parked for the opening sky view
+ *   --Wf     the arbour's scale: frames grow a little on wide screens to reach the corners
  * Layers carry their source box as unitless fractions of the source width.
  */
 .hero { position: relative; z-index: 1; }
@@ -17,58 +23,66 @@
   height: 100lvh;
   overflow: clip;
   container-type: size;
-  background: var(--sky-horizon);
+  background: var(--sky-mid);
 
-  /* wide screens: grow until the mirrored garden reaches both edges */
+  /* wide screens: grow until the continued garden reaches both edges */
   --Wc: max(min(100cqw, 100cqh), calc(100cqw / (1 + 2 * var(--ex))));
   --Hw: calc(var(--Wc) * var(--ar));
   --yEnd: calc(100cqh - var(--Hw));
   --yStart: max(0px, calc(var(--yEnd) + 42cqh));
+  --S: max(0px, calc(104cqh - var(--Wc) * var(--gt) - var(--yStart)));
   --worldLeft: calc((100cqw - var(--Wc)) / 2 - var(--Wc) * var(--ex));
+  --Wf: max(var(--Wc), min(68cqw, calc(var(--Wc) * 1.15)));
+  /* how far a frame sits outside the screen: 0 on wide screens, the crop on phones */
+  --edge: min(0px, calc((100cqw - var(--Wc)) / 2));
+  --monoW: clamp(84px, calc(var(--Wc) * 0.17), 168px);
 }
 @media (max-aspect-ratio: 3/4) {
   .hero-stage { --Wc: max(122cqw, calc(100cqh / var(--ar))); }
 }
 
-.hero-probe {
+.hero-probe, .hero-probe-s {
   position: absolute;
   left: 0; top: 0;
-  width: var(--Wc);
-  height: 100cqh;
   visibility: hidden;
   pointer-events: none;
 }
+.hero-probe { width: var(--Wc); height: 100cqh; }
+.hero-probe-s { width: 1px; height: var(--S); }
 
-/* ------------------------------------------------------------------ sky */
+/* ------------------------------------------------------------------ sky (looking up: zenith first) */
 .hero-sky {
   position: absolute;
-  inset: 0 0 -32% 0;
+  inset: 0 0 -46% 0;
   background:
     linear-gradient(180deg,
-      var(--sky-top) 0%,
-      #85b6e2 14%,
-      var(--sky-mid) 30%,
-      #c2dcef 44%,
-      var(--sky-low) 56%,
-      var(--sky-horizon) 70%,
+      #4f8fd3 0%,
+      var(--sky-top) 12%,
+      #85b6e2 26%,
+      var(--sky-mid) 40%,
+      #c2dcef 52%,
+      var(--sky-low) 62%,
+      var(--sky-horizon) 74%,
       #f2efe7 100%);
   will-change: transform;
 }
 .hero-sun {
   position: absolute;
   left: -14%;
-  top: -18%;
+  top: -16%;
   width: 78%;
-  height: 62%;
+  height: 52%;
   background: radial-gradient(closest-side, rgb(255 251 236 / 0.72), rgb(255 251 236 / 0.18) 55%, rgb(255 251 236 / 0));
 }
 
 .hero-clouds { position: absolute; inset: 0; will-change: transform; }
 .hero-cloud { position: absolute; display: block; opacity: 0.92; animation: hero-drift 80s linear infinite alternate; }
 .hero-cloud img { width: 100%; height: auto; }
-.hero-cloud--1 { left: 54%; top: 7%; width: calc(var(--Wc) * 0.5); animation-duration: 92s; }
-.hero-cloud--2 { left: -6%; top: 22%; width: calc(var(--Wc) * 0.36); animation-duration: 76s; opacity: 0.8; }
-.hero-cloud--3 { left: 30%; top: 33%; width: calc(var(--Wc) * 0.26); animation-duration: 64s; opacity: 0.7; }
+.hero-cloud--1 { left: 58%; top: 9%; width: calc(var(--Wc) * 0.5); animation-duration: 92s; }
+.hero-cloud--2 { left: -6%; top: 30%; width: calc(var(--Wc) * 0.36); animation-duration: 76s; opacity: 0.82; }
+.hero-cloud--3 { left: 34%; top: 56%; width: calc(var(--Wc) * 0.26); animation-duration: 64s; opacity: 0.7; }
+.hero-cloud--4 { left: 74%; top: 66%; width: calc(var(--Wc) * 0.3); animation-duration: 84s; opacity: 0.66; }
+.hero-cloud--5 { left: 8%; top: 78%; width: calc(var(--Wc) * 0.4); animation-duration: 70s; opacity: 0.6; }
 @keyframes hero-drift { to { transform: translateX(-5cqw); } }
 
 /* ------------------------------------------------------------------ layers */
@@ -80,31 +94,25 @@
   will-change: transform;
   pointer-events: none;
 }
-.hl--world { top: calc(var(--yStart) + var(--Wc) * var(--fy)); }
-.hl--screen { top: calc(var(--Wc) * var(--fy)); }
+/* garden layers start parked below the sky view */
+.hl--world { top: calc(var(--yStart) + var(--S) + var(--Wc) * var(--fy)); }
+/* the arbour is pinned to the screen's top corners, never continued past them */
+.hl--edge-l, .hl--edge-r {
+  top: calc(var(--Wf) * var(--fy));
+  width: calc(var(--Wf) * var(--fw));
+  height: calc(var(--Wf) * var(--fh));
+}
+.hl--edge-l { left: calc(var(--edge) + var(--Wf) * var(--fx)); }
+.hl--edge-r { left: auto; right: calc(var(--edge) + var(--Wf) * var(--fxr)); }
 .hl picture, .hl img { display: block; width: 100%; height: 100%; }
 
-/* very-near flowers frame the desktop corners (pre-blurred in the asset) */
-.hl--near {
-  position: absolute;
-  bottom: -3%;
-  width: calc((100cqw - var(--Wc)) / 2 + var(--Wc) * 0.14);
-  max-width: 46cqw;
-  display: none;
-  pointer-events: none;
-  will-change: transform;
-}
-.hl--near img { width: 100%; height: auto; }
-.hl--near-l { left: -2%; }
-.hl--near-r { right: -2%; }
-@media (min-aspect-ratio: 3/4) { .hl--near { display: block; } }
-
-/* ------------------------------------------------------------------ title */
+/* ------------------------------------------------------------------ title (in the sky) */
 .hero-title {
   position: absolute;
   left: 50%;
   translate: -50% 0;
-  top: calc(var(--yStart) + var(--Wc) * var(--tt));
+  /* the opening frame: the monogram alone, just above the middle of the sky */
+  top: calc(45cqh - var(--monoW) / 2);
   width: min(92cqw, calc(var(--Wc) * 0.66));
   display: grid;
   justify-items: center;
@@ -114,11 +122,11 @@
   will-change: transform, opacity;
 }
 @media (max-aspect-ratio: 3/4) {
-  .hero-title {
-    width: 92cqw;
-    top: max(9cqh, calc(var(--yStart) + var(--Wc) * var(--tt) - 0.55 * (var(--yStart) - var(--yEnd))));
-  }
+  .hero-title { width: 92cqw; }
 }
+/* the names wait for the first scroll (the script reveals them; see the noscript rule) */
+.hero-stage:not([data-ready]) .hero-reveal { visibility: hidden; }
+
 /* a soft ivory haze keeps small type legible over bright sky */
 .hero-title::before {
   content: "";
@@ -129,7 +137,7 @@
 }
 
 .hero-mono {
-  width: clamp(76px, calc(var(--Wc) * 0.15), 150px);
+  width: var(--monoW);
   height: auto;
   color: var(--gold-ink);
 }
@@ -199,5 +207,6 @@
 .hero-cue-arrow { color: var(--forest); }
 
 /* ------------------------------------------------------------------ reduced motion: one tall, still composition */
-[data-tier="C"] .hero-stage { height: calc(var(--yStart) + var(--Hw)); }
-[data-tier="C"] .hl--near { display: none; }
+[data-tier="C"] .hero-stage { height: calc(var(--yStart) + var(--Hw)); --S: 0px; }
+[data-tier="C"] .hero-title { top: calc(var(--yStart) + var(--Wc) * var(--tt)); }
+[data-tier="C"] .hero-sky { inset: 0; }

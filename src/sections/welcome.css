@@ -45,7 +45,7 @@
   background-size: 40px 20px;
 }
 
-.welcome-edge { position: absolute; inset: 0 0 auto 0; height: 0; z-index: 4; }
+.welcome-edge { position: absolute; inset: 0 0 auto 0; height: 0; z-index: 4; overflow-x: clip; } /* the corner beds bleed off-screen without widening the page on phones */
 .welcome-bloom { top: -150px; width: clamp(240px, 36vw, 560px); height: auto; }
 .welcome-bloom--l { left: -6vw; }
 .welcome-bloom--r { right: -6vw; }
