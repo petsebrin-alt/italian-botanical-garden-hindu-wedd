@@ -1,0 +1,59 @@
+/* Need help? */
+.help { overflow: clip; }
+.help-head { position: relative; z-index: 2; display: grid; gap: 6px; margin-bottom: clamp(2rem, 5vw, 3.5rem); max-width: 680px; }
+.help-sub { color: var(--botanical); }
+
+.help-grid { position: relative; z-index: 1; display: grid; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; max-width: 1120px; }
+@media (min-width: 1000px) { .help-grid { grid-template-columns: 7fr 4fr; } }
+
+.help-faqs { display: grid; gap: 10px; }
+.help-faq {
+  border-radius: 16px;
+  background: rgb(250 247 239 / 0.92);
+  border: 1px solid rgb(196 166 106 / 0.4);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.help-faq[open] { border-color: rgb(196 166 106 / 0.8); box-shadow: 0 18px 36px -28px rgb(41 52 35 / 0.4); }
+.help-faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  cursor: pointer;
+  list-style: none;
+}
+.help-faq summary::-webkit-details-marker { display: none; }
+.help-faq summary:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; border-radius: 16px; }
+.help-q { font-family: var(--font-head), serif; font-size: clamp(1.02rem, 0.95rem + 0.3vw, 1.18rem); color: var(--forest); }
+.help-toggle { position: relative; flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--gold); }
+.help-toggle::before, .help-toggle::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 11px; height: 1.5px; background: var(--gold-ink);
+  translate: -50% -50%; transition: rotate 0.3s ease;
+}
+.help-toggle::after { rotate: 90deg; }
+.help-faq[open] .help-toggle::after { rotate: 0deg; }
+.help-a { display: grid; gap: 8px; padding: 0 20px 20px; animation: help-open 0.35s ease; }
+.help-a .body-s { color: var(--botanical); max-width: 62ch; }
+.help-link { color: var(--gold-ink); font-size: 0.9rem; }
+@keyframes help-open { from { opacity: 0; transform: translateY(-6px); } }
+
+.help-contact {
+  display: grid;
+  gap: 14px;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border-radius: 22px;
+  background: var(--forest);
+  color: var(--ivory);
+  box-shadow: 0 26px 50px -30px rgb(41 52 35 / 0.6);
+}
+@media (min-width: 1000px) { .help-contact { position: sticky; top: 110px; } }
+.help-contact-title { font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem); letter-spacing: 0.04em; color: var(--ivory); }
+.help-soon { color: rgb(248 244 233 / 0.82); }
+.help-people { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.help-person { display: grid; gap: 4px; padding-bottom: 14px; border-bottom: 1px solid rgb(248 244 233 / 0.18); }
+.help-person-name { font-family: var(--font-head), serif; font-size: 1.1rem; }
+.help-person-role { color: rgb(248 244 233 / 0.75); }
+.help-person-actions { display: flex; gap: 8px; margin-top: 6px; }
+.help-contact .btn--ghost { color: var(--ivory); border-color: rgb(248 244 233 / 0.6); }
+.help-rsvp { justify-self: start; }

@@ -50,7 +50,7 @@ https://<your-site>/?to=Sharma%20Family
 
 The site opens on a closed garden gate tied with a satin bow (`src/scenes/gate/`). The right tail of the bow is pulled down and its loop slides through the knot. The other loop loosens, the knot gives, and the posy of flowers drops away. Each half of the ribbon is then drawn out past its pillar, trailing and twisting. The two iron leaves swing inward onto open sky, the camera walks through, and the gate dissolves into the opening screen, where the J|R monogram draws itself. It runs about six seconds. A tap, scroll or key press starts it at once or speeds it up. Links to a section (`/#events`) skip it, and with reduced motion the gate simply fades out.
 
-The ribbon is drawn live (`src/scenes/gate/ribbon.ts`) as two continuous satin strips. While the bow is tied, its shape follows how far each loop has been pulled; once the knot gives, the strips move as soft ropes with gravity and air. The photographed layers are cut from `assets-src/botanical/ref-gate.webp`:
+The bow is the photographed satin bow itself. `tools/build_gate.py` cuts its satin from the photo part by part (two straps, two loops, two tails, and the knot with its posy) into `bow-atlas.webp`. Each strap is continued under its loop with its own satin, so each half is one unbroken ribbon. `src/scenes/gate/ribbon.ts` draws each half with WebGL as a strip that carries that photographed satin. At rest it reproduces the photo exactly; when the ribbon bends, twists and falls, the real satin bends with it. While the bow is tied, its shape follows how far each loop has been pulled; once the knot gives, the ribbons move as soft ropes with gravity and air. The photographed layers are cut from `assets-src/botanical/ref-gate.webp`:
 
 ```bash
 python3 tools/build_gate.py                   # writes public/assets/gate/* + manifest.json
@@ -58,6 +58,24 @@ GATE_DEBUG=/tmp/gate python3 tools/build_gate.py   # also writes inspection comp
 ```
 
 The ironwork is keyed so the sky shows between the bars. Where the bow and vines hid it, the bars are continued and the scrolls are copied from the visible repeats and from the mirror-image leaf. Wide screens see both pillars completed (the urns are symmetric) and a cypress garden beyond them.
+
+## Page order
+
+Gate → Opening (sky, monogram, names) → Welcome → The Couple → Save the Date → Sweet Memories → Celebrations → Destination → Ceremony → Family → Dress Code → Gallery → Venue → RSVP → Wishes → Need Help → Thank You.
+
+## Sweet Memories
+
+Seven photographs of the couple on a curved lens carousel (`src/sections/Memories.tsx`, drawn by `src/lib/lens.ts`). The photograph in the middle is flat and sharp; its neighbours swell and curve away to either side, with a faint colour fringe at the edges. It turns on its own every few seconds and follows a drag or swipe, the arrows, the dots and the arrow keys. The title and caption of each photograph are in `memories` in `src/content/wedding.ts`. The photographs are cut from `assets-src/botanical/ref-memories.webp`:
+
+```bash
+python3 tools/build_memories.py        # writes public/assets/img/memory-1..7.webp/.avif
+```
+
+## Venue, RSVP and Need Help
+
+- **Venue:** the villa in a wide arch with a Location button, and the travel notes as tiles. Set `venue.name` and `venue.address` and the Location buttons (here and in Celebrations) point at the villa.
+- **RSVP:** posts to `/api/rsvp`; replies appear in `/studio`. Guests can come back and edit theirs from the same device.
+- **Need Help:** the questions in `help.faqs`. A family contact appears, with Call and WhatsApp buttons, once its `phone` is filled in under `help.contacts`.
 
 ## Celebrations
 

@@ -6,7 +6,7 @@ import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useMotion } from "@/lib/motion";
 import { gatePhase, setGatePhase } from "@/lib/gate";
 import { heroAsset } from "@/lib/heroAsset";
-import { Bow, type BowState, type View } from "./ribbon";
+import { Bow, BowRenderer, type BowMeta, type BowState, type View } from "./ribbon";
 import manifest from "../../../public/assets/gate/manifest.json";
 import "./gate.css";
 
@@ -23,6 +23,7 @@ import "./gate.css";
 type Box = { x: number; y: number; w: number; h: number };
 const L = manifest.layers as Record<string, Box>;
 const C = manifest.canvas;
+const BOW_META = (manifest as unknown as { bow: BowMeta }).bow;
 const BASE = "/assets/gate/";
 /** The centre of the gate's opening, where the camera walks through. */
 const THROUGH: [number, number] = [C.seam, 880];
@@ -87,6 +88,7 @@ export default function Gate() {
   preload(`${BASE}frame.webp`, { as: "image", fetchPriority: "high" });
   preload(`${BASE}door-l.webp`, { as: "image", fetchPriority: "high" });
   preload(`${BASE}door-r.webp`, { as: "image", fetchPriority: "high" });
+  preload(`${BASE}bow-atlas.webp`, { as: "image", fetchPriority: "high" });
 
   useGSAP(
     () => {
@@ -104,15 +106,15 @@ export default function Gate() {
       const far = q(".gate-far")[0] as HTMLElement;
 
       // ---------------------------------------------------------------- the ribbon, drawn live
-      // one screen-sized canvas over the gate holds the ribbon and the posy of flowers on its
-      // knot, so both can travel off any screen without meeting the photograph's edge
+      // the photographed satin bow, bent and dropped by ribbon.ts. One screen-sized canvas over
+      // the gate holds the ribbon and the posy of flowers on its knot, so both can travel off any
+      // screen without meeting the photograph's edge.
       const canvas = q(".gate-ribbon")[0] as HTMLCanvasElement;
-      const ctx = canvas.getContext("2d")!;
-      const posyImg = q('[data-g="bow-knot"] img')[0] as HTMLImageElement;
-      const PB = L["bow-knot"];
+      const atlas = q(".gate-atlas")[0] as HTMLImageElement;
       const posy = { y: 0, r: 0 };
       const tied: BowState = { loopL: 1, loopR: 1, sway: 0 };
-      const bow = new Bow(tied);
+      const bow = new Bow(BOW_META, tied);
+      let renderer: BowRenderer | null = null;
       let k = 1, ox = 0, oy = 0;
       let view: View = { x0: 0, y0: 0, x1: C.w, y1: C.h };
       const fit = () => {
@@ -126,22 +128,12 @@ export default function Gate() {
         oy = (b.top - r.top) * dpr;
         view = { x0: -ox / k, y0: -oy / k, x1: (canvas.width - ox) / k, y1: (canvas.height - oy) / k };
       };
-      const paint = () => {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.setTransform(k, 0, 0, k, ox, oy);
-        if (!bow.done) bow.draw(ctx, k);
-        if (posyImg?.complete && posyImg.naturalWidth) {
-          ctx.save();
-          ctx.translate(PB.x + PB.w / 2, PB.y + PB.h * 0.4 + posy.y);
-          ctx.rotate((posy.r * Math.PI) / 180);
-          ctx.drawImage(posyImg, -PB.w / 2, -PB.h * 0.4, PB.w, PB.h);
-          ctx.restore();
-        }
-      };
+      const paint = () => renderer?.draw(bow, posy, k, ox, oy, canvas.width, canvas.height);
       fit();
-      paint();
-      posyImg?.decode().then(paint).catch(() => undefined);
+      const atlasReady = atlas.decode().catch(() => undefined).then(() => {
+        renderer = BowRenderer.create(canvas, atlas, BOW_META);
+        paint();
+      });
       let speed = 1;
       let ribbonLive = true;
       const tick = (_t: number, dms: number) => {
@@ -150,7 +142,7 @@ export default function Gate() {
         if (!bow.free) bow.tie(tied);
         bow.advance(dt, view);
         paint();
-        if (bow.done && posy.y > view.y1 - PB.y) { ribbonLive = false; gsap.ticker.remove(tick); }
+        if (bow.done && posy.y > view.y1) { ribbonLive = false; gsap.ticker.remove(tick); }
       };
       const ro = new ResizeObserver(() => { if (!bow.free) { fit(); paint(); } });
       ro.observe(el);
@@ -209,7 +201,7 @@ export default function Gate() {
           .to(posy, { y: 12, r: 4, duration: 1.3, ease: "sine.inOut" }, 0.85)
           // the knot gives: the ribbon is free, the posy of flowers drops away
           .add(() => bow.release(), 2.15)
-          .to(posy, { y: () => view.y1 - PB.y + 40, r: 34, duration: 1.2, ease: "power2.in" }, 2.15)
+          .to(posy, { y: () => view.y1 - BOW_META.parts.knot.y + 40, r: 34, duration: 1.2, ease: "power2.in" }, 2.15)
           // DOORS: a nudge as the latch gives, then the leaves swing in
           .to(g("door-l"), { rotationY: 1.2, duration: 0.25, ease: "power1.out" }, 2.9)
           .to(g("door-r"), { rotationY: -1.2, duration: 0.25, ease: "power1.out" }, 2.9)
@@ -226,7 +218,7 @@ export default function Gate() {
       // start once the gate's photographs are decoded (or soon regardless)
       const imgs = q(".gate-world img:not([loading=lazy])") as HTMLImageElement[];
       const ready = Promise.race([
-        Promise.all(imgs.map((i) => i.decode().catch(() => undefined))),
+        Promise.all([...imgs.map((i) => i.decode().catch(() => undefined)), atlasReady]),
         new Promise((r) => setTimeout(r, 3500)),
       ]);
       let alive = true;
@@ -266,8 +258,8 @@ export default function Gate() {
         <Layer name="door-l" className="gate-door" />
         <Layer name="door-r" className="gate-door" />
         <Layer name="frame" />
-        {/* the posy of flowers on the knot, drawn into the ribbon canvas */}
-        <Layer name="bow-knot" className="gate-posy" />
+        {/* the photographed bow, part by part: drawn by the ribbon canvas */}
+        <img className="gate-atlas" src={`${BASE}bow-atlas.webp`} alt="" width={BOW_META.atlas.w} height={BOW_META.atlas.h} decoding="async" draggable={false} />
       </div>
       <canvas className="gate-ribbon" />
     </div>

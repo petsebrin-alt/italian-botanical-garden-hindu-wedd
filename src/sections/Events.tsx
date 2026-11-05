@@ -2,7 +2,7 @@
 
 import { publishedEvents, wedding } from "@/content/wedding";
 import { clock, weekdayDate } from "@/lib/dates";
-import { gsap, ScrollTrigger, tokens } from "@/lib/gsap";
+import { gsap, tokens } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import AddToCalendar from "@/components/AddToCalendar";
 import Pic, { Sprite } from "@/components/Pic";
@@ -61,31 +61,56 @@ export default function Events() {
     });
 
     if (window.innerWidth < 1024) return;
-    // wide screens: the arched stage changes photograph as each celebration crosses the middle
+    // wide screens: the arched stage always shows the celebration in the middle of the screen.
+    // Which one that is comes from the items' live positions on every scroll (never from
+    // trigger points measured earlier), so it stays right however fast or far the page moves.
     const photos = q(".ev-photo") as HTMLElement[];
-    gsap.set(photos, { clipPath: "inset(100% 0% 0% 0%)" });
-    gsap.set(photos[0], { clipPath: "inset(0% 0% 0% 0%)" });
+    gsap.set(photos, { clipPath: "inset(100% 0% 0% 0%)", zIndex: 0 });
+    gsap.set(photos[0], { clipPath: "inset(0% 0% 0% 0%)", zIndex: 1 });
     let current = 0;
     const show = (i: number) => {
       if (i === current) return;
       const down = i > current;
       const incoming = photos[i], outgoing = photos[current];
-      gsap.set(incoming, { zIndex: 2 });
-      gsap.set(outgoing, { zIndex: 1 });
-      gsap.fromTo(incoming, { clipPath: down ? "inset(100% 0% 0% 0%)" : "inset(0% 0% 100% 0%)" }, {
-        clipPath: "inset(0% 0% 0% 0%)", duration: 0.95, ease: tokens.ease.cinematic, overwrite: true,
+      // only two photographs are ever in play: the one leaving, and the one sliding in over it
+      photos.forEach((p, n) => {
+        if (n === i || n === current) return;
+        gsap.killTweensOf(p);
+        gsap.set(p, { clipPath: "inset(100% 0% 0% 0%)", zIndex: 0 });
       });
-      gsap.fromTo(incoming.querySelector("img"), { scale: 1.14 }, { scale: 1, duration: 1.2, ease: tokens.ease.reveal });
-      gsap.to(outgoing.querySelector("img"), { scale: 1.05, duration: 0.95 });
+      gsap.killTweensOf(outgoing);
+      gsap.set(outgoing, { zIndex: 1, clipPath: "inset(0% 0% 0% 0%)" });
+      gsap.set(incoming, { zIndex: 2 });
+      gsap.fromTo(incoming, { clipPath: down ? "inset(100% 0% 0% 0%)" : "inset(0% 0% 100% 0%)" }, {
+        clipPath: "inset(0% 0% 0% 0%)", duration: 0.85, ease: tokens.ease.cinematic, overwrite: true,
+        onComplete: () => { if (current === i) gsap.set(outgoing, { clipPath: "inset(100% 0% 0% 0%)", zIndex: 0 }); },
+      });
+      gsap.fromTo(incoming.querySelector("img"), { scale: 1.12 }, { scale: 1, duration: 1.1, ease: tokens.ease.reveal, overwrite: true });
+      gsap.to(outgoing.querySelector("img"), { scale: 1.04, duration: 0.85, overwrite: true });
       current = i;
       q(".ev-caption-text").forEach((c, n) => c.classList.toggle("is-on", n === i));
       q(".ev-dot").forEach((c, n) => c.classList.toggle("is-on", n === i));
       const count = q(".ev-count-now")[0];
       if (count) count.textContent = String(i + 1).padStart(2, "0");
     };
-    items.forEach((item, i) => {
-      ScrollTrigger.create({ trigger: item, start: "top 55%", end: "bottom 55%", onEnter: () => show(i), onEnterBack: () => show(i) });
-    });
+    // the active celebration: the last one whose top has passed 55% of the screen
+    let raf = 0;
+    const pick = () => {
+      raf = 0;
+      const line = window.innerHeight * 0.55;
+      let active = 0;
+      items.forEach((item, i) => { if (item.getBoundingClientRect().top < line) active = i; });
+      show(active);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(pick); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    pick();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(raf);
+    };
   });
 
   if (!events.length) return null; // no published events: the section disappears entirely

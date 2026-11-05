@@ -87,6 +87,16 @@ export const wedding = {
     { label: "[2025]", title: "The Proposal", body: "[How the question was asked, and how the answer was a yes.]", image: "/assets/img/story-4.webp", alt: "Janvi and Rohit exchanging flower garlands among cypress trees" },
     { label: "15 · 08 · 2027", title: "The Wedding Journey", body: "Two families, one celebration, and a garden in Tuscany where our forever begins.", image: "/assets/img/story-5.webp", alt: "Janvi and Rohit holding rose and jasmine garlands" },
   ] as Milestone[],
+  /** S04 · Sweet Memories: the curved carousel (photos from tools/build_memories.py). */
+  memories: [
+    { image: "/assets/img/memory-1", title: "A Walk in the Garden", caption: "Hand in hand, the first of many", alt: "Rohit and Janvi walking hand in hand along a garden path, smiling at each other" },
+    { image: "/assets/img/memory-2", title: "Our Quiet Place", caption: "Where every worry falls away", alt: "Janvi resting her head on Rohit's shoulder, eyes closed, under pink bougainvillea" },
+    { image: "/assets/img/memory-3", title: "A Flower for Her", caption: "Small things, said softly", alt: "Rohit tucking a pink flower into Janvi's hair as she laughs" },
+    { image: "/assets/img/memory-4", title: "Laughter on the Steps", caption: "The joke only we understand", alt: "Janvi and Rohit in maroon, sitting on garden steps and laughing together" },
+    { image: "/assets/img/memory-5", title: "The Question", caption: "He knelt, she laughed, and then said yes", alt: "Rohit on one knee offering a flower to Janvi, who covers her smile with her hand" },
+    { image: "/assets/img/memory-6", title: "Forehead to Forehead", caption: "A promise without words", alt: "Janvi and Rohit standing forehead to forehead beneath a flowering arch" },
+    { image: "/assets/img/memory-7", title: "Long Summer Afternoons", caption: "Stories, flowers and golden light", alt: "Janvi reading to Rohit on a picnic blanket beside a basket of flowers" },
+  ],
   events: [
     { id: "haldi", type: "haldi", name: "Haldi", date: "2027-08-12", start: "10:00", end: "13:00", area: "The villa courtyard", description: "A sunny morning of turmeric, marigolds, laughter and blessings for the couple." },
     { id: "mehendi", type: "mehendi", name: "Mehendi", date: "2027-08-13", start: "11:00", end: "15:00", area: "The villa garden hall", description: "Henna, music and bright cushions under the bougainvillea. Come with open palms." },
@@ -140,6 +150,25 @@ export const wedding = {
       { title: "Ferragosto", text: "15 August is Italy's biggest summer holiday. Book flights and rooms early: prices rise and seats go quickly." },
     ],
     hotels: [] as { name: string; distance: string; price: string; url?: string; code?: string }[],
+  },
+  /**
+   * "Need help?": the questions guests ask most, and who to call. A contact appears once it has a
+   * phone number (WhatsApp is offered for it too).
+   */
+  help: {
+    faqs: [
+      { q: "What should I wear?", a: "Each celebration has its own colours, from sunny yellow at the Haldi to champagne and midnight at the Reception. The Dress Code section has the palettes. The lawns are grass and gravel, so comfortable heels or flats are wise.", link: { href: "#dress-code", label: "See the dress code" } },
+      { q: "Which airport should I fly into?", a: "Florence (FLR) and Pisa (PSA) are the closest. Long-haul flights often connect through Rome (FCO) or Milan (MXP)." },
+      { q: "How do I get to the villa?", a: "Transfer details between the hotels and the villa will be shared closer to the date. A hire car is useful for exploring the hills." },
+      { q: "Do I need a visa?", a: "If you need a Schengen visa, please apply well in advance. Italy uses the euro and type C, F and L plugs." },
+      { q: "What will the weather be like?", a: "Mid-August in Tuscany is hot and sunny by day and pleasantly warm in the evening. Bring sunglasses, sun cream and a light layer for after dark." },
+      { q: "When should I reply?", a: "As soon as you can, so we can plan for everyone. Please include everyone in your party in one reply.", link: { href: "#rsvp", label: "Reply now" } },
+      { q: "Where do I find the times and places?", a: "Every celebration, with its time, place, map and an Add to calendar button, is in the Celebrations section.", link: { href: "#events", label: "See the celebrations" } },
+    ],
+    contacts: [
+      { name: "[Bride's family]", role: "Kapoor & Lalitha", phone: "" },
+      { name: "[Groom's family]", role: "Vasu & Jansi", phone: "" },
+    ],
   },
   rsvp: {
     deadline: "", // [YYYY-MM-DD]

@@ -8,11 +8,13 @@ import "./nav.css";
 
 const LINKS = [
   { href: "#couple", label: "The Couple" },
+  { href: "#memories", label: "Memories" },
   { href: "#events", label: "Celebrations", needs: "events" },
-  { href: "#destination", label: "Destination" },
   { href: "#dress-code", label: "Dress Code" },
-  { href: "#gallery", label: "Gallery" },
+  { href: "#venue", label: "Venue" },
+  { href: "#rsvp", label: "RSVP" },
   { href: "#wishes", label: "Wishes" },
+  { href: "#help", label: "Help" },
 ];
 
 function go(href: string, reduced: boolean) {

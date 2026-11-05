@@ -10,8 +10,9 @@ The photograph is split into layers that move on their own (public/assets/gate/)
   door-l/r   the two wrought-iron leaves, keyed so only the ironwork is opaque (the garden shows
              through the scrolls and stays put while the leaves swing). The ironwork hidden by the
              bow and the vines is rebuilt from the leaves' symmetry and the pattern's repeat.
-  bow-knot   the posy of flowers on the bow's knot. The satin ribbon itself is drawn live by
-             src/scenes/gate/ribbon.ts so it can be pulled, untied and dropped like fabric.
+  bow-atlas  the photographed satin bow, part by part (two straps, two loops, two tails and the
+             knot with its posy of flowers). src/scenes/gate/ribbon.ts maps each part's own
+             satin onto a ribbon that bends, so it can be pulled, untied and dropped like fabric.
              Beyond the gate is open sky, drawn by the page.
 
 manifest.json records every layer's box on the canvas (photo px, after the mirrored edges).
@@ -27,6 +28,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "assets-src", "botanical")
 OUT = os.path.join(ROOT, "public", "assets", "gate")
 DEBUG = os.environ.get("GATE_DEBUG")
+BOW_ONLY = "--bow" in __import__("sys").argv  # only re-cut the bow
 
 # ---------------------------------------------------------------- the photo's geometry (1024 x 1536)
 W, H = 1024, 1536
@@ -142,6 +144,103 @@ def bow_masks(img):
     owner = np.argmin(np.stack(dist), 0)
     pieces = {name: alpha * (owner == i) for i, name in enumerate(BOW_ORDER)}
     return fg, alpha, pieces
+
+
+ATLAS_ORDER = ["band-l", "loop-l", "tail-l", "band-r", "loop-r", "tail-r", "knot"]
+
+
+def satin_pieces(img, pieces):
+    """The bow's satin parts, cut cleanly: inside each traced piece only the near-white satin is
+    kept (the garden glimpsed between the bars is dropped), thin iron bars touching the satin are
+    opened away, and the satin's own folds and shadows are filled back in. The knot keeps its
+    flowers (the posy)."""
+    v = img.max(-1)
+    ch = v - img.min(-1)
+    r, g = img[..., 0], img[..., 1]
+    # satin is near-white, warm where the sun is on it; the garden between the bars is green
+    satin = ((v > 165) & (ch < 46) & (g <= r + 6)).astype(np.uint8)
+    satin = cv2.morphologyEx(satin, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))
+    satin = cv2.morphologyEx(satin, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
+    xx = np.mgrid[0:H, 0:W][1]
+    out = {}
+    for name, a in pieces.items():
+        if name == "knot":
+            # the posy: below the flowers hang only leaves; the white meeting posts and the dark
+            # garden glimpsed behind them stay with the gate
+            yy = np.mgrid[0:H, 0:W][0]
+            k = ((a > 0.5) & (yy < 912)).astype(np.float32)
+            # the posy ends softly just under the hydrangea
+            k *= np.clip((912 - yy) / 10, 0, 1)
+            out[name] = cv2.GaussianBlur(k, (3, 3), 0.7) * (a > 0.02)
+            continue
+        m = ((a > 0.5) & (satin > 0)).astype(np.uint8)
+        # the straps start past the stiles' faces, which stay with the leaves
+        if name == "band-l":
+            m[xx < LEFT + 21] = 0
+        if name == "band-r":
+            m[xx > RIGHT - 22] = 0
+        n, lab, stats, _ = cv2.connectedComponentsWithStats(m)
+        keep = np.isin(lab, [i for i in range(1, n) if stats[i, cv2.CC_STAT_AREA] > 300])
+        # fill the folds' shadows (holes enclosed by satin)
+        filled = keep.astype(np.uint8).copy()
+        ff = np.zeros((H + 2, W + 2), np.uint8)
+        inv = (1 - filled).copy()
+        cv2.floodFill(inv, ff, (0, 0), 0)
+        filled |= inv
+        # a smooth cut edge, like scissors through satin (no stair-steps from the key)
+        filled = cv2.medianBlur(filled * 255, 7) > 127
+        out[name] = cv2.GaussianBlur(filled.astype(np.float32), (3, 3), 0.8) * (a > 0.02)
+    return out
+
+
+def bow_atlas(img, pieces, manifest):
+    """All seven parts side by side in one image (bow-atlas.webp), each in its own cell, so the
+    page can map each part's own satin onto the moving ribbon. manifest["bow"] gives every part's
+    box in the photo and its place in the atlas."""
+    parts = satin_pieces(img, pieces)
+    alpha_all = np.zeros((H, W), np.float32)
+    for a in parts.values():
+        alpha_all = np.maximum(alpha_all, a)
+    rgb = decontaminate(img, alpha_all)
+    prgb = {name: rgb for name in parts}
+    # each strap runs on under its loop to the knot, where the photo cannot show it: continue it
+    # with its own satin from where it is seen full width (mirrored back and forth), keeping every
+    # pixel the photo does show, so the ribbon stays whole once it comes loose
+    for name, c0, to, step in (("band-l", 300, 478, 1), ("band-r", 740, 556, -1)):
+        a = parts[name].copy()
+        # the strap's full height there, with no gaps (rows between its top and bottom edge)
+        win = a[:, c0 - 24:c0 + 1] if step > 0 else a[:, c0:c0 + 25]
+        rows = np.where(win.max(1) > 0.5)[0]
+        prof = np.zeros(H, np.float32)
+        prof[rows.min():rows.max() + 1] = 1
+        prof = cv2.GaussianBlur(prof[:, None], (1, 5), 0.8)[:, 0]
+        # the photo's own strap stops where the loop begins: from there on it is all continuation
+        stop = 336 if step > 0 else 718
+        out = rgb.copy()
+        span = 40
+        for xx in range(c0, to + step, step):
+            k = abs(xx - c0) % (2 * span)
+            src = c0 - step * (k if k < span else 2 * span - k)
+            keep = (a[:, xx] > 0.5) & ((xx < stop) if step > 0 else (xx > stop))
+            out[~keep, xx] = rgb[~keep, src]
+            a[:, xx] = np.where(keep, a[:, xx], prof)
+        parts[name] = a
+        prgb[name] = out
+    cells, x = {}, 0
+    boxes = {name: bbox(parts[name], pad=3) for name in ATLAS_ORDER}
+    AH = max(b[3] - b[1] for b in boxes.values())
+    AW = sum(b[2] - b[0] for b in boxes.values()) + 4 * len(boxes)
+    atlas = np.zeros((AH, AW, 4), np.float32)
+    for name in ATLAS_ORDER:
+        x0, y0, x1, y1 = boxes[name]
+        w, h = x1 - x0, y1 - y0
+        atlas[:h, x:x + w, :3] = prgb[name][y0:y1, x0:x1]
+        atlas[:h, x:x + w, 3] = 255 * parts[name][y0:y1, x0:x1]
+        cells[name] = {"x": int(x0), "y": int(y0), "w": int(w), "h": int(h), "ax": int(x), "ay": 0}
+        x += w + 4
+    save("bow-atlas", atlas[..., :3], atlas[..., 3], quality=90)
+    manifest["bow"] = {"atlas": {"w": int(AW), "h": int(AH)}, "ext": EXT_L, "parts": cells}
+    return parts, rgb
 
 
 # ---------------------------------------------------------------- the ironwork key
@@ -368,12 +467,21 @@ def main():
     # ------------------------------------------------ the bow
     bow_fg, bow_a, pieces = bow_masks(img)
     bow_rgb = decontaminate(img, bow_a)
-    # the ribbon itself is drawn live (src/scenes/gate/ribbon.ts); only the posy of flowers on the
-    # knot is cut from the photo
-    a = pieces["knot"]
-    x0, y0, x1, y1 = bbox(a)
-    save("bow-knot", bow_rgb[y0:y1, x0:x1], 255 * a[y0:y1, x0:x1], quality=88)
-    manifest["layers"]["bow-knot"] = {"x": int(x0 + EXT_L), "y": int(y0), "w": int(x1 - x0), "h": int(y1 - y0)}
+    # the bow's own satin, part by part, for the page to bend and drop (src/scenes/gate/ribbon.ts)
+    parts, parts_rgb = bow_atlas(img, pieces, manifest)
+    if DEBUG:
+        sky = np.zeros((H, W, 3), np.float32) + np.array([170, 205, 238], np.float32)
+        for name in ATLAS_ORDER:
+            a = parts[name][..., None]
+            sky = sky * (1 - a) + parts_rgb * a
+        dbg("bow_parts", sky)
+    if BOW_ONLY:
+        with open(os.path.join(OUT, "manifest.json")) as fh:
+            old = json.load(fh)
+        old["bow"] = manifest["bow"]
+        with open(os.path.join(OUT, "manifest.json"), "w") as fh:
+            json.dump(old, fh, indent=1)
+        return
 
     # ------------------------------------------------ what hangs in front (it stays with the arch)
     near_bow = np.zeros((H, W), np.uint8)
