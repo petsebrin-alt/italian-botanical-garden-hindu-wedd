@@ -171,7 +171,7 @@ export default function Hero() {
       let scroll: gsap.Context | null = null;
       const build = () => scroll = gsap.context(() => {
         const vw = window.innerWidth;
-        const portrait = vw / window.innerHeight < 0.75;
+        const portrait = window.matchMedia("(max-aspect-ratio: 3/4)").matches;   // same test as hero.css
         const lvh = probe.getBoundingClientRect().height;
         const Wc = probe.getBoundingClientRect().width;
         const S = probeS.getBoundingClientRect().height;     // the garden's parking depth (hero.css --S)
@@ -188,7 +188,12 @@ export default function Hero() {
         const titleTop = titleEl.getBoundingClientRect().top - stageTop;
         const titleH = titleEl.offsetHeight;
         const centred = Math.max(0.06 * lvh, 0.46 * lvh - titleH / 2) - titleTop;
-        const poster = Math.max(0.03 * lvh, yEnd + TITLE_TOP * Wc) - titleTop;
+        const posterTop = Math.max(0.03 * lvh, yEnd + TITLE_TOP * Wc);
+        const poster = posterTop - titleTop;
+        // the sky left above the couple's heads once the garden has risen: if the title block is
+        // taller than that on some screen, it shrinks to fit rather than overlap the couple
+        const coupleTop = yEnd + (M.layers.couple.y / SRC_W) * Wc;
+        const posterFit = Math.min(1, Math.max(0.6, (coupleTop - 0.015 * lvh - posterTop) / titleH));
 
         const origin = (n: string, p = CONTACT) => {
           const L = M.layers[n];
@@ -234,8 +239,8 @@ export default function Hero() {
           // the arbour stays overhead, lifting a touch as the camera lowers
           .to([layer("frame-l"), layer("frame-r")], { y: -0.05 * lvh, scale: 1.04, duration: DESCENT }, d);
         if (portrait) {
-          // phones keep the poster: names above the couple, between the trees
-          tl.to(titleEl, { y: poster, duration: DESCENT, ease: "power1.inOut" }, d);
+          // phones and upright tablets keep the poster: names above the couple, between the trees
+          tl.to(titleEl, { y: poster, scale: posterFit, transformOrigin: "50% 0%", duration: DESCENT, ease: "power1.inOut" }, d);
         } else {
           // wide screens: the names drift up into the sky and fade as the trees rise past them
           tl.to(titleEl, { y: centred - 0.5 * lvh, duration: DESCENT * 0.7 }, d)

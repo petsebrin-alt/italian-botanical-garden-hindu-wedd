@@ -37,8 +37,10 @@
   --edge: min(0px, calc((100cqw - var(--Wc)) / 2));
   --monoW: clamp(84px, calc(var(--Wc) * 0.17), 168px);
 }
+/* upright screens frame the whole poster: garden height = screen height. Tall phones crop the
+ * photo's sides a little; wider ones (older phones, tablets) see the sharp continued garden. */
 @media (max-aspect-ratio: 3/4) {
-  .hero-stage { --Wc: max(122cqw, calc(100cqh / var(--ar))); }
+  .hero-stage { --Wc: calc(100cqh / var(--ar)); }
 }
 
 .hero-probe, .hero-probe-s {
