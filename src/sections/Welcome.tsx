@@ -5,53 +5,36 @@ import { gsap, scrub } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import { InvocationIcon, LotusDivider } from "@/components/Ornaments";
 import Pic, { Sprite } from "@/components/Pic";
-import { heroAsset } from "@/lib/heroAsset";
-import Ridges from "@/components/Ridges";
 import "./welcome.css";
 
 /**
- * S02 · Welcome: one Italian garden scene, no framed photo. The blessing sits in the open sky;
- * the arbour and hydrangeas frame the left, the villa terrace and its cypresses the right, with
- * hills on the horizon. Every layer moves at its own depth as the page scrolls, and the garden
- * gathers in from both sides as the scene arrives.
+ * S02 · Welcome: one sunlit Tuscan garden, photographed, with the blessing in its open sky.
+ * The photograph is split into depth layers (tools/build_welcome.py): the sky drifts slowest,
+ * the lawn and hills hold, and the villa terrace, the hydrangeas and the wisteria canopy settle
+ * in from below as the section arrives, nearer layers faster.
  */
 export default function Welcome() {
   const ref = useScene<HTMLElement>((root, q, tier) => {
     if (tier === "C") return;
-    const enter = { trigger: root, start: "top bottom", end: "top 12%", scrub: scrub() };
-    gsap.fromTo(q(".wel-villa"), { x: "9vw" }, { x: 0, ease: "power2.out", scrollTrigger: enter });
-    gsap.fromTo(q(".wel-canopy"), { x: "-7vw", rotation: -2 }, { x: 0, rotation: 0, ease: "power2.out", scrollTrigger: enter });
-    gsap.fromTo(q(".wel-bed"), { scale: 1.12 }, { scale: 1, transformOrigin: "0% 100%", ease: "power2.out", scrollTrigger: enter });
-    gsap.fromTo(q(".wel-cypress--l"), { x: "-4vw" }, { x: 0, ease: "power2.out", scrollTrigger: enter });
-    gsap.fromTo(q(".wel-cypress--r"), { x: "4vw" }, { x: 0, ease: "power2.out", scrollTrigger: enter });
-    // the clouds keep drifting apart while the section crosses the screen
-    (q(".wel-cloud") as HTMLElement[]).forEach((c, i) => {
-      gsap.fromTo(c, { x: `${(i % 2 ? 1 : -1) * 3}vw` }, {
-        x: `${(i % 2 ? -1 : 1) * 3}vw`, ease: "none",
-        scrollTrigger: { trigger: root, start: "top bottom", end: "bottom top", scrub: scrub() },
-      });
-    });
+    // the near layers only ever settle downward-to-home, so nothing they cover is uncovered
+    const enter = { trigger: root, start: "top bottom", end: "top 18%", scrub: scrub() };
+    gsap.fromTo(q(".wel-near--l"), { yPercent: 3 }, { yPercent: 0, ease: "power2.out", scrollTrigger: enter });
+    gsap.fromTo(q(".wel-near--r"), { yPercent: 1.4 }, { yPercent: 0, ease: "power2.out", scrollTrigger: enter });
   });
   const { invocation, message } = wedding.welcome;
 
   return (
     <section ref={ref} id="welcome" className="welcome rise-over" aria-labelledby="welcome-title" data-stage>
       <div className="wel-scene" aria-hidden="true">
-        <div className="wel-sky" data-depth="-0.4"><span className="wel-sun" /></div>
-        <div className="wel-clouds" data-depth="-0.3">
-          {[1, 2, 3, 1].map((n, i) => (
-            <img key={i} className={`wel-cloud wel-cloud--${i + 1}`} src={heroAsset(`cloud-${n}.webp`)} alt="" loading="lazy" decoding="async" />
-          ))}
+        <div className="wel-box">
+          <div className="wel-layer" data-depth="-0.3"><Pic src="/assets/img/welcome-sky" alt="" /></div>
+          <div className="wel-layer"><Pic src="/assets/img/welcome-far" alt="" /></div>
+          <div className="wel-layer wel-near wel-near--l"><Pic src="/assets/img/welcome-near-l" alt="" /></div>
+          <div className="wel-layer wel-near wel-near--r"><Pic src="/assets/img/welcome-near-r" alt="" /></div>
         </div>
-        <Ridges id="wel" className="wel-ridge" depths={[-0.26, -0.17, -0.08]} />
-        <Sprite name="cypress-r" className="wel-cypress wel-cypress--r" depth={-0.06} />
-        <Sprite name="cypress-l" className="wel-cypress wel-cypress--l" depth={-0.06} />
-        <div className="wel-villa" data-depth="0.05">
-          <Pic src="/assets/img/welcome-villa" alt="" />
-        </div>
-        <Sprite name="canopy-l" className="wel-canopy sway sway--slow" depth={0.16} />
-        <Sprite name="bed-l" className="wel-bed" depth={0.3} />
-        <div className="wel-mist" />
+        {/* phones see the villa side of the garden: wisteria and hydrangeas join it */}
+        <Sprite name="canopy-l" className="wel-canopy" depth={0.14} />
+        <Sprite name="bed-l" className="wel-m wel-m-bed" depth={0.22} />
       </div>
 
       <div className="container wel-text">

@@ -75,7 +75,10 @@ The flowers and trees that dress the sections (wisteria canopy and strands, hydr
 
 ```bash
 python3 tools/build_botanicals.py      # writes public/assets/botanical/* and the S06 avenue photo
+python3 tools/build_welcome.py         # splits the S02 garden photo into sky, land and near layers
 ```
+
+The Welcome section is one photographed garden (`assets-src/botanical/ref-welcome.webp`). The build removes any lettering baked into it, keys out the sky, separates the villa terrace and the hydrangea corner, and continues the sky upward for phones. The layers then move at different depths.
 
 `tools/prepare_assets.py` produced the photo crops in `public/assets/img/` from the three references.
 

@@ -181,9 +181,8 @@ Three soft separate high summer cumulus clouds with clear deep summer-blue sky a
 Each image goes straight in by file name (§7); no code changes are needed. "Crop" describes how the site frames it.
 
 ### P-10 · Villa terrace → `villa-terrace`
-- **Used in:** S02 Welcome, as a cut-out layer on the right of the garden scene (its sky is keyed out so the scene's own sky shows)
+- **Used in:** S02 Welcome is now one photographed scene, `assets-src/botanical/ref-welcome.webp` (about 2:1): open sky in the left two-thirds for the blessing, wisteria and hydrangeas on the left, the villa terrace on the right, lawn and hills between, and **no lettering**. Replace that file and run `python3 tools/build_welcome.py`; it splits the scene into its depth layers. This villa photo is no longer used there.
 - **Aspect:** 3:4 · **Size:** ≥ 1500 × 2000 · **Light:** L-MORNING
-- **Crop:** keep clear, plain blue sky above and to the left of the villa (that is what gets keyed out). After importing, run `python3 tools/prepare_assets.py villa` to cut it out
 ```
 A honey-stone Tuscan villa with a ground-floor arcade of round arches and climbing white roses, seen across a gravel terrace with large terracotta urns overflowing with blush hydrangeas and potted lemon trees, two cypress trees beside the villa, pink wisteria trained over the arches, no people. Eye level, 35 mm, f/5.6, vertical composition with the arcade filling the middle of the frame. {L-MORNING}.
 ```
