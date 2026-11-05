@@ -5,12 +5,11 @@ import { gsap, scrub } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import { LotusDivider, Sprig } from "@/components/Ornaments";
 import Pic, { Sprite } from "@/components/Pic";
-import Ridges from "@/components/Ridges";
 import "./couple.css";
 
 const PEOPLE = [
   { key: "bride", photo: "/assets/img/portrait-bride", alt: "Janvi in a blush-pink lehenga with kundan jewellery and a sheer dupatta" },
-  { key: "groom", photo: "/assets/img/portrait-groom", alt: "Rohit in an ivory embroidered sherwani and a turban with a pearl kalgi" },
+  { key: "groom", photo: "/assets/img/portrait-groom", alt: "Rohit in an ivory embroidered sherwani with a maroon velvet dupatta and a jewelled safa" },
 ] as const;
 
 /** A small gold five-petal blossom, the full stop under each name. */
@@ -27,7 +26,7 @@ function Blossom() {
 
 /**
  * S03 · Couple: two arched portraits side by side in a garden frame (arbour vines above,
- * hydrangeas below, hills on the horizon). The frame drifts at its own depths while the arches
+ * hydrangeas below, the photographed Tuscan fields on the horizon). The frame drifts at its own depths while the arches
  * uncover from below and, on wide screens, glide in towards each other.
  */
 export default function Couple() {
@@ -51,7 +50,8 @@ export default function Couple() {
   return (
     <section ref={ref} id="couple" className="couple section paper" aria-labelledby="couple-title" data-stage>
       <div className="cpl-frame" aria-hidden="true">
-        <div className="cpl-horizon"><Ridges id="cpl" className="cpl-ridge" depths={[-0.2, -0.12]} count={2} /></div>
+        {/* the real Tuscan fields: vineyard hills, the far mountains and the lawn (tools/build_fields.py) */}
+        <div className="cpl-horizon" data-depth="-0.06"><Pic src="/assets/img/fields-hills" alt="" className="cpl-fields" /></div>
         <Sprite name="canopy-l" className="cpl-vine cpl-vine--l" depth={-0.1} />
         <Sprite name="canopy-r" className="cpl-vine cpl-vine--r" depth={-0.1} />
         <Sprite name="strand-1" className="cpl-hang cpl-hang--l sway" depth={-0.04} />

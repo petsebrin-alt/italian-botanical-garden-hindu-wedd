@@ -1,0 +1,91 @@
+/* S00 · The garden gate (splash screen). Geometry follows public/assets/gate/manifest.json:
+ * every layer carries its box in canvas px (--x --y --w --h); --u is CSS px per canvas px.
+ *
+ *   phones and upright tablets   the gate fills the height; the leaves fill the width
+ *   wide screens                 the gate fills the height (zooming in a little on very wide
+ *                                screens) and the garden continues past both pillars
+ */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  overflow: hidden;
+  container-type: size;
+  background: linear-gradient(180deg, #5b97d6 0%, #7fb2e3 22%, #a6cbec 44%, #c7dff2 62%, #e0ecf4 80%, #eef1ec 100%);
+  --u: max(calc(100cqh / 1536), min(calc(100cqw / 2300), calc(100cqh / 1536 * 1.12)));
+  touch-action: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.no-gate .gate { display: none; }
+
+.gate-unit { position: absolute; left: 0; top: 0; width: calc(1000 * var(--u)); height: 1px; visibility: hidden; }
+
+.gate-box {
+  position: absolute;
+  left: calc(50cqw - 660 * var(--u));
+  top: calc((100cqh - 1536 * var(--u)) * 0.4);
+  width: calc(1312 * var(--u));
+  height: calc(1536 * var(--u));
+  opacity: 0;
+  transition: opacity 0.7s ease-out;
+  will-change: transform;
+}
+.gate[data-ready] .gate-box { opacity: 1; }
+
+.gl {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+  will-change: transform;
+}
+.gl img { display: block; width: 100%; height: 100%; user-select: none; }
+.gate-door { backface-visibility: hidden; }
+.gate-ribbon { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.7s ease-out; }
+.gate[data-ready] .gate-ribbon { opacity: 1; }
+.gate-posy { visibility: hidden; }
+
+/* beyond the gate: the sky (the opening screen's colours), clouds drifting low */
+.gate-sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #5b97d6 0%, #7fb2e3 22%, #a6cbec 44%, #c7dff2 62%, #e0ecf4 80%, #eef1ec 100%);
+  overflow: hidden;
+}
+.gate-sky::after {
+  content: "";
+  position: absolute;
+  left: 20%; top: 6%;
+  width: 60%; height: 38%;
+  background: radial-gradient(closest-side, rgb(255 251 236 / 0.55), rgb(255 251 236 / 0));
+}
+.gate-cloud { position: absolute; display: block; height: auto; opacity: 0.9; animation: gate-drift 40s linear infinite alternate; }
+.gate-cloud--1 { left: 24%; top: 24%; width: calc(520 * var(--u)); }
+.gate-cloud--2 { left: 46%; top: 42%; width: calc(380 * var(--u)); opacity: 0.78; animation-duration: 34s; }
+.gate-cloud--3 { left: 22%; top: 60%; width: calc(320 * var(--u)); opacity: 0.7; animation-duration: 46s; }
+.gate-cloud--4 { left: 50%; top: 74%; width: calc(440 * var(--u)); opacity: 0.6; animation-duration: 38s; }
+@keyframes gate-drift { to { transform: translateX(calc(-60 * var(--u))); } }
+
+/* ------------------------------------------------------------------ the garden past the pillars */
+.gate-garden {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: calc(1500 * var(--u));
+  pointer-events: none;
+}
+.gate-garden--l { right: calc(100% - 40 * var(--u)); }
+.gate-garden--r { left: calc(100% - 40 * var(--u)); transform: scaleX(-1); }
+.gate-garden img { position: absolute; display: block; height: auto; }
+.gg-cypress--1 { width: calc(380 * var(--u)); right: calc(20 * var(--u)); bottom: calc(70 * var(--u)); }
+.gg-cypress--2 { width: calc(330 * var(--u)); right: calc(400 * var(--u)); bottom: calc(110 * var(--u)); }
+.gg-cypress--3 { width: calc(300 * var(--u)); right: calc(760 * var(--u)); bottom: calc(130 * var(--u)); }
+.gg-bed--far { width: calc(900 * var(--u)); right: calc(520 * var(--u)); bottom: calc(-80 * var(--u)); }
+.gg-bed--near { width: calc(640 * var(--u)); right: calc(-10 * var(--u)); bottom: calc(-60 * var(--u)); }
+.gg-canopy { width: calc(700 * var(--u)); right: calc(90 * var(--u)); top: calc(-40 * var(--u)); }
+/* upright screens never see past the pillars: don't fetch the garden at all */
+@media (max-aspect-ratio: 5/6) {
+  .gate-garden { display: none; }
+}

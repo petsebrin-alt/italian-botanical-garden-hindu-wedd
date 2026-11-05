@@ -19,9 +19,7 @@
 @media (min-width: 1100px) { .nav-links { display: flex; } }
 .nav:not(.nav--solid) .nav-links { opacity: 0; pointer-events: none; }
 .nav-end { display: flex; align-items: center; gap: 10px; }
-.nav-rsvp { min-height: 40px; padding: 0 20px; font-size: 0.8125rem; }
-.nav:not(.nav--solid) .nav-rsvp { opacity: 0; pointer-events: none; }
-.nav-burger {
+.nav:not(.nav--solid) .nav-burger {
   display: grid;
   gap: 5px;
   place-content: center;
@@ -37,19 +35,6 @@
 .nav-progress { position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; overflow: hidden; }
 .nav-progress-bar { height: 100%; background: var(--gold); transform-origin: 0 50%; transform: scaleX(0); }
 
-.rsvp-pill {
-  position: fixed;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(16px, env(safe-area-inset-bottom));
-  z-index: 45;
-  min-height: 52px;
-  box-shadow: var(--shadow-lift);
-  transform: translateY(90px);
-  opacity: 0;
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease;
-}
-.rsvp-pill.is-on { transform: none; opacity: 1; }
-@media (min-width: 1100px) { .rsvp-pill { display: none; } }
 
 .menu {
   width: 100vw; max-width: 100vw;
@@ -66,4 +51,3 @@
 .menu-mono { color: var(--gold-ink); }
 .menu-links { display: grid; gap: 4px; }
 .menu-links a { font-family: var(--font-head), serif; font-size: 1.6rem; text-decoration: none; padding: 8px 18px; }
-.menu-rsvp { color: var(--gold-ink); }

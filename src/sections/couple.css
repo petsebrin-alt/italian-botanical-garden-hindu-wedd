@@ -1,21 +1,21 @@
 /* S03 · Couple: two arched portraits in a garden frame */
-.couple { overflow: clip; padding-bottom: calc(var(--section-pad) + clamp(3rem, 9vw, 7rem)); }
+/* the fields band (--fields tall) lies below the names, never behind them */
+.couple { overflow: clip; --fields: clamp(150px, 19vw, 300px); padding-bottom: calc(var(--fields) * 0.82 + clamp(1.5rem, 3vw, 3rem)); }
 
 /* the garden frame: arbour vines above, hydrangea beds below, hills on the horizon */
 .cpl-frame { position: absolute; inset: 0; pointer-events: none; }
 .cpl-frame > * { z-index: 0; }
-/* distant ridges behind the names, fading into the paper at both sides and below */
+/* the photographed fields along the foot of the section: the skyline sits on the paper, the
+ * lawn melts into the next section */
 .cpl-horizon {
   position: absolute;
-  left: 0; right: 0; bottom: -2%;
-  height: clamp(170px, 25vw, 360px);
-  opacity: 0.7;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent), linear-gradient(180deg, #000 55%, transparent 92%);
-  -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent), linear-gradient(180deg, #000 55%, transparent 92%);
-  mask-composite: intersect;
+  left: 0; right: 0; bottom: 0;
+  height: var(--fields);
+  -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent);
+  mask-image: linear-gradient(180deg, #000 72%, transparent);
 }
-.cpl-ridge { position: absolute; left: -4%; width: 108%; bottom: 0; height: 100%; will-change: transform; }
+.cpl-fields, .cpl-fields img { display: block; width: 100%; height: 100%; }
+.cpl-fields img { object-fit: cover; object-position: 50% 0%; }
 .cpl-vine { top: -2%; width: clamp(200px, 27vw, 480px); height: auto; }
 .cpl-vine--l { left: -3%; transform-origin: 0% 0%; }
 .cpl-vine--r { right: -3%; transform-origin: 100% 0%; }

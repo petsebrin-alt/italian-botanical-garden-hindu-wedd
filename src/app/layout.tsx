@@ -38,9 +38,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={`${names.variable} ${head.variable} ${body.variable} ${script.variable} ${deva.variable}`}>
+    <html lang="en-GB" suppressHydrationWarning className={`${names.variable} ${head.variable} ${body.variable} ${script.variable} ${deva.variable}`}>
       <body>
-        <a className="skip-link" href="#rsvp">Skip to RSVP</a>
+        <a className="skip-link" href="#events">Skip to the celebrations</a>
         <MotionProvider>{children}</MotionProvider>
       </body>
     </html>

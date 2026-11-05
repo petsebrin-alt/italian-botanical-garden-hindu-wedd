@@ -6,6 +6,7 @@ import { useMotion } from "@/lib/motion";
 import { wedding } from "@/content/wedding";
 import { longDate, longDateParts } from "@/lib/dates";
 import { heroAsset } from "@/lib/heroAsset";
+import { gatePhase, gateRevealed } from "@/lib/gate";
 import { CypressIcon, LotusDivider, Monogram, Sprig } from "@/components/Ornaments";
 import manifest from "../../../public/scenes/hero/manifest.json";
 import "./hero.css";
@@ -171,19 +172,22 @@ export default function Hero() {
       // ---------------------------------------------------------------- intro (time-based): the sky, then the monogram
       const intro = gsap.timeline({ paused: true });
       const opening = [q(".hero-sky")[0], q(".hero-clouds")[0], inner("frame-l"), inner("frame-r")].filter(Boolean);
+      // behind the opening gate the sky is already in place: the gate dissolves into it, and only
+      // the monogram is left to draw itself
+      const behindGate = gatePhase() === "closed";
       if (tier === "C") {
-        intro.from([...opening, titleEl], { autoAlpha: 0, duration: 0.4, ease: "none" });
+        intro.from(behindGate ? [titleEl] : [...opening, titleEl], { autoAlpha: 0, duration: 0.4, ease: "none" });
       } else {
+        if (!behindGate) intro.from(opening, { autoAlpha: 0, scale: 1.05, yPercent: -2, duration: 1.6, ease: tokens.ease.settle, stagger: 0.12 }, 0);
         intro
-          .from(opening, { autoAlpha: 0, scale: 1.05, yPercent: -2, duration: 1.6, ease: tokens.ease.settle, stagger: 0.12 }, 0)
-          .from(q(".mono-draw"), { drawSVG: "0%", duration: 1.5, ease: tokens.ease.cinematic }, 0.7)
+          .from(q(".mono-draw"), { drawSVG: "0%", duration: 1.5, ease: tokens.ease.cinematic }, behindGate ? 0.35 : 0.7)
           .from(q(".mono-leaves path"), { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%", duration: 0.6, stagger: 0.03 }, 0.9)
           .from(q(".mono-letters"), { autoAlpha: 0, duration: 0.7 }, 1.7)
           .from(q(".hero-cue"), { autoAlpha: 0, y: -8, duration: 0.6 }, 2.2);
       }
       // only the live mount may start its intro (React dev mounts effects twice)
       let alive = true;
-      decoded.then(() => { if (alive) intro.play(); });
+      Promise.all([decoded, gateRevealed()]).then(() => { if (alive) intro.play(); });
 
       // ---------------------------------------------------------------- ambient (time-based)
       const ambient = gsap.timeline({ repeat: -1, yoyo: true, paused: tier === "C" });

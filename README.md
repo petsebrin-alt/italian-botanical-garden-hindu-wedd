@@ -46,6 +46,29 @@ https://<your-site>/?to=Sharma%20Family
 
 (`?guest=` works too; spaces can be `%20` or `+`.) Without a name, the greeting reads "Dear Family & Friends"; change both words in `greeting` in `src/content/wedding.ts`.
 
+## The garden gate (splash screen)
+
+The site opens on a closed garden gate tied with a satin bow (`src/scenes/gate/`). The right tail of the bow is pulled down and its loop slides through the knot. The other loop loosens, the knot gives, and the posy of flowers drops away. Each half of the ribbon is then drawn out past its pillar, trailing and twisting. The two iron leaves swing inward onto open sky, the camera walks through, and the gate dissolves into the opening screen, where the J|R monogram draws itself. It runs about six seconds. A tap, scroll or key press starts it at once or speeds it up. Links to a section (`/#events`) skip it, and with reduced motion the gate simply fades out.
+
+The ribbon is drawn live (`src/scenes/gate/ribbon.ts`) as two continuous satin strips. While the bow is tied, its shape follows how far each loop has been pulled; once the knot gives, the strips move as soft ropes with gravity and air. The photographed layers are cut from `assets-src/botanical/ref-gate.webp`:
+
+```bash
+python3 tools/build_gate.py                   # writes public/assets/gate/* + manifest.json
+GATE_DEBUG=/tmp/gate python3 tools/build_gate.py   # also writes inspection composites
+```
+
+The ironwork is keyed so the sky shows between the bars. Where the bow and vines hid it, the bars are continued and the scrolls are copied from the visible repeats and from the mirror-image leaf. Wide screens see both pillars completed (the urns are symmetric) and a cypress garden beyond them.
+
+## Celebrations
+
+The five celebrations (Haldi, Mehendi, Sangeet Night, Wedding Ceremony, Reception Party) are listed in `events` in `src/content/wedding.ts`. Each has a date, start and end time, the part of the villa and a short description. On wide screens one arched photograph stays in view while the timeline scrolls past and changes to each celebration's photo. On phones each photo sits inline. Every celebration has a **Location** button (Google Maps) and **Add to calendar**. Until the villa is confirmed, the map opens on `venue.mapsQuery` ("Tuscany, Italy"). Set `venue.name` and `venue.address` and every Location button points at the villa.
+
+The photographs are cut from `assets-src/botanical/ref-events.webp`:
+
+```bash
+python3 tools/build_events.py          # writes public/assets/img/event-*.webp/.avif
+```
+
 ## Parallax layers
 
 The opening screen has 13 separately moving layers, decomposed from `assets-src/ref-opening.webp` with no flattened background:
@@ -77,6 +100,14 @@ The flowers and trees that dress the sections (wisteria canopy and strands, hydr
 python3 tools/build_botanicals.py      # writes public/assets/botanical/* and the S06 avenue photo
 python3 tools/build_welcome.py         # splits the S02 garden photo into sky, land and near layers
 ```
+
+The real Tuscan fields under the Couple portraits and along the foot of Save the Date (`fields-hills`, `fields-meadow`) are cut from the same sharp garden photograph. Its sky is keyed out, and each band is continued sideways with mirrored copies of itself:
+
+```bash
+python3 tools/build_fields.py          # writes public/assets/img/fields-*.webp/.avif
+```
+
+Save the Date opens on a dial of the wedding month. The needle sweeps from the 1st to the 15th while the day number counts up through a soft blur. Then the month and year rise in, followed by the hour, and the countdown counts up to the real values before ticking live. A small bead runs along the dial with the seconds, and Add to Calendar comes last.
 
 The Welcome section is one photographed garden (`assets-src/botanical/ref-welcome.webp`). The build removes any lettering baked into it, keys out the sky, separates the villa terrace and the hydrangea corner, and continues the sky upward for phones. The layers then move at different depths.
 

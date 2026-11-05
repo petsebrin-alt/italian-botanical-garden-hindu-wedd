@@ -1,118 +1,92 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { publishedEvents, wedding, type WeddingEvent } from "@/content/wedding";
-import { clock, shortDate, weekdayDate } from "@/lib/dates";
-import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { publishedEvents, wedding } from "@/content/wedding";
+import { clock, weekdayDate } from "@/lib/dates";
+import { gsap, ScrollTrigger, tokens } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import AddToCalendar from "@/components/AddToCalendar";
-import EventIcon from "@/components/EventIcon";
-import { Sprite } from "@/components/Pic";
+import Pic, { Sprite } from "@/components/Pic";
 import "./events.css";
 
-const PER_ROW = 5;
+/** Each celebration's photograph (tools/build_events.py), with a description for screen readers. */
+const PHOTOS: Record<string, { src: string; alt: string }> = {
+  haldi: { src: "/assets/img/event-haldi", alt: "The Haldi set in a villa garden: yellow drapes, marigold strings, a bowl of turmeric and lemons" },
+  mehendi: { src: "/assets/img/event-mehendi", alt: "The Mehendi lounge: a carved bench with jewel cushions under bougainvillea and brass lanterns" },
+  sangeet: { src: "/assets/img/event-sangeet", alt: "The Sangeet stage at night: a lit arch, purple drapes, curtains of fairy lights and a dhol" },
+  ceremony: { src: "/assets/img/event-ceremony", alt: "The wedding mandap: ivory drapes and roses on a garden lawn" },
+  reception: { src: "/assets/img/event-reception", alt: "The reception: round tables with pink centrepieces under string lights" },
+};
 
-/** Serpentine placement: rows of up to five, every other row runs right-to-left. */
-function place(i: number, n: number) {
-  const row = Math.floor(i / PER_ROW);
-  const inRow = Math.min(PER_ROW, n - row * PER_ROW);
-  const cols = Math.min(PER_ROW, n);
-  const offset = Math.floor((cols - inRow) / 2);
-  const k = i % PER_ROW;
-  const col = row % 2 === 0 ? offset + k : offset + (inRow - 1 - k);
-  return { row: row + 1, col: col + 1 };
+/** The villa on a map: its name and address once confirmed (src/content/wedding.ts), else the region. */
+const mapsUrl = () => {
+  const v = wedding.venue;
+  const query = [v.name, v.address].filter(Boolean).join(", ") || v.mapsQuery || wedding.destination.label;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+};
+
+function PinIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" />
+      <circle cx="12" cy="9.5" r="2.6" />
+    </svg>
+  );
 }
 
-/** Curved connectors through the medallion centres: N nodes always give N − 1 curves. */
-function connectorPath(pts: { x: number; y: number; row: number }[], vertical: boolean, cx: number) {
-  if (pts.length < 2) return { d: "", stops: [0] };
-  const segs: string[] = [];
-  for (let i = 0; i < pts.length - 1; i++) {
-    const a = pts[i], b = pts[i + 1];
-    if (vertical) {
-      const dy = b.y - a.y;
-      segs.push(`C ${a.x} ${a.y + dy * 0.55}, ${b.x} ${b.y - dy * 0.55}, ${b.x} ${b.y}`);
-    } else if (a.row === b.row) {
-      const amp = (i % 2 ? 1 : -1) * 30;
-      const dx = b.x - a.x;
-      segs.push(`C ${a.x + dx / 3} ${a.y + amp}, ${b.x - dx / 3} ${b.y + amp}, ${b.x} ${b.y}`);
-    } else {
-      const side = a.x > cx ? 1 : -1;
-      segs.push(`C ${a.x + side * 110} ${a.y}, ${b.x + side * 110} ${b.y}, ${b.x} ${b.y}`);
-    }
-  }
-  const d = `M ${pts[0].x} ${pts[0].y} ` + segs.join(" ");
-  // cumulative length at each node, so a node lights up when the line reaches it
-  const probe = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  const stops = [0];
-  let acc = `M ${pts[0].x} ${pts[0].y}`;
-  segs.forEach((s) => {
-    acc += " " + s;
-    probe.setAttribute("d", acc);
-    stops.push(probe.getTotalLength());
-  });
-  const total = stops[stops.length - 1] || 1;
-  return { d, stops: stops.map((s) => s / total) };
-}
-
+/**
+ * S04 · Celebrations: the love-story layout, for the five events. On wide screens an arched
+ * photograph stays in place while the timeline scrolls past it, and each celebration slides its
+ * own photograph in as it reaches the middle of the screen; a vine grows down the timeline and a
+ * bud blooms at each event. Phones show each photograph inline.
+ */
 export default function Events() {
   const events = publishedEvents();
-  const [geo, setGeo] = useState<{ d: string; w: number; h: number; stops: number[] }>({ d: "", w: 0, h: 0, stops: [] });
-  const [open, setOpen] = useState<WeddingEvent | null>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  const measure = useCallback(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const vertical = window.innerWidth < 768;
-    // layout offsets ignore the pop-in transforms, so curves always meet the medallion centres
-    const offsetIn = (el: HTMLElement) => {
-      let x = 0, y = 0, n: HTMLElement | null = el;
-      while (n && n !== track) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent as HTMLElement | null; }
-      return { x, y };
-    };
-    const pts = Array.from(track.querySelectorAll<HTMLElement>(".ev-medal")).map((m) => {
-      const o = offsetIn(m);
-      return { x: o.x + m.offsetWidth / 2, y: o.y + m.offsetHeight / 2, row: Number(m.dataset.row) };
-    });
-    const { d, stops } = connectorPath(pts, vertical, track.clientWidth / 2);
-    setGeo((g) => (g.d === d ? g : { d, w: track.clientWidth, h: track.clientHeight, stops }));
-  }, []);
-
-  useEffect(() => {
-    measure();
-    const ro = new ResizeObserver(() => measure());
-    if (trackRef.current) ro.observe(trackRef.current);
-    document.fonts.ready.then(measure);
-    return () => ro.disconnect();
-  }, [measure]);
 
   const ref = useScene<HTMLElement>((root, q, tier) => {
-    const nodes = q(".ev-node") as HTMLElement[];
-    if (tier === "C" || !geo.d) {
-      nodes.forEach((n) => n.classList.add("is-on"));
-      return;
-    }
-    const line = q(".ev-line")[0];
-    const beads = q(".ev-beads")[0];
-    gsap.set([line, beads], { drawSVG: "0%" });
-    const st = ScrollTrigger.create({
-      trigger: trackRef.current, start: "top 72%", end: "bottom 62%", scrub: true,
-      onUpdate: (self) => {
-        const p = self.progress;
-        gsap.set(line, { drawSVG: `0% ${p * 100}%` });
-        gsap.set(beads, { drawSVG: `0% ${Math.max(0, p - 0.04) * 100}%` });
-        nodes.forEach((n, i) => n.classList.toggle("is-on", p >= (geo.stops[i] ?? 0) - 0.015));
-      },
+    const items = q(".ev-item") as HTMLElement[];
+    if (tier === "C" || items.length < 1) return;
+    gsap.from(q(".ev-vine-path"), {
+      drawSVG: "0%", ease: "none",
+      scrollTrigger: { trigger: q(".ev-list")[0], start: "top 62%", end: "bottom 62%", scrub: true },
     });
-    // the first node is lit as soon as the track arrives
-    ScrollTrigger.create({ trigger: trackRef.current, start: "top 80%", onEnter: () => nodes[0]?.classList.add("is-on") });
-    return () => st.kill();
-  }, [geo.d]);
+    items.forEach((item) => {
+      gsap.fromTo(item.querySelector(".ev-bud"), { scale: 0.35, rotation: -25, backgroundColor: "#A9BBA0" }, {
+        scale: 1, rotation: 0, backgroundColor: "#D9A5A0", duration: 0.6, ease: "back.out(1.6)",
+        scrollTrigger: { trigger: item, start: "top 58%", toggleActions: "play none none reverse" },
+      });
+      gsap.from(item.querySelectorAll(".ev-reveal"), {
+        y: 26, autoAlpha: 0, duration: 0.9, stagger: 0.09, ease: tokens.ease.reveal,
+        scrollTrigger: { trigger: item, start: "top 78%", once: true },
+      });
+    });
 
-  const show = (e: WeddingEvent) => { setOpen(e); requestAnimationFrame(() => dialogRef.current?.showModal()); };
-  const dress = open ? wedding.dressCode.find((d) => d.eventId === open.id) : undefined;
+    if (window.innerWidth < 1024) return;
+    // wide screens: the arched stage changes photograph as each celebration crosses the middle
+    const photos = q(".ev-photo") as HTMLElement[];
+    gsap.set(photos, { clipPath: "inset(100% 0% 0% 0%)" });
+    gsap.set(photos[0], { clipPath: "inset(0% 0% 0% 0%)" });
+    let current = 0;
+    const show = (i: number) => {
+      if (i === current) return;
+      const down = i > current;
+      const incoming = photos[i], outgoing = photos[current];
+      gsap.set(incoming, { zIndex: 2 });
+      gsap.set(outgoing, { zIndex: 1 });
+      gsap.fromTo(incoming, { clipPath: down ? "inset(100% 0% 0% 0%)" : "inset(0% 0% 100% 0%)" }, {
+        clipPath: "inset(0% 0% 0% 0%)", duration: 0.95, ease: tokens.ease.cinematic, overwrite: true,
+      });
+      gsap.fromTo(incoming.querySelector("img"), { scale: 1.14 }, { scale: 1, duration: 1.2, ease: tokens.ease.reveal });
+      gsap.to(outgoing.querySelector("img"), { scale: 1.05, duration: 0.95 });
+      current = i;
+      q(".ev-caption-text").forEach((c, n) => c.classList.toggle("is-on", n === i));
+      q(".ev-dot").forEach((c, n) => c.classList.toggle("is-on", n === i));
+      const count = q(".ev-count-now")[0];
+      if (count) count.textContent = String(i + 1).padStart(2, "0");
+    };
+    items.forEach((item, i) => {
+      ScrollTrigger.create({ trigger: item, start: "top 55%", end: "bottom 55%", onEnter: () => show(i), onEnterBack: () => show(i) });
+    });
+  });
 
   if (!events.length) return null; // no published events: the section disappears entirely
 
@@ -120,62 +94,68 @@ export default function Events() {
     <section ref={ref} id="events" className="events section paper" aria-labelledby="events-title" data-stage>
       <Sprite name="strand-1" className="hang hang--l sway" depth={-0.18} />
       <Sprite name="strand-2" className="hang hang--r sway sway--slow" depth={-0.22} />
-      <Sprite name="cypress-l" className="events-cypress events-cypress--l" depth={-0.12} />
-      <Sprite name="cypress-r" className="events-cypress events-cypress--r" depth={-0.12} />
 
       <header className="container center events-head">
         <p className="eyebrow" data-reveal="fade">Join us for</p>
         <h2 id="events-title" className="script" data-reveal="up">Wedding Celebrations</h2>
-        <p className="body-s events-sub" data-reveal="fade">All times are Italy time (CEST). Tap a celebration for details.</p>
+        <p className="body-s events-sub" data-reveal="fade">Five celebrations at our Tuscan villa. All times are Italy time (CEST).</p>
       </header>
 
-      <div className="container">
-        <div ref={trackRef} className="ev-track" style={{ "--cols": Math.min(PER_ROW, events.length) } as React.CSSProperties}>
-          {geo.d && (
-            <svg className="ev-svg" width={geo.w} height={geo.h} viewBox={`0 0 ${geo.w} ${geo.h}`} aria-hidden="true">
-              <path className="ev-line" d={geo.d} />
-              <path className="ev-beads" d={geo.d} />
+      <div className="container ev-grid">
+        <div className="ev-stage-wrap" aria-hidden="true">
+          <div className="ev-stage arch arch--frame">
+            {events.map((e) => (
+              <div key={e.id} className="ev-photo">
+                <Pic src={(PHOTOS[e.id] ?? PHOTOS.ceremony).src} alt="" />
+              </div>
+            ))}
+          </div>
+          <p className="ev-caption caption">
+            {events.map((e, i) => (
+              <span key={e.id} className={`ev-caption-text${i === 0 ? " is-on" : ""}`}>{e.name}</span>
+            ))}
+          </p>
+          <div className="ev-progress">
+            <span className="ev-count names"><span className="ev-count-now">01</span> / {String(events.length).padStart(2, "0")}</span>
+            <span className="ev-dots">
+              {events.map((e, i) => <i key={e.id} className={`ev-dot${i === 0 ? " is-on" : ""}`} />)}
+            </span>
+          </div>
+        </div>
+
+        <ol className="ev-list">
+          {events.length > 1 && (
+            <svg className="ev-vine" viewBox="0 0 40 1000" preserveAspectRatio="none" aria-hidden="true">
+              <path className="ev-vine-path" d="M20 0 C 2 90, 38 170, 20 250 C 2 330, 38 420, 20 500 C 2 580, 38 670, 20 750 C 2 830, 38 920, 20 1000"
+                fill="none" stroke="currentColor" strokeWidth="1.5" />
             </svg>
           )}
-          <ol className="ev-list">
-            {events.map((e, i) => {
-              const { row, col } = place(i, events.length);
-              return (
-                <li key={e.id} className={`ev-node ${i % 2 ? "ev-node--odd" : ""}`} style={{ gridRow: row, gridColumn: col }}>
-                  <button type="button" className="ev-button" onClick={() => show(e)} aria-haspopup="dialog">
-                    <span className="ev-medal arch" data-row={row}>
-                      <EventIcon type={e.type} />
-                    </span>
-                    <span className="ev-name h3">{e.name}</span>
-                    <span className="ev-when caption">{shortDate(e.date!)} · {clock(e.start!)}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
+          {events.map((e, i) => {
+            const photo = PHOTOS[e.id] ?? PHOTOS.ceremony;
+            return (
+              <li key={e.id} className="ev-item">
+                <span className="ev-bud" aria-hidden="true" />
+                <figure className="ev-inline arch arch--frame" data-reveal="mask">
+                  <Pic src={photo.src} alt={photo.alt} inner />
+                </figure>
+                <p className="ev-label eyebrow ev-reveal">
+                  <span className="ev-num">{String(i + 1).padStart(2, "0")}</span> {weekdayDate(e.date!)}
+                </p>
+                <h3 className="ev-title script ev-reveal">{e.name}</h3>
+                <p className="ev-time date-display ev-reveal">{clock(e.start!)}{e.end ? ` – ${clock(e.end)}` : ""}</p>
+                {e.area && <p className="ev-place body-s ev-reveal"><PinIcon /> {e.area} · {wedding.destination.label}</p>}
+                {e.description && <p className="ev-body ev-reveal">{e.description}</p>}
+                <div className="ev-actions ev-reveal">
+                  <a className="btn btn--ghost ev-map" href={mapsUrl()} target="_blank" rel="noopener noreferrer">
+                    <PinIcon /> Location
+                  </a>
+                  <AddToCalendar event={e} variant="gold" align="start" />
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       </div>
-
-      <dialog ref={dialogRef} className="ev-dialog" onClose={() => setOpen(null)} aria-labelledby="ev-dialog-title">
-        {open && (
-          <div className="ev-sheet">
-            <button className="ev-close" type="button" onClick={() => dialogRef.current?.close()} aria-label="Close">×</button>
-            <span className="ev-sheet-icon"><EventIcon type={open.type} size={52} /></span>
-            <h3 id="ev-dialog-title" className="script script--m">{open.name}</h3>
-            <p className="eyebrow">{weekdayDate(open.date!)}</p>
-            <p className="ev-sheet-time date-display">{clock(open.start!)}{open.end ? ` – ${clock(open.end)}` : ""}</p>
-            <p className="ev-sheet-area body-s">{open.area?.startsWith("[") ? "Venue details to be announced" : open.area}</p>
-            {open.description && <p className="ev-sheet-desc">{open.description}</p>}
-            {dress && (
-              <a className="ev-chip" href="#dress-code" onClick={() => dialogRef.current?.close()}>
-                <span className="ev-chip-dots">{dress.palette.slice(0, 3).map((p) => <i key={p.hex} style={{ background: p.hex }} />)}</span>
-                Dress code: {dress.theme}
-              </a>
-            )}
-            <AddToCalendar event={open} variant="primary" />
-          </div>
-        )}
-      </dialog>
     </section>
   );
 }

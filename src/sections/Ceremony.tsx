@@ -168,22 +168,6 @@ export default function Ceremony() {
         <JasmineCurtain side="r" />
       </div>
 
-      <div className="container cer-guide section">
-        <header className="center cer-guide-head">
-          <p className="eyebrow" data-reveal="fade">What to expect</p>
-          <h3 className="h2" data-reveal="up">The rituals, gently explained</h3>
-        </header>
-        <ol className="cer-rituals" data-reveal="stagger">
-          {c.rituals.map((r, i) => (
-            <li key={r.name} className="cer-ritual card" data-item>
-              <span className="cer-num names">{String(i + 1).padStart(2, "0")}</span>
-              <h4 className="h3">{r.name}</h4>
-              <p className="body-s">{r.text}</p>
-            </li>
-          ))}
-        </ol>
-        <p className="cer-note center measure" data-reveal="fade">{c.note}</p>
-      </div>
     </section>
   );
 }

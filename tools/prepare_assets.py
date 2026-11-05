@@ -152,7 +152,13 @@ def couple_closeups():
         save("portrait-bride", np.ascontiguousarray(crop(bride, 84, 44, 564, 644)[:, ::-1]), scale=1.1, sharpen=True, quality=88)
     else:
         save("portrait-bride", np.ascontiguousarray(crop(clean, 500, 836, 830, 1248)[:, ::-1]), scale=1.5, sharpen=True, quality=88)
-    save("portrait-groom", np.ascontiguousarray(crop(clean, 125, 770, 445, 1170)[:, ::-1]), scale=1.5, sharpen=True, quality=88)
+    if os.path.exists(os.path.join(SRC, "botanical", "ref-groom.webp")):
+        # the groom's own portrait photograph, framed to match the bride's arch (turban to chest)
+        # and mirrored so he turns towards her
+        groom = load(os.path.join("botanical", "ref-groom.webp"))
+        save("portrait-groom", np.ascontiguousarray(crop(groom, 235, 75, 775, 750)[:, ::-1]), scale=528 / 540, sharpen=True, quality=88)
+    else:
+        save("portrait-groom", np.ascontiguousarray(crop(clean, 125, 770, 445, 1170)[:, ::-1]), scale=1.5, sharpen=True, quality=88)
 
 
 if __name__ == "__main__":

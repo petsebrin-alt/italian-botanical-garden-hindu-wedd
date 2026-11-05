@@ -84,17 +84,3 @@
 [data-tier="C"] .jas { display: none; }
 
 /* ritual guide */
-.cer-guide-head { display: grid; gap: 8px; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
-.cer-rituals {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 16px;
-}
-@media (min-width: 700px) { .cer-rituals { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1024px) { .cer-rituals { grid-template-columns: repeat(3, 1fr); gap: 22px; } }
-.cer-ritual { padding: 24px 24px 26px; display: grid; gap: 6px; }
-.cer-num { font-size: 1.6rem; color: var(--gold-ink); }
-.cer-ritual .body-s { color: var(--botanical); }
-.cer-note { margin-top: clamp(2rem, 5vw, 3rem); color: var(--botanical); }

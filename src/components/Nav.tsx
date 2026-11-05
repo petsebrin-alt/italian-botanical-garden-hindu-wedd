@@ -7,12 +7,11 @@ import { Monogram } from "@/components/Ornaments";
 import "./nav.css";
 
 const LINKS = [
-  { href: "#couple", label: "Our Story" },
+  { href: "#couple", label: "The Couple" },
   { href: "#events", label: "Celebrations", needs: "events" },
   { href: "#destination", label: "Destination" },
   { href: "#dress-code", label: "Dress Code" },
   { href: "#gallery", label: "Gallery" },
-  { href: "#venue", label: "Travel & Stay" },
   { href: "#wishes", label: "Wishes" },
 ];
 
@@ -32,7 +31,6 @@ export default function Nav() {
   const { tier, paused, togglePaused } = useMotion();
   const [solid, setSolid] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const [pill, setPill] = useState(false);
   const [menu, setMenu] = useState(false);
   const bar = useRef<HTMLDivElement>(null);
   const dlg = useRef<HTMLDialogElement>(null);
@@ -50,8 +48,6 @@ export default function Nav() {
         setSolid(past);
         setHidden(past && y > last + 4);
         if (y < last - 4) setHidden(false);
-        const rsvp = document.getElementById("rsvp")?.getBoundingClientRect();
-        setPill(past && !(rsvp && rsvp.top < window.innerHeight * 0.8 && rsvp.bottom > window.innerHeight * 0.2));
         const max = document.documentElement.scrollHeight - window.innerHeight;
         if (bar.current) bar.current.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
         last = y;
@@ -81,7 +77,6 @@ export default function Nav() {
             {links.map((l) => <a key={l.href} href={l.href} onClick={click}>{l.label}</a>)}
           </nav>
           <div className="nav-end">
-            <a className="btn btn--gold nav-rsvp" href="#rsvp" onClick={click}>RSVP</a>
             <button type="button" className="nav-burger" aria-label="Open menu" aria-haspopup="dialog" onClick={() => { setMenu(true); dlg.current?.showModal(); }}>
               <span /><span /><span />
             </button>
@@ -90,15 +85,12 @@ export default function Nav() {
         <div className="nav-progress" aria-hidden="true"><div ref={bar} className="nav-progress-bar" /></div>
       </header>
 
-      <a className={`rsvp-pill btn btn--primary${pill ? " is-on" : ""}`} href="#rsvp" onClick={click} tabIndex={pill ? 0 : -1} aria-hidden={!pill}>RSVP</a>
-
       <dialog ref={dlg} className="menu paper" aria-label="Menu" onClose={() => setMenu(false)}>
         <button type="button" className="ev-close menu-close" onClick={() => dlg.current?.close()} aria-label="Close menu">×</button>
         <Monogram size={84} className="menu-mono" />
         <nav className="menu-links" aria-label="Sections">
           <a href="#top" onClick={click}>Home</a>
           {links.map((l) => <a key={l.href} href={l.href} onClick={click}>{l.label}</a>)}
-          <a href="#rsvp" onClick={click} className="menu-rsvp">RSVP</a>
         </nav>
         <button type="button" className="rsvp-link" onClick={togglePaused} aria-pressed={paused}>{paused ? "Resume animations" : "Pause animations"}</button>
       </dialog>

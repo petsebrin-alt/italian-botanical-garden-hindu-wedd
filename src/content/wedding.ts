@@ -67,7 +67,7 @@ export const wedding = {
     highlights: [
       { title: "The landscape", text: "Cypress avenues, rolling hills and villa gardens: the Tuscany of postcards, at the height of summer." },
       { title: "Summer in Tuscany", text: "Mid-August days are long, golden and warm. Light, breathable fabrics and sun hats are your friends." },
-      { title: "Getting here", text: "Flights, transfers, stays and travel essentials are gathered in the Travel & Stay section below." },
+      { title: "Getting here", text: "Florence (FLR) and Pisa (PSA) are the closest airports; Rome (FCO) and Milan (MXP) connect from further afield." },
     ],
   },
   hashtag: "[#JanviWedsRohit]",
@@ -88,11 +88,11 @@ export const wedding = {
     { label: "15 · 08 · 2027", title: "The Wedding Journey", body: "Two families, one celebration, and a garden in Tuscany where our forever begins.", image: "/assets/img/story-5.webp", alt: "Janvi and Rohit holding rose and jasmine garlands" },
   ] as Milestone[],
   events: [
-    { id: "mehendi", type: "mehendi", name: "Mehendi", date: "2027-08-12", start: "16:00", end: "19:00", area: "[Garden terrace]", description: "Henna, music and marigold-bright afternoons. Come with open palms." },
-    { id: "haldi", type: "haldi", name: "Haldi", date: "2027-08-13", start: "10:00", end: "12:30", area: "[Lemon-tree courtyard]", description: "A morning of turmeric, laughter and blessings for the couple." },
-    { id: "sangeet", type: "sangeet", name: "Sangeet", date: "2027-08-13", start: "19:00", end: "23:30", area: "[Villa lawns]", description: "An evening of dance, dholak and performances by both families." },
-    { id: "ceremony", type: "ceremony", name: "Wedding Ceremony", date: "2027-08-15", start: "10:00", end: "13:00", area: "[Mandap lawn]", description: "The Baraat, the Jaimala and the sacred pheras under the Tuscan sun." },
-    { id: "reception", type: "reception", name: "Reception", date: "2027-08-15", start: "19:00", end: "23:59", area: "[Sunset terrace]", description: "Dinner, toasts and dancing as the light turns gold over the hills." },
+    { id: "haldi", type: "haldi", name: "Haldi", date: "2027-08-12", start: "10:00", end: "13:00", area: "The villa courtyard", description: "A sunny morning of turmeric, marigolds, laughter and blessings for the couple." },
+    { id: "mehendi", type: "mehendi", name: "Mehendi", date: "2027-08-13", start: "11:00", end: "15:00", area: "The villa garden hall", description: "Henna, music and bright cushions under the bougainvillea. Come with open palms." },
+    { id: "sangeet", type: "sangeet", name: "Sangeet Night", date: "2027-08-13", start: "19:00", end: "23:00", area: "The villa lawns", description: "An evening of dance, dhol and performances by both families under the lights." },
+    { id: "ceremony", type: "ceremony", name: "Wedding Ceremony", date: "2027-08-15", start: "10:00", end: "13:00", area: "The mandap lawn", description: "The baraat, the jaimala and the sacred vows under the Tuscan sun." },
+    { id: "reception", type: "reception", name: "Reception Party", date: "2027-08-15", start: "19:00", end: "23:30", area: "The villa terrace", description: "Dinner, toasts and dancing beneath the string lights as the evening turns gold." },
   ] as WeddingEvent[],
   ceremony: {
     title: "Vivah Sanskar",
@@ -126,6 +126,8 @@ export const wedding = {
     { src: "/assets/img/gallery-10.webp", alt: "Janvi and Rohit with garlands in the cypress garden", caption: "Forever in bloom", category: "Moments", shape: "wide" },
   ] as GalleryImage[],
   venue: {
+    /** Every celebration's "Location" button opens maps on this (the villa's name or address once confirmed). */
+    mapsQuery: "Tuscany, Italy",
     name: "", // [Venue to be announced]
     address: "",
     lat: undefined as number | undefined,

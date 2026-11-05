@@ -33,10 +33,28 @@ function Digits({ value, pad = 2 }: { value: number; pad?: number }) {
   );
 }
 
-/** Live countdown to the ceremony, correct in every visitor time zone. */
-export default function Countdown() {
+/**
+ * Live countdown to the ceremony, correct in every visitor time zone.
+ * With `run` false the tiles wait at zero; when it turns true they count up to the real values
+ * (each digit rolling in through a soft blur), then tick live.
+ */
+export default function Countdown({ run = true }: { run?: boolean }) {
   const [state, setState] = useState<State>({ kind: "pending" });
   const [spoken, setSpoken] = useState("");
+  const [intro, setIntro] = useState(run ? 1 : 0);
+
+  useEffect(() => {
+    if (!run) return;
+    let raf = 0;
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const p = Math.min(1, (t - t0) / 1500);
+      setIntro(p);
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [run]);
 
   useEffect(() => {
     let timer = 0;
@@ -59,14 +77,16 @@ export default function Countdown() {
     return <p className="cd-done date-display">{state.kind === "today" ? "Today is the day" : "Just married · 15 · 08 · 2027"}</p>;
   }
   const p = state.kind === "counting" ? state.parts : null;
-  const tiles: [string, number | null, number][] = [["Days", p?.d ?? null, 3], ["Hours", p?.h ?? null, 2], ["Minutes", p?.m ?? null, 2], ["Seconds", p?.s ?? null, 2]];
+  const k = 1 - Math.pow(1 - intro, 3);
+  const up = (v: number | undefined) => (v === undefined ? null : Math.round(v * k));
+  const tiles: [string, number | null, number][] = [["Days", up(p?.d), 3], ["Hours", up(p?.h), 2], ["Minutes", up(p?.m), 2], ["Seconds", up(p?.s), 2]];
   return (
     <div className="cd">
       <p className="sr-only" aria-live="off">{spoken}</p>
       <ol className="cd-tiles" aria-hidden="true">
         {tiles.map(([label, v, pad]) => (
           <li key={label} className="cd-tile" data-item>
-            <span className="cd-num">{v === null ? "—" : <Digits value={v} pad={label === "Days" ? Math.max(1, String(v).length) : pad} />}</span>
+            <span className="cd-num">{v === null ? "—" : <Digits value={v} pad={label === "Days" ? Math.max(1, String(p?.d ?? v).length) : pad} />}</span>
             <span className="cd-label">{label}</span>
           </li>
         ))}
