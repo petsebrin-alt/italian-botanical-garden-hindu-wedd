@@ -181,9 +181,9 @@ Three soft separate high summer cumulus clouds with clear deep summer-blue sky a
 Each image goes straight in by file name (§7); no code changes are needed. "Crop" describes how the site frames it.
 
 ### P-10 · Villa terrace → `villa-terrace`
-- **Used in:** S02 Welcome
+- **Used in:** S02 Welcome, as a cut-out layer on the right of the garden scene (its sky is keyed out so the scene's own sky shows)
 - **Aspect:** 3:4 · **Size:** ≥ 1500 × 2000 · **Light:** L-MORNING
-- **Crop:** shown in a round-top arch; the top 15 % is lost to the curve
+- **Crop:** keep clear, plain blue sky above and to the left of the villa (that is what gets keyed out). After importing, run `python3 tools/prepare_assets.py villa` to cut it out
 ```
 A honey-stone Tuscan villa with a ground-floor arcade of round arches and climbing white roses, seen across a gravel terrace with large terracotta urns overflowing with blush hydrangeas and potted lemon trees, two cypress trees beside the villa, pink wisteria trained over the arches, no people. Eye level, 35 mm, f/5.6, vertical composition with the arcade filling the middle of the frame. {L-MORNING}.
 ```
@@ -191,7 +191,7 @@ A honey-stone Tuscan villa with a ground-floor arcade of round arches and climbi
 ### P-11 · Bride portrait → `portrait-bride`
 - **Used in:** S03 Couple, S11 Gallery
 - **Aspect:** 3:4 · **Size:** ≥ 1500 × 2000 · **Light:** L-MORNING
-- **Crop:** round-top arch, focus point 50 % / 20 %: keep her face centred in the upper third
+- **Crop:** round-top 4:5 arch, head and shoulders, focus point 50 % / 30 %. She sits in the left arch, so have her turn slightly to her left (towards the groom's arch, on the right of the picture)
 ```
 Portrait of Janvi from the waist up, three-quarter view, smiling softly towards the camera, one hand lightly holding the edge of her dupatta, in a Tuscan garden with soft out-of-focus cypress trees and hanging pink wisteria behind her. {W-BRIDE}. 85 mm, f/2.8, face sharp, jewellery detail crisp. {L-MORNING}.
 ```
@@ -199,7 +199,7 @@ Portrait of Janvi from the waist up, three-quarter view, smiling softly towards 
 ### P-12 · Groom portrait → `portrait-groom`
 - **Used in:** S03 Couple, S11 Gallery
 - **Aspect:** 3:4 · **Size:** ≥ 1500 × 2000 · **Light:** L-MORNING
-- **Crop:** as P-11
+- **Crop:** as P-11, in the right arch: he turns slightly to his right (towards the bride's arch, on the left of the picture)
 ```
 Portrait of Rohit from the waist up, three-quarter view, warm confident smile towards the camera, hands relaxed at his sherwani buttons, in a Tuscan garden with soft out-of-focus cypress trees and a stone wall behind him. {W-GROOM}. 85 mm, f/2.8, face and kalgi sharp. {L-MORNING}.
 ```

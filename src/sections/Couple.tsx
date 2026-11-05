@@ -3,44 +3,66 @@
 import { wedding } from "@/content/wedding";
 import { gsap, scrub } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
-import { Monogram } from "@/components/Ornaments";
+import { LotusDivider, Sprig } from "@/components/Ornaments";
 import Pic, { Sprite } from "@/components/Pic";
+import Ridges from "@/components/Ridges";
 import "./couple.css";
 
 const PEOPLE = [
-  { key: "bride", photo: "/assets/img/portrait-bride", alt: "Janvi in a blush-pink lehenga with kundan jewellery and a sheer dupatta", sprite: "wisteria-1" },
-  { key: "groom", photo: "/assets/img/portrait-groom", alt: "Rohit in an ivory embroidered sherwani and a turban with a pearl kalgi", sprite: "wisteria-2" },
+  { key: "bride", photo: "/assets/img/portrait-bride", alt: "Janvi in a blush-pink lehenga with kundan jewellery and a sheer dupatta" },
+  { key: "groom", photo: "/assets/img/portrait-groom", alt: "Rohit in an ivory embroidered sherwani and a turban with a pearl kalgi" },
 ] as const;
 
-/** S03 · Couple: two arched portraits uncover from below and meet in the middle. */
+/** A small gold five-petal blossom, the full stop under each name. */
+function Blossom() {
+  return (
+    <svg className="person-blossom" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true" fill="currentColor">
+      {[0, 72, 144, 216, 288].map((r) => (
+        <path key={r} d="M13 13 C 10 9, 10.5 4.5, 13 2.5 C 15.5 4.5, 16 9, 13 13 Z" transform={`rotate(${r} 13 13)`} />
+      ))}
+      <circle cx="13" cy="13" r="2" fill="var(--ivory)" />
+    </svg>
+  );
+}
+
+/**
+ * S03 · Couple: two arched portraits side by side in a garden frame (arbour vines above,
+ * hydrangeas below, hills on the horizon). The frame drifts at its own depths while the arches
+ * uncover from below and, on wide screens, glide in towards each other.
+ */
 export default function Couple() {
   const ref = useScene<HTMLElement>((root, q, tier) => {
-    if (tier === "C" || window.innerWidth < 1024) return;
-    // desktop: the portraits converge towards the monogram as the section arrives
-    gsap.fromTo(q(".person--bride"), { x: "-7vw" }, {
-      x: 0, ease: "power2.inOut",
-      scrollTrigger: { trigger: q(".couple-grid")[0], start: "top 95%", end: "center 55%", scrub: scrub() },
-    });
-    gsap.fromTo(q(".person--groom"), { x: "7vw" }, {
-      x: 0, ease: "power2.inOut",
-      scrollTrigger: { trigger: q(".couple-grid")[0], start: "top 95%", end: "center 55%", scrub: scrub() },
-    });
-    gsap.from(q(".couple-mono"), {
-      scale: 0.7, autoAlpha: 0, ease: "power2.out",
-      scrollTrigger: { trigger: q(".couple-grid")[0], start: "top 70%", end: "center 55%", scrub: scrub() },
-    });
+    if (tier === "C") return;
+    const wide = window.innerWidth >= 768;
+    const grid = q(".couple-grid")[0];
+    const meet = { trigger: grid, start: "top 95%", end: "center 55%", scrub: scrub() };
+    gsap.fromTo(q(".person--bride"), { x: wide ? "-6vw" : "-4vw" }, { x: 0, ease: "power2.inOut", scrollTrigger: meet });
+    gsap.fromTo(q(".person--groom"), { x: wide ? "6vw" : "4vw" }, { x: 0, ease: "power2.inOut", scrollTrigger: meet });
+    // the garden frame closes in around them as the section arrives
+    const enter = { trigger: root, start: "top bottom", end: "top 20%", scrub: scrub() };
+    gsap.fromTo(q(".cpl-vine--l"), { x: "-5vw", rotation: -3 }, { x: 0, rotation: 0, ease: "power2.out", scrollTrigger: enter });
+    gsap.fromTo(q(".cpl-vine--r"), { x: "5vw", rotation: 3 }, { x: 0, rotation: 0, ease: "power2.out", scrollTrigger: enter });
+    gsap.fromTo(q(".cpl-bed--l"), { x: "-6vw" }, { x: 0, ease: "power2.out", scrollTrigger: { ...enter, start: "top 70%", end: "bottom bottom" } });
+    gsap.fromTo(q(".cpl-bed--r"), { x: "6vw" }, { x: 0, ease: "power2.out", scrollTrigger: { ...enter, start: "top 70%", end: "bottom bottom" } });
   });
   const { bride, groom } = wedding.couple;
   const info = { bride, groom };
 
   return (
     <section ref={ref} id="couple" className="couple section paper" aria-labelledby="couple-title" data-stage>
-      <Sprite name="bloom-l" className="couple-corner couple-corner--l" depth={0.3} />
-      <Sprite name="bloom-r" className="couple-corner couple-corner--r" depth={0.3} />
+      <div className="cpl-frame" aria-hidden="true">
+        <div className="cpl-horizon"><Ridges id="cpl" className="cpl-ridge" depths={[-0.2, -0.12]} count={2} /></div>
+        <Sprite name="frame-l" className="cpl-vine cpl-vine--l" depth={-0.1} />
+        <Sprite name="frame-r" className="cpl-vine cpl-vine--r" depth={-0.1} />
+        <Sprite name="wisteria-1" className="cpl-hang cpl-hang--l sway" depth={-0.04} />
+        <Sprite name="wisteria-2" className="cpl-hang cpl-hang--r sway sway--slow" depth={-0.04} />
+        <Sprite name="bloom-l" className="cpl-bed cpl-bed--l" depth={0.28} />
+        <Sprite name="bloom-r" className="cpl-bed cpl-bed--r" depth={0.28} />
+      </div>
 
       <header className="container center couple-head">
-        <p className="eyebrow" data-reveal="fade">Meet</p>
         <h2 id="couple-title" className="script" data-reveal="up">The Couple</h2>
+        <LotusDivider className="couple-ornament" />
       </header>
 
       <div className="container couple-grid">
@@ -48,22 +70,20 @@ export default function Couple() {
           const person = info[p.key];
           return (
             <article key={p.key} className={`person person--${p.key}`}>
-              <div className="person-frame">
-                <Sprite name={p.sprite} className="person-wisteria sway" depth={-0.08} />
-                <figure className="person-arch arch arch--frame" data-reveal="mask">
+              <figure className="person-arch">
+                <div className="person-photo arch" data-reveal="mask">
                   <Pic src={p.photo} alt={p.alt} inner />
-                </figure>
-              </div>
+                </div>
+              </figure>
               <h3 className="person-name names" data-reveal="chars">{person.name}</h3>
-              <p className="person-role script script--m" data-reveal="up" data-delay="0.15">{person.role}</p>
+              <p className="person-role script" data-reveal="up" data-delay="0.15">{person.role}</p>
               <p className="person-line body-s" data-reveal="fade" data-delay="0.25">{person.line}</p>
+              <div className="person-flourish" data-reveal="fade" data-delay="0.35" aria-hidden="true">
+                <Sprig /><Blossom /><Sprig flip />
+              </div>
             </article>
           );
-        }).flatMap((card, i) => (i === 0 ? [card, (
-          <div key="mono" className="couple-mono" aria-hidden="true">
-            <Monogram size={110} />
-          </div>
-        )] : [card]))}
+        })}
       </div>
     </section>
   );

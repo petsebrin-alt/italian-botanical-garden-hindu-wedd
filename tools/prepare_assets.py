@@ -1,8 +1,11 @@
 """Builds the parallax layers and photo crops in public/assets/img from the
 reference artwork in assets-src/. Re-run after replacing a reference image:
 
-    python3 tools/prepare_assets.py
+    python3 tools/prepare_assets.py            # everything
+    python3 tools/prepare_assets.py sections   # only the couple close-ups and the Welcome villa cut-out
+    python3 tools/prepare_assets.py villa      # only the villa cut-out (after importing a final villa-terrace)
 """
+import sys
 import os
 import cv2
 import numpy as np
@@ -104,8 +107,6 @@ def opening_layers():
     br = crop(clean, 680, 1360, w, h)
     save("hero-bloom-right", br, radial_mask(br.shape[1], br.shape[0], br.shape[1] - 30, br.shape[0], 280, 300))
 
-    save("portrait-groom", crop(clean, 120, 780, 470, 1260), scale=1.3, sharpen=True)
-    save("portrait-bride", crop(clean, 480, 870, 860, 1390), scale=1.3, sharpen=True)
     save("story-garland", crop(clean, 330, 900, 640, 1320), scale=1.4, sharpen=True)
     save("gallery-garland", crop(clean, 0, 760, w, 1560), quality=86)
     save("path-petals", crop(clean, 0, 1080, w, 1671), quality=84)
@@ -140,8 +141,47 @@ def website_crops():
         save(name, crop(img, *box), scale=2.4, sharpen=True)
 
 
+def couple_closeups():
+    """S03's arched close-ups (placeholders until the P-11 / P-12 photographs are imported)."""
+    clean = remove_text(load("ref-opening.webp"), (280, 176, 668, 792))
+    # head-and-shoulders crops of the opening photograph (sharper than the collage's tiny arches),
+    # mirrored so the two arches face each other with Janvi on the left
+    save("portrait-bride", np.ascontiguousarray(crop(clean, 500, 836, 830, 1248)[:, ::-1]), scale=1.5, sharpen=True, quality=88)
+    save("portrait-groom", np.ascontiguousarray(crop(clean, 125, 770, 445, 1170)[:, ::-1]), scale=1.5, sharpen=True, quality=88)
+
+
+def welcome_villa():
+    """S02's villa terrace as a cut-out layer: the current villa-terrace photo (placeholder or the
+    imported P-10 photograph) with its sky keyed out, so the scene's own sky shows through."""
+    v = cv2.cvtColor(np.array(Image.open(os.path.join(OUT, "villa-terrace.webp")).convert("RGB")), cv2.COLOR_RGB2BGR)
+    k = 600 / v.shape[0]                                  # key at a fixed working height
+    if abs(k - 1) > 0.01:
+        v = cv2.resize(v, None, fx=k, fy=k, interpolation=cv2.INTER_AREA if k < 1 else cv2.INTER_CUBIC)
+    a = sky_alpha(v, limit_y=int(v.shape[0] * 0.8), blue_margin=8, bright_white=222)
+    # drop leftover specks of cloud floating in the keyed sky
+    n_, lab_, st_, _ = cv2.connectedComponentsWithStats((a > 16).astype(np.uint8))
+    small = np.zeros(n_, bool)
+    small[1:] = st_[1:, cv2.CC_STAT_AREA] < 1500
+    a = np.where(small[lab_], 0, a).astype(np.uint8)
+    # pull the edge in a little so no pale rim of the old sky outlines the trees
+    a = cv2.GaussianBlur(cv2.erode(a, np.ones((5, 5), np.uint8)), (0, 0), 1.2).astype(np.float32)
+    hh, ww = a.shape
+    xs = np.arange(ww, dtype=np.float32)[None, :]
+    ys = np.arange(hh, dtype=np.float32)[:, None]
+    a *= np.clip((hh - 4 - ys) / 6.0, 0, 1) * np.clip((ww - 6 - xs) / 4.0, 0, 1)   # trim the photo's own border
+    save("welcome-villa", v, a.astype(np.uint8), quality=86)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    opening_layers()
-    cypress_layers()
-    website_crops()
+    if sys.argv[1:] == ["villa"]:          # after importing a final villa-terrace photograph
+        welcome_villa()
+    elif sys.argv[1:] == ["sections"]:     # placeholders: couple close-ups + villa cut-out
+        couple_closeups()
+        welcome_villa()
+    else:
+        opening_layers()
+        cypress_layers()
+        website_crops()
+        couple_closeups()
+        welcome_villa()

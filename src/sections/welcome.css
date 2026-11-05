@@ -26,51 +26,119 @@
 }
 
 /* S02 ---------------------------------------------------------------- */
+/* One garden scene: sky, clouds, hills, cypresses, the villa terrace, the arbour and the flower
+ * bed are separate layers (each with its own data-depth); the blessing sits in the open sky. */
 .welcome {
   position: relative;
   z-index: 5;
   margin-top: -35vh;
   margin-top: -35lvh;
-  padding-block: clamp(6rem, 14vh, 10rem) var(--section-pad);
+  min-height: clamp(720px, 112vh, 1040px);
+  padding-block: clamp(6.5rem, 15vh, 10rem) clamp(16rem, 40vh, 26rem);
+  background: #cfe3f1;
   box-shadow: 0 -30px 60px -30px rgb(41 69 53 / 0.35);
+  overflow-x: clip;   /* (the text haze is wider than a phone; the lace edge above stays visible) */
 }
 [data-tier="C"] .welcome { margin-top: 0; }
+/* the lace edge the scene rises with */
 .welcome::before {
   content: "";
   position: absolute;
   left: 0; right: 0;
   top: -19px;
   height: 20px;
+  z-index: 3;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cpath d='M0 20 A20 20 0 0 1 40 20 Z' fill='%23F8F4E9'/%3E%3Cpath d='M1 20 A19 19 0 0 1 39 20' fill='none' stroke='%23C4A66A' stroke-width='0.8'/%3E%3C/svg%3E") repeat-x;
   background-size: 40px 20px;
 }
 
-.welcome-edge { position: absolute; inset: 0 0 auto 0; height: 0; z-index: 4; overflow-x: clip; } /* the corner beds bleed off-screen without widening the page on phones */
-.welcome-bloom { top: -150px; width: clamp(240px, 36vw, 560px); height: auto; }
-.welcome-bloom--l { left: -6vw; }
-.welcome-bloom--r { right: -6vw; }
+.wel-scene { position: absolute; inset: 0; overflow: clip; pointer-events: none; }
+.wel-scene > * { position: absolute; will-change: transform; }
 
-.welcome-grid {
+.wel-sky {
+  inset: -22% 0;
+  background: linear-gradient(180deg, #7fb3e0 0%, #9cc6ea 22%, #c4ddf0 46%, #e3edf2 64%, #f4efe3 80%, #efe7d2 100%);
+}
+.wel-sun {
+  position: absolute;
+  left: 18%; top: 4%;
+  width: 70%; height: 46%;
+  background: radial-gradient(closest-side, rgb(255 251 236 / 0.8), rgb(255 251 236 / 0.22) 55%, rgb(255 251 236 / 0));
+}
+.wel-clouds { inset: 0; }
+.wel-cloud { position: absolute; height: auto; opacity: 0.9; }
+.wel-cloud--1 { left: 50%; top: 10%; width: clamp(220px, 30vw, 460px); }
+.wel-cloud--2 { left: 6%; top: 26%; width: clamp(150px, 18vw, 300px); opacity: 0.75; }
+.wel-cloud--3 { left: 30%; top: 46%; width: clamp(120px, 13vw, 220px); opacity: 0.6; }
+.wel-cloud--4 { left: 70%; top: 34%; width: clamp(130px, 16vw, 260px); opacity: 0.7; }
+
+/* distant ridges down to the meadow (the near ridge runs under the garden) */
+.wel-ridge { left: -4%; width: 108%; bottom: -8%; height: 44%; }
+.wel-ridge--1 { height: 50%; }
+
+.welcome .wel-cypress {
+  height: auto;
+  /* both edges soft: these trees were cut at the photo's border */
+  -webkit-mask-image: linear-gradient(90deg, transparent 4%, #000 26%, #000 70%, transparent 96%);
+  mask-image: linear-gradient(90deg, transparent 4%, #000 26%, #000 70%, transparent 96%);
+}
+.wel-cypress--l { left: clamp(-30px, 1vw, 30px); bottom: 10%; width: clamp(110px, 12vw, 200px); }
+.wel-cypress--r { right: clamp(260px, 31vw, 520px); bottom: 12%; width: clamp(80px, 8vw, 140px); }
+
+/* the villa terrace stands on the right edge, its foot on the scene's floor */
+.wel-villa {
+  right: 0; bottom: -1%;
+  /* never wider than 40% of the screen, so the blessing keeps the sky to itself */
+  height: min(74%, 780px, calc(40vw * 595 / 442));
+  aspect-ratio: 442 / 595;
+  /* the photo's cut edges (left, and the treetops along the top) melt into the scene */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%), linear-gradient(180deg, transparent, #000 12%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 14%), linear-gradient(180deg, transparent, #000 12%);
+  mask-composite: intersect;
+}
+.wel-villa picture, .wel-villa img { display: block; width: 100%; height: 100%; }
+
+/* the arbour canopy and the hydrangea bed frame the left */
+.wel-canopy { left: -2%; top: -2%; width: clamp(200px, 30vw, 540px); height: auto; transform-origin: 0% 0%; }
+/* the right-hand bed, mirrored: its lush real bush sits innermost, its continuation outside.
+ * (the mirror lives on the inner image: GSAP owns the outer element's transform) */
+.wel-bed { left: -22vw; bottom: -2%; width: clamp(480px, 54vw, 980px); aspect-ratio: 892 / 337; }
+.welcome .wel-bed-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  transform: scaleX(-1);
+  /* (local left = the real bed's cut edge, which the mirror turns inward) */
+  -webkit-mask-image: linear-gradient(90deg, transparent 2%, #000 16%);
+  mask-image: linear-gradient(90deg, transparent 2%, #000 16%);
+}
+
+/* the lace sits on ivory: the sky fades up into it */
+.wel-mist { left: 0; right: 0; top: 0; height: 16%; background: linear-gradient(180deg, var(--ivory), rgb(248 244 233 / 0)); }
+
+/* the blessing, in the open sky */
+.wel-text {
   position: relative;
   z-index: 2;
   display: grid;
-  gap: clamp(2.5rem, 5vw, 5rem);
-  align-items: center;
+  justify-items: center;
+  text-align: center;
+  gap: 14px;
+  max-width: 40rem;
 }
-@media (min-width: 1024px) {
-  .welcome-grid { grid-template-columns: 5fr 7fr; }
+.wel-text::before {
+  content: "";
+  position: absolute;
+  inset: -12% -18%;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(248 244 233 / 0.62), rgb(248 244 233 / 0.28) 60%, rgb(248 244 233 / 0));
 }
-
-.welcome-figure {
-  margin: 0 auto;
-  width: min(78vw, 440px);
-  aspect-ratio: 3 / 4;
-  box-shadow: var(--shadow-card);
+@media (min-width: 768px) {
+  /* leave the right of the scene to the villa */
+  .wel-text { width: min(40rem, 56vw); margin-left: max(1rem, calc(35vw - min(20rem, 28vw))); margin-right: auto; }
 }
-.welcome-figure picture { position: absolute; inset: -8% 0; }
-.welcome-figure img { width: 100%; height: 100%; object-fit: cover; }
-
-.welcome-text { display: grid; justify-items: center; text-align: center; gap: 14px; }
+.wel-title { color: var(--gold-ink); }
+.wel-eyebrow { color: var(--forest); }
 .welcome-icon svg { color: var(--gold-ink); }
 .welcome-invocation {
   font-family: var(--font-deva), serif;
@@ -82,7 +150,21 @@
 .welcome-message {
   max-width: 34ch;
   font-family: var(--font-head), serif;
-  font-size: clamp(1.15rem, 0.95rem + 0.8vw, 1.55rem);
+  font-size: clamp(1.15rem, 0.95rem + 0.8vw, 1.5rem);
   line-height: 1.65;
   color: var(--forest);
+}
+
+/* phones: the blessing in the sky above, the garden gathered along the bottom */
+@media (max-width: 767px) {
+  .welcome { min-height: 0; padding-block: 5.5rem 27rem; }
+  .wel-ridge { height: 52%; left: -40%; width: 180%; }
+  .wel-ridge--1 { height: 58%; }
+  .wel-villa { right: -14vw; height: 44%; }
+  .wel-cypress--l { bottom: 9%; width: 26vw; }
+  .wel-cypress--r { right: 56vw; bottom: 12%; width: 18vw; }
+  .wel-canopy { width: 46vw; }
+  .wel-bed { left: -62vw; width: 130vw; }
+  .wel-cloud--1 { left: 46%; top: 6%; }
+  .wel-cloud--3, .wel-cloud--4 { top: 58%; }
 }

@@ -1,37 +1,91 @@
-/* S03 · Couple */
-.couple { overflow: clip; }
-.couple-head { display: grid; gap: 4px; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
-.couple-corner { width: clamp(200px, 30vw, 460px); height: auto; bottom: -40px; z-index: 1; opacity: 0.95; }
-.couple-corner--l { left: -8vw; }
-.couple-corner--r { right: -8vw; }
+/* S03 · Couple: two arched portraits in a garden frame */
+.couple { overflow: clip; padding-bottom: calc(var(--section-pad) + clamp(3rem, 9vw, 7rem)); }
 
+/* the garden frame: arbour vines above, hydrangea beds below, hills on the horizon */
+.cpl-frame { position: absolute; inset: 0; pointer-events: none; }
+.cpl-frame > * { z-index: 0; }
+/* distant ridges behind the names, fading into the paper at both sides and below */
+.cpl-horizon {
+  position: absolute;
+  left: 0; right: 0; bottom: -2%;
+  height: clamp(170px, 25vw, 360px);
+  opacity: 0.7;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent), linear-gradient(180deg, #000 55%, transparent 92%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent), linear-gradient(180deg, #000 55%, transparent 92%);
+  mask-composite: intersect;
+}
+.cpl-ridge { position: absolute; left: -4%; width: 108%; bottom: 0; height: 100%; will-change: transform; }
+.cpl-vine { top: -2%; width: clamp(200px, 31vw, 540px); height: auto; }
+.cpl-vine--l { left: -3%; transform-origin: 0% 0%; }
+.cpl-vine--r { right: -3%; transform-origin: 100% 0%; }
+.cpl-hang { top: -10px; height: auto; transform-origin: 50% 0%; }
+.cpl-hang--l { left: clamp(4px, 3vw, 60px); width: clamp(46px, 5vw, 86px); }
+.cpl-hang--r { right: clamp(4px, 3vw, 60px); width: clamp(54px, 6vw, 104px); }
+.couple .cpl-bed {
+  bottom: -3%;
+  width: clamp(380px, 46vw, 820px);
+  height: auto;
+  -webkit-mask-image: none; mask-image: none;
+}
+.cpl-bed--l { left: -18vw; transform-origin: 0% 100%; }
+.cpl-bed--r { right: -16vw; transform-origin: 100% 100%; }
+
+.couple-head { position: relative; z-index: 2; display: grid; justify-items: center; gap: 2px; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+.couple-ornament { color: var(--gold-ink); }
+
+/* two arches side by side on every screen, like a printed invitation */
 .couple-grid {
   position: relative;
   z-index: 2;
   display: grid;
-  gap: clamp(3rem, 8vw, 4rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.9rem, 4vw, 3.5rem);
+  max-width: 820px;
   justify-items: center;
-}
-@media (min-width: 1024px) {
-  .couple-grid { grid-template-columns: 1fr auto 1fr; align-items: start; gap: clamp(1.5rem, 3vw, 3.5rem); }
+  align-items: start;
 }
 
-.person { display: grid; justify-items: center; text-align: center; gap: 6px; width: min(84vw, 400px); will-change: transform; }
-.person-frame { position: relative; width: 100%; }
+.person { display: grid; justify-items: center; text-align: center; gap: 4px; width: 100%; max-width: 330px; will-change: transform; }
+/* a fine gold arch around the photo, with a sliver of ivory between */
 .person-arch {
   width: 100%;
-  aspect-ratio: 3 / 4;
   margin: 0;
+  padding: clamp(4px, 0.8vw, 7px);
+  border: 1px solid rgb(196 166 106 / 0.95);
+  border-bottom-width: 1px;
+  border-radius: 999px 999px 4px 4px;
+  background: rgb(248 244 233 / 0.85);
   box-shadow: var(--shadow-lift);
+}
+.person-photo {
+  aspect-ratio: 4 / 5;
+  border-radius: 999px 999px 2px 2px;
   background: var(--beige);
 }
-.person-arch picture { position: absolute; inset: -8% 0; }
-.person-arch img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
-.person-wisteria { top: -18px; left: 8%; width: 24%; z-index: 3; }
-.person--groom .person-wisteria { left: auto; right: 6%; width: 30%; }
-.person-name { margin-top: 18px; font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.5rem); color: var(--gold-ink); }
-.person-role { color: var(--rose-ink); margin-top: -4px; }
-.person-line { color: var(--botanical); }
+.person-photo picture { position: absolute; inset: -8% 0; }
+.person-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
 
-.couple-mono { color: var(--gold-ink); align-self: center; display: none; }
-@media (min-width: 1024px) { .couple-mono { display: block; } }
+.person-name {
+  margin-top: clamp(12px, 2vw, 20px);
+  font-size: clamp(1.45rem, 1.1rem + 1.8vw, 2.5rem);
+  letter-spacing: 0.08em;
+  color: var(--forest);
+}
+.person-role {
+  margin-top: -2px;
+  font-size: clamp(1.35rem, 1rem + 1.4vw, 2.1rem);
+  color: var(--gold-ink);
+}
+.person-line { color: var(--botanical); font-size: clamp(0.78rem, 0.7rem + 0.3vw, 0.9375rem); }
+.person-flourish { display: flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--gold-ink); }
+.person-flourish .sprig { width: clamp(26px, 3.4vw, 40px); height: auto; }
+.person-blossom { width: clamp(16px, 2vw, 24px); height: auto; color: var(--gold); }
+
+@media (max-width: 560px) {
+  .person-line { min-height: 3.2em; }   /* both cards end level when a parents' line wraps */
+  .cpl-vine { width: 46vw; }
+  .couple .cpl-bed { width: 92vw; }
+  .cpl-bed--l { left: -40vw; }
+  .cpl-bed--r { right: -40vw; }
+}
