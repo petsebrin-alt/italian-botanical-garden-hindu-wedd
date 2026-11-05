@@ -35,6 +35,12 @@ const at = (date: string) => new Date(`${date}T12:00:00Z`);
 export const longDate = (date: string) =>
   new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(at(date));
 
+/** The long date in pieces, so its numbers can be set in their own face. */
+export const longDateParts = (date: string) =>
+  new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
+    .formatToParts(at(date))
+    .map((p) => ({ text: p.value, numeric: p.type === "day" || p.type === "year" }));
+
 export const weekdayDate = (date: string) =>
   new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(at(date));
 

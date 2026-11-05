@@ -134,8 +134,8 @@ export default function Ceremony() {
     <section ref={ref} id="ceremony" className="cer" aria-labelledby="cer-title">
       <div className="cer-stage">
         <div className="cer-garden" aria-hidden="true">
-          <Sprite name="trees-l" className="cer-cypress cer-cypress--l" />
-          <Sprite name="trees-r" className="cer-cypress cer-cypress--r" />
+          <Sprite name="cypress-l" className="cer-cypress cer-cypress--l" />
+          <Sprite name="cypress-r" className="cer-cypress cer-cypress--r" />
           <div className="cer-lawn" />
         </div>
         <div className="cer-mandap">

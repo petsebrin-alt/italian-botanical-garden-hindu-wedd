@@ -16,20 +16,15 @@
   mask-composite: intersect;
 }
 .cpl-ridge { position: absolute; left: -4%; width: 108%; bottom: 0; height: 100%; will-change: transform; }
-.cpl-vine { top: -2%; width: clamp(200px, 31vw, 540px); height: auto; }
+.cpl-vine { top: -2%; width: clamp(200px, 27vw, 480px); height: auto; }
 .cpl-vine--l { left: -3%; transform-origin: 0% 0%; }
 .cpl-vine--r { right: -3%; transform-origin: 100% 0%; }
 .cpl-hang { top: -10px; height: auto; transform-origin: 50% 0%; }
 .cpl-hang--l { left: clamp(4px, 3vw, 60px); width: clamp(46px, 5vw, 86px); }
 .cpl-hang--r { right: clamp(4px, 3vw, 60px); width: clamp(54px, 6vw, 104px); }
-.couple .cpl-bed {
-  bottom: -3%;
-  width: clamp(380px, 46vw, 820px);
-  height: auto;
-  -webkit-mask-image: none; mask-image: none;
-}
-.cpl-bed--l { left: -18vw; transform-origin: 0% 100%; }
-.cpl-bed--r { right: -16vw; transform-origin: 100% 100%; }
+.couple .cpl-bed { bottom: -2%; width: clamp(210px, 27vw, 470px); height: auto; }
+.cpl-bed--l { left: -3vw; transform-origin: 0% 100%; }
+.cpl-bed--r { right: -3vw; transform-origin: 100% 100%; }
 
 .couple-head { position: relative; z-index: 2; display: grid; justify-items: center; gap: 2px; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
 .couple-ornament { color: var(--gold-ink); }
@@ -85,7 +80,7 @@
 @media (max-width: 560px) {
   .person-line { min-height: 3.2em; }   /* both cards end level when a parents' line wraps */
   .cpl-vine { width: 46vw; }
-  .couple .cpl-bed { width: 92vw; }
-  .cpl-bed--l { left: -40vw; }
-  .cpl-bed--r { right: -40vw; }
+  .couple .cpl-bed { width: 46vw; }
+  .cpl-bed--l { left: -6vw; }
+  .cpl-bed--r { right: -6vw; }
 }

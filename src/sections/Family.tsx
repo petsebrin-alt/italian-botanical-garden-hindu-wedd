@@ -34,8 +34,8 @@ export default function Family() {
 
   return (
     <section ref={ref} id="family" className="family section paper" aria-labelledby="family-title" data-stage>
-      <Sprite name="bloom-l" className="fam-bloom fam-bloom--l" depth={0.3} />
-      <Sprite name="bloom-r" className="fam-bloom fam-bloom--r" depth={0.3} />
+      <Sprite name="bed-l" className="fam-bloom fam-bloom--l" depth={0.3} />
+      <Sprite name="bed-r" className="fam-bloom fam-bloom--r" depth={0.3} />
       <header className="container center fam-head">
         <p className="eyebrow" data-reveal="fade">Our families</p>
         <h2 id="family-title" className="script" data-reveal="up">With Love &amp; Blessings</h2>
@@ -44,7 +44,7 @@ export default function Family() {
         {[{ k: "bride", f: bride }, { k: "groom", f: groom }].map(({ k, f }, i) => (
           <article key={k} className={`fam-card fam-card--${k}`}>
             <ArchFrame />
-            <Sprite name={i ? "wisteria-2" : "wisteria-1"} className="fam-wisteria sway" />
+            <Sprite name={i ? "strand-2" : "strand-1"} className="fam-wisteria sway" />
             <div className="fam-body">
               <p className="eyebrow">{f.title}</p>
               <p className="fam-names names">

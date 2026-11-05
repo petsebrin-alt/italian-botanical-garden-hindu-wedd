@@ -103,15 +103,15 @@ export default function Rsvp() {
   return (
     <section ref={ref} id="rsvp" className="rsvp section" aria-labelledby="rsvp-title" data-stage>
       <div className="rsvp-sky" aria-hidden="true" />
-      <Sprite name="trees-l" className="rsvp-cypress rsvp-cypress--l" depth={-0.12} />
-      <Sprite name="trees-r" className="rsvp-cypress rsvp-cypress--r" depth={-0.12} />
-      <Sprite name="bloom-l" className="rsvp-bloom rsvp-bloom--l" depth={0.35} />
-      <Sprite name="bloom-r" className="rsvp-bloom rsvp-bloom--r" depth={0.35} />
+      <Sprite name="cypress-l" className="rsvp-cypress rsvp-cypress--l" depth={-0.12} />
+      <Sprite name="cypress-r" className="rsvp-cypress rsvp-cypress--r" depth={-0.12} />
+      <Sprite name="bed-l" className="rsvp-bloom rsvp-bloom--l" depth={0.35} />
+      <Sprite name="bed-r" className="rsvp-bloom rsvp-bloom--r" depth={0.35} />
 
       <div className="container rsvp-wrap">
         <div ref={card} className="rsvp-card card" data-reveal="up">
-          <Sprite name="wisteria-1" className="rsvp-w rsvp-w--l sway" />
-          <Sprite name="wisteria-2" className="rsvp-w rsvp-w--r sway sway--slow" />
+          <Sprite name="strand-1" className="rsvp-w rsvp-w--l sway" />
+          <Sprite name="strand-2" className="rsvp-w rsvp-w--r sway sway--slow" />
           {status === "done" ? (
             <div className="rsvp-done" aria-live="polite">
               <h2 ref={summary} tabIndex={-1} className="script">Grazie{first ? `, ${first}` : ""}!</h2>

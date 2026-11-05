@@ -47,6 +47,11 @@ export interface GalleryImage {
 }
 
 export const wedding = {
+  /**
+   * The greeting under the monogram. Send each guest their own link with their name in it,
+   * e.g. https://<site>/?to=Sharma%20Family  ("?guest=" works too). Without one, `fallback` shows.
+   */
+  greeting: { dear: "Dear", fallback: "Family & Friends" },
   couple: {
     bride: { name: "Janvi", role: "The Bride", line: "Daughter of Kapoor & Lalitha" },
     groom: { name: "Rohit", role: "The Groom", line: "Son of Vasu & Jansi" },

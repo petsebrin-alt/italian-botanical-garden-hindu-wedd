@@ -36,9 +36,9 @@ export default function DressCode() {
 
   return (
     <section ref={ref} id="dress-code" className="dress section paper" aria-labelledby="dress-title" data-stage>
-      <Sprite name="wisteria-1" className="hang hang--l sway" depth={-0.18} />
-      <Sprite name="wisteria-3" className="hang hang--l2 sway sway--slow" depth={-0.1} />
-      <Sprite name="wisteria-2" className="hang hang--r sway" depth={-0.2} />
+      <Sprite name="strand-1" className="hang hang--l sway" depth={-0.18} />
+      <Sprite name="strand-3" className="hang hang--l2 sway sway--slow" depth={-0.1} />
+      <Sprite name="strand-2" className="hang hang--r sway" depth={-0.2} />
       <header className="container center dress-head">
         <p className="eyebrow" data-reveal="fade">What to wear</p>
         <h2 id="dress-title" className="script" data-reveal="up">Dress Code</h2>

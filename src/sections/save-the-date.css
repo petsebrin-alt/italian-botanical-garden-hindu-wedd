@@ -16,9 +16,9 @@
 .std-cypress--l { left: -9vw; }
 .std-cypress--r { right: -6vw; }
 @media (min-width: 1024px) { .std-cypress--l { left: 0; } .std-cypress--r { right: 0; } }
-.std-bloom { bottom: -60px; width: clamp(220px, 32vw, 520px); height: auto; z-index: 3; }
-.std-bloom--l { left: -10vw; }
-.std-bloom--r { right: -10vw; }
+.std-bloom { bottom: -30px; width: clamp(170px, 23vw, 380px); height: auto; z-index: 3; }
+.std-bloom--l { left: -3vw; }
+.std-bloom--r { right: -3vw; }
 
 .std-wrap { position: relative; z-index: 2; display: grid; place-items: center; }
 .std-card {
@@ -49,6 +49,14 @@
   font-size: clamp(2.3rem, 1.4rem + 4vw, 4.2rem);
   color: var(--gold-ink);
   letter-spacing: 0.08em;
+}
+/* the numbers in the same clean sans with lining figures as the opening title */
+.std-num {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 0.84em;
+  font-variant-numeric: lining-nums;
+  letter-spacing: 0.06em;
 }
 .std-meta { color: var(--forest); font-size: 0.875rem; }
 .std-zone { color: var(--botanical); }

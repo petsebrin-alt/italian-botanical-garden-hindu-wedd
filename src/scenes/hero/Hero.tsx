@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { gsap, ScrollTrigger, SplitText, useGSAP, scrub, tokens } from "@/lib/gsap";
 import { useMotion } from "@/lib/motion";
 import { wedding } from "@/content/wedding";
-import { longDate } from "@/lib/dates";
+import { longDate, longDateParts } from "@/lib/dates";
 import { heroAsset } from "@/lib/heroAsset";
 import { CypressIcon, LotusDivider, Monogram, Sprig } from "@/components/Ornaments";
 import manifest from "../../../public/scenes/hero/manifest.json";
@@ -46,16 +46,27 @@ const DEPTH = { hills: 0.45, far: 0.74, cypress: 0.86, ground: 1 };
 
 /**
  * The pinned timeline, in timeline seconds (scrubbed by scroll):
- *   0 → NAMES   the names write themselves into the sky under the monogram
+ *   0 → NAMES   under the monogram: "Dear <guest>", then the names write themselves into the sky
  *   → HOLD      a breath with the full title in the sky
  *   → DESCENT   the camera tilts down: sky, clouds, hills, avenue, trees, couple and flowers each
  *               rise at their own speed; the title drifts up behind the trees
  *   → STEP      step through the arch into the welcome
  */
-const NAMES = 1.6;
+const NAMES = 2;
 const HOLD = 0.4;
 const DESCENT = 5;
 const STEP = 3;
+
+/**
+ * The guest's name comes from their personal link (?to=Sharma%20Family, or ?guest=). It is read
+ * after hydration, so the static page stays the same for everyone; the greeting is still hidden
+ * until the first scroll, so the swap is never seen.
+ */
+const noSubscribe = () => () => {};
+const readGuest = () => {
+  const p = new URLSearchParams(window.location.search);
+  return (p.get("to") ?? p.get("guest") ?? "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 48);
+};
 
 type LayerName = keyof typeof M.layers;
 const WIDE = new Set(["hills", "far", "cypress-l", "cypress-r", "ground", "couple", "frame-l", "frame-r", "bloom-l", "bloom-r"]);
@@ -91,6 +102,32 @@ function Layer({ name, priority = false, anchor = "world" }: {
   );
 }
 
+/**
+ * The flower beds in the bottom corners. They keep the manifest boxes (and so every tween) of the
+ * photo's own flower layers, but show sharp hydrangeas cut from an in-focus photograph: the
+ * photo's corner flowers were soft, out-of-focus foreground. A long border runs off-screen
+ * behind a bed whose inner edge is the plant's own outline.
+ */
+function BedLayer({ side }: { side: "l" | "r" }) {
+  const name = `bloom-${side}` as LayerName;
+  const L = M.layers[name];
+  const style = {
+    "--fx": L.x / SRC_W, "--fy": L.y / SRC_W, "--fw": L.w / SRC_W, "--fh": L.h / SRC_W,
+  } as React.CSSProperties;
+  const img = (file: string, cls: string) => (
+    <picture className={cls}>
+      <source srcSet={`/assets/botanical/${file}.avif`} type="image/avif" />
+      <img src={`/assets/botanical/${file}.webp`} alt="" decoding="async" draggable={false} />
+    </picture>
+  );
+  return (
+    <div className={`hl hl--${name} hl--world hero-bed hero-bed--${side}`} data-layer={name} style={style} aria-hidden="true">
+      {img("bed-wide", "hero-bed-border")}
+      {img(`bed-${side}`, "hero-bed-main")}
+    </div>
+  );
+}
+
 /** Without scripts there is no scroll camera: show the names and the composed garden. */
 const NO_SCRIPT = `<style>
 .hero-stage { height: calc(var(--yStart) + var(--Hw)); --S: 0px; }
@@ -106,6 +143,7 @@ export default function Hero() {
   const pausedNow = useRef(paused);
   pausedNow.current = paused;
   const { bride, groom } = wedding.couple;
+  const guest = useSyncExternalStore(noSubscribe, readGuest, () => "") || wedding.greeting.fallback;
 
   useEffect(() => {
     loops.current.forEach((t) => (paused || !visible.current || tier === "C" ? t.pause() : t.play()));
@@ -187,13 +225,18 @@ export default function Hero() {
         const stageTop = stage.getBoundingClientRect().top;
         const titleTop = titleEl.getBoundingClientRect().top - stageTop;
         const titleH = titleEl.offsetHeight;
+        const greetEl = q(".hero-greeting")[0] as HTMLElement;
+        const greetH = greetEl.offsetHeight;
+        const rowGap = parseFloat(getComputedStyle(titleEl).rowGap) || 0;
         const centred = Math.max(0.06 * lvh, 0.46 * lvh - titleH / 2) - titleTop;
         const posterTop = Math.max(0.03 * lvh, yEnd + TITLE_TOP * Wc);
         const poster = posterTop - titleTop;
         // the sky left above the couple's heads once the garden has risen: if the title block is
         // taller than that on some screen, it shrinks to fit rather than overlap the couple
         const coupleTop = yEnd + (M.layers.couple.y / SRC_W) * Wc;
-        const posterFit = Math.min(1, Math.max(0.6, (coupleTop - 0.015 * lvh - posterTop) / titleH));
+        // (on phones the greeting folds away during the descent, so the poster is shorter)
+        const posterH = titleH - greetH - rowGap;
+        const posterFit = Math.min(1, Math.max(0.6, (coupleTop - 0.015 * lvh - posterTop) / posterH));
 
         const origin = (n: string, p = CONTACT) => {
           const L = M.layers[n];
@@ -219,13 +262,16 @@ export default function Hero() {
         const spacing = eyebrowText ? getComputedStyle(eyebrowText).letterSpacing : "0.2em";
         tl.to(titleEl, { y: centred, duration: NAMES, ease: "power1.inOut" }, 0)
           .to(q(".hero-cue"), { autoAlpha: 0, y: 14, duration: 0.3 }, 0)
-          .fromTo(r(".hero-eyebrow .rule"), { scaleX: 0 }, { scaleX: 1, duration: 0.5, transformOrigin: (i: number) => (i ? "0% 50%" : "100% 50%") }, 0.1)
-          .fromTo(r(".hero-eyebrow span:not(.rule)"), { autoAlpha: 0, letterSpacing: "0.5em" }, { autoAlpha: 1, letterSpacing: spacing, duration: 0.6 }, 0.1)
-          .fromTo(split.chars, { yPercent: 110 }, { yPercent: 0, duration: 0.45, stagger: 0.06, ease: tokens.ease.title }, 0.3)
-          .fromTo(r(".hero-amp"), { autoAlpha: 0, scale: 0.9, rotation: -4 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.5 }, 0.6)
-          .fromTo(r(".hero-ornament, .hero-date"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.12 }, 1.0)
-          .fromTo(q(".sprig-stem"), { drawSVG: "0%" }, { drawSVG: "100%", duration: 0.5 }, 1.05)
-          .fromTo(r(".hero-place"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.4 }, 1.2);
+          // "Dear", then the guest's own name
+          .fromTo(r(".hero-dear"), { autoAlpha: 0, y: 18, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.4, ease: "power2.out" }, 0.05)
+          .fromTo(r(".hero-guest"), { autoAlpha: 0, y: 18, letterSpacing: "0.18em" }, { autoAlpha: 1, y: 0, letterSpacing: "0.03em", duration: 0.45, ease: "power2.out" }, 0.25)
+          .fromTo(r(".hero-eyebrow .rule"), { scaleX: 0 }, { scaleX: 1, duration: 0.5, transformOrigin: (i: number) => (i ? "0% 50%" : "100% 50%") }, 0.55)
+          .fromTo(r(".hero-eyebrow span:not(.rule)"), { autoAlpha: 0, letterSpacing: "0.5em" }, { autoAlpha: 1, letterSpacing: spacing, duration: 0.6 }, 0.55)
+          .fromTo(split.chars, { yPercent: 110 }, { yPercent: 0, duration: 0.45, stagger: 0.06, ease: tokens.ease.title }, 0.75)
+          .fromTo(r(".hero-amp"), { autoAlpha: 0, scale: 0.9, rotation: -4 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.5 }, 1.05)
+          .fromTo(r(".hero-ornament, .hero-date"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.12 }, 1.4)
+          .fromTo(q(".sprig-stem"), { drawSVG: "0%" }, { drawSVG: "100%", duration: 0.5 }, 1.45)
+          .fromTo(r(".hero-place"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.4 }, 1.6);
 
         // DESCENT: the camera tilts down out of the sky and the garden rises layer by layer
         const d = NAMES + HOLD;
@@ -240,7 +286,9 @@ export default function Hero() {
           .to([layer("frame-l"), layer("frame-r")], { y: -0.05 * lvh, scale: 1.04, duration: DESCENT }, d);
         if (portrait) {
           // phones and upright tablets keep the poster: names above the couple, between the trees
-          tl.to(titleEl, { y: poster, scale: posterFit, transformOrigin: "50% 0%", duration: DESCENT, ease: "power1.inOut" }, d);
+          // the greeting has been read: it folds away so the names sit close under the monogram
+          tl.to(greetEl, { autoAlpha: 0, height: 0, marginTop: -rowGap, duration: DESCENT * 0.4, ease: "power1.inOut" }, d)
+            .to(titleEl, { y: poster, scale: posterFit, transformOrigin: "50% 0%", duration: DESCENT, ease: "power1.inOut" }, d);
         } else {
           // wide screens: the names drift up into the sky and fade as the trees rise past them
           tl.to(titleEl, { y: centred - 0.5 * lvh, duration: DESCENT * 0.7 }, d)
@@ -293,7 +341,7 @@ export default function Hero() {
         scroll?.revert();
       };
     },
-    { scope: root, dependencies: [tier], revertOnUpdate: true },
+    { scope: root, dependencies: [tier, guest], revertOnUpdate: true },
   );
 
   return (
@@ -319,6 +367,10 @@ export default function Hero() {
 
         <div className="hero-title">
           <Monogram className="hero-mono" size={128} />
+          <p className="hero-greeting hero-reveal">
+            <span className="hero-dear">{wedding.greeting.dear}</span>
+            <span className="hero-guest">{guest}</span>
+          </p>
           <p className="hero-eyebrow eyebrow hero-reveal">
             <span className="rule" /> <span>The wedding of</span> <span className="rule" />
           </p>
@@ -329,7 +381,11 @@ export default function Hero() {
           </h1>
           <LotusDivider className="hero-ornament hero-reveal" />
           <p className="hero-date date-display hero-reveal">
-            <Sprig /> <span>{longDate(wedding.date)}</span> <Sprig flip />
+            <Sprig />{" "}
+            <span aria-label={longDate(wedding.date)}>
+              {longDateParts(wedding.date).map((p, i) => (p.numeric ? <span key={i} className="hero-num" aria-hidden="true">{p.text}</span> : <span key={i} aria-hidden="true">{p.text}</span>))}
+            </span>{" "}
+            <Sprig flip />
           </p>
           <p className="hero-place eyebrow hero-reveal">
             <CypressIcon className="hero-place-icon" />
@@ -341,8 +397,8 @@ export default function Hero() {
         <Layer name="cypress-r" priority />
         <Layer name="ground" />
         <Layer name="couple" priority />
-        <Layer name="bloom-l" />
-        <Layer name="bloom-r" />
+        <BedLayer side="l" />
+        <BedLayer side="r" />
         <Layer name="frame-l" priority anchor="edge-l" />
         <Layer name="frame-r" priority anchor="edge-r" />
 

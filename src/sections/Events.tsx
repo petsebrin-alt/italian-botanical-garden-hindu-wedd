@@ -118,10 +118,10 @@ export default function Events() {
 
   return (
     <section ref={ref} id="events" className="events section paper" aria-labelledby="events-title" data-stage>
-      <Sprite name="wisteria-1" className="hang hang--l sway" depth={-0.18} />
-      <Sprite name="wisteria-2" className="hang hang--r sway sway--slow" depth={-0.22} />
-      <Sprite name="trees-l" className="events-cypress events-cypress--l" depth={-0.12} />
-      <Sprite name="trees-r" className="events-cypress events-cypress--r" depth={-0.12} />
+      <Sprite name="strand-1" className="hang hang--l sway" depth={-0.18} />
+      <Sprite name="strand-2" className="hang hang--r sway sway--slow" depth={-0.22} />
+      <Sprite name="cypress-l" className="events-cypress events-cypress--l" depth={-0.12} />
+      <Sprite name="cypress-r" className="events-cypress events-cypress--r" depth={-0.12} />
 
       <header className="container center events-head">
         <p className="eyebrow" data-reveal="fade">Join us for</p>

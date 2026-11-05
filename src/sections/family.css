@@ -1,9 +1,9 @@
 /* S09 · Family */
 .family { overflow: clip; }
 .fam-head { display: grid; gap: 6px; margin-bottom: clamp(3rem, 7vw, 4.5rem); }
-.fam-bloom { bottom: -50px; width: clamp(200px, 28vw, 440px); height: auto; }
-.fam-bloom--l { left: -9vw; }
-.fam-bloom--r { right: -9vw; }
+.fam-bloom { bottom: -24px; width: clamp(160px, 21vw, 340px); height: auto; }
+.fam-bloom--l { left: -3vw; }
+.fam-bloom--r { right: -3vw; }
 
 .fam-grid { position: relative; z-index: 1; display: grid; justify-items: center; gap: 0; }
 @media (min-width: 900px) { .fam-grid { grid-template-columns: 1fr minmax(80px, 160px) 1fr; align-items: center; } }

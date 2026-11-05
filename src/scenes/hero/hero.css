@@ -108,6 +108,16 @@
 .hl--edge-r { left: auto; right: calc(var(--edge) + var(--Wf) * var(--fxr)); }
 .hl picture, .hl img { display: block; width: 100%; height: 100%; }
 
+/* the corner flower beds (sharp hydrangeas inside the photo's flower boxes) */
+.hero-bed picture { position: absolute; display: block; height: auto; }
+.hero-bed img { display: block; width: 100%; height: auto; }
+.hero-bed .hero-bed-border { bottom: -8%; width: 52%; }
+.hero-bed .hero-bed-main { bottom: -6%; width: 48%; }
+.hero-bed--l .hero-bed-border { left: 0; }
+.hero-bed--l .hero-bed-main { right: 0; }
+.hero-bed--r .hero-bed-border { right: 0; transform: scaleX(-1); }
+.hero-bed--r .hero-bed-main { left: 0; }
+
 /* ------------------------------------------------------------------ title (in the sky) */
 .hero-title {
   position: absolute;
@@ -143,6 +153,33 @@
   height: auto;
   color: var(--gold-ink);
 }
+/* "Dear <guest>": both large, the script word in gold, the name in the names serif */
+.hero-greeting {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  overflow: clip;
+  overflow-clip-margin: 0.4em;
+  line-height: 1;
+  padding-bottom: 0.15em;
+}
+.hero-dear {
+  font-family: var(--font-script), var(--font-names), serif;
+  font-size: clamp(2.6rem, calc(var(--Wc) * 0.085), 5.4rem);
+  line-height: 0.95;
+  color: var(--gold-ink);
+}
+.hero-guest {
+  display: block;
+  max-width: 100%;
+  font-family: var(--font-names), serif;
+  font-weight: 600;
+  font-size: clamp(1.9rem, calc(var(--Wc) * 0.07), 4.6rem);
+  letter-spacing: 0.03em;
+  line-height: 1.05;
+  color: var(--forest);
+  text-wrap: balance;
+}
 .hero-eyebrow {
   display: flex;
   align-items: center;
@@ -175,6 +212,14 @@
   gap: 10px;
   color: var(--forest);
   font-size: clamp(1.15rem, calc(var(--Wc) * 0.03), 2rem);
+}
+/* the date's numbers in a clean sans with lining figures (the serif's figures are old-style) */
+.hero-num {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 0.86em;
+  font-variant-numeric: lining-nums;
+  letter-spacing: 0.08em;
 }
 .hero-date .sprig { width: clamp(28px, calc(var(--Wc) * 0.045), 44px); height: auto; color: var(--gold-ink); }
 .hero-place {

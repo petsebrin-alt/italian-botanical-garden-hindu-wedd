@@ -56,7 +56,7 @@ export default function Story() {
 
   return (
     <section ref={ref} id="story" className="story section paper" aria-labelledby="story-title" data-stage>
-      <Sprite name="wisteria-2" className="hang hang--r sway" depth={-0.2} />
+      <Sprite name="strand-2" className="hang hang--r sway" depth={-0.2} />
       <header className="container center story-head">
         <p className="eyebrow" data-reveal="fade">A journey of friendship, laughter and countless memories</p>
         <h2 id="story-title" className="script" data-reveal="up">Our Love Story</h2>

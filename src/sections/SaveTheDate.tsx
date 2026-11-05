@@ -39,26 +39,26 @@ export default function SaveTheDate() {
       <div className="std-sky" aria-hidden="true" />
       <Sprite name="cloud-1" className="std-cloud std-cloud--1" depth={-0.3} />
       <Sprite name="cloud-2" className="std-cloud std-cloud--2" depth={-0.2} />
-      <Sprite name="trees-l" className="std-cypress std-cypress--l" depth={0.15} />
-      <Sprite name="trees-r" className="std-cypress std-cypress--r" depth={0.15} />
-      <Sprite name="bloom-l" className="std-bloom std-bloom--l" depth={0.45} />
-      <Sprite name="bloom-r" className="std-bloom std-bloom--r" depth={0.45} />
+      <Sprite name="cypress-l" className="std-cypress std-cypress--l" depth={0.15} />
+      <Sprite name="cypress-r" className="std-cypress std-cypress--r" depth={0.15} />
+      <Sprite name="bed-l" className="std-bloom std-bloom--l" depth={0.45} />
+      <Sprite name="bed-r" className="std-bloom std-bloom--r" depth={0.45} />
 
       <div className="container std-wrap">
         <div className="std-card card">
           <div className="std-garland" aria-hidden="true">
-            <Sprite name="wisteria-2" className="std-w std-w--1 sway" />
-            <Sprite name="wisteria-1" className="std-w std-w--2 sway sway--slow" />
-            <Sprite name="wisteria-3" className="std-w std-w--3 sway" />
-            <Sprite name="wisteria-1" className="std-w std-w--4 sway" />
-            <Sprite name="wisteria-2" className="std-w std-w--5 sway sway--slow" />
+            <Sprite name="strand-2" className="std-w std-w--1 sway" />
+            <Sprite name="strand-1" className="std-w std-w--2 sway sway--slow" />
+            <Sprite name="strand-3" className="std-w std-w--3 sway" />
+            <Sprite name="strand-1" className="std-w std-w--4 sway" />
+            <Sprite name="strand-2" className="std-w std-w--5 sway sway--slow" />
           </div>
           <h2 id="std-title" className="script" data-reveal="up">Save the Date</h2>
           <div className="ornament std-rules" aria-hidden="true"><span className="rule" /><span className="std-dot" /><span className="rule" /></div>
           <p className="std-date names" aria-label={`${Number(d)} ${month} ${y}`}>
-            <span className="line-mask"><span className="std-date-part">{Number(d)}</span></span>
+            <span className="line-mask"><span className="std-date-part std-num">{Number(d)}</span></span>
             <span className="line-mask"><span className="std-date-part">{month}</span></span>
-            <span className="line-mask"><span className="std-date-part">{y}</span></span>
+            <span className="line-mask"><span className="std-date-part std-num">{y}</span></span>
           </p>
           <p className="std-meta eyebrow" data-reveal="fade">
             {clock(wedding.time)} · {wedding.destination.label}

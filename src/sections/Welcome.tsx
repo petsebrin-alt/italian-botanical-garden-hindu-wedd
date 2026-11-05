@@ -21,7 +21,7 @@ export default function Welcome() {
     const enter = { trigger: root, start: "top bottom", end: "top 12%", scrub: scrub() };
     gsap.fromTo(q(".wel-villa"), { x: "9vw" }, { x: 0, ease: "power2.out", scrollTrigger: enter });
     gsap.fromTo(q(".wel-canopy"), { x: "-7vw", rotation: -2 }, { x: 0, rotation: 0, ease: "power2.out", scrollTrigger: enter });
-    gsap.fromTo(q(".wel-bed"), { scale: 1.12 }, { scale: 1, transformOrigin: "50% 100%", ease: "power2.out", scrollTrigger: enter });
+    gsap.fromTo(q(".wel-bed"), { scale: 1.12 }, { scale: 1, transformOrigin: "0% 100%", ease: "power2.out", scrollTrigger: enter });
     gsap.fromTo(q(".wel-cypress--l"), { x: "-4vw" }, { x: 0, ease: "power2.out", scrollTrigger: enter });
     gsap.fromTo(q(".wel-cypress--r"), { x: "4vw" }, { x: 0, ease: "power2.out", scrollTrigger: enter });
     // the clouds keep drifting apart while the section crosses the screen
@@ -44,13 +44,13 @@ export default function Welcome() {
           ))}
         </div>
         <Ridges id="wel" className="wel-ridge" depths={[-0.26, -0.17, -0.08]} />
-        <Sprite name="trees-r" className="wel-cypress wel-cypress--r" depth={-0.06} />
-        <Sprite name="trees-l" className="wel-cypress wel-cypress--l" depth={-0.06} />
+        <Sprite name="cypress-r" className="wel-cypress wel-cypress--r" depth={-0.06} />
+        <Sprite name="cypress-l" className="wel-cypress wel-cypress--l" depth={-0.06} />
         <div className="wel-villa" data-depth="0.05">
           <Pic src="/assets/img/welcome-villa" alt="" />
         </div>
-        <Sprite name="frame-l" className="wel-canopy sway sway--slow" depth={0.16} />
-        <div className="wel-bed" data-depth="0.3"><Sprite name="bloom-r" className="wel-bed-img" /></div>
+        <Sprite name="canopy-l" className="wel-canopy sway sway--slow" depth={0.16} />
+        <Sprite name="bed-l" className="wel-bed" depth={0.3} />
         <div className="wel-mist" />
       </div>
 

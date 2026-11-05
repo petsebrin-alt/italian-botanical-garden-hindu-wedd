@@ -43,6 +43,8 @@ export default function Destination() {
       .fromTo(q(".dest-avenue"), { scale: 1.02 }, { scale: 1.5 * lite + (1 - lite), duration: 0.78 }, 0)
       .fromTo(q(".dest-near--l"), { x: 0, scale: 1 }, { x: -0.5 * window.innerWidth * lite, scale: 1.9, duration: 0.62 }, 0.1)
       .fromTo(q(".dest-near--r"), { x: 0, scale: 1 }, { x: 0.5 * window.innerWidth * lite, scale: 1.9, duration: 0.62 }, 0.1)
+      // the ivory card arrives with its words (it must not show empty over the sky first)
+      .fromTo(q(".dest-title"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06 }, 0.19)
       .from(q(".dest-title > *"), { y: 40, autoAlpha: 0, duration: 0.1, stagger: 0.03, ease: "power2.out" }, 0.2)
       .to(q(".dest-title"), { y: -0.08 * window.innerHeight, autoAlpha: 0, duration: 0.1, ease: "power1.in" }, 0.58)
       .to(q(".dest-veil"), { opacity: 1, duration: 0.12 }, 0.66)
@@ -55,15 +57,15 @@ export default function Destination() {
       <div className="dest-stage">
         <span className="dest-outline" aria-hidden="true" />
         <div className="dest-hangs" aria-hidden="true">
-          <Sprite name="wisteria-2" className="dest-hang dest-hang--1 sway" />
-          <Sprite name="wisteria-1" className="dest-hang dest-hang--2 sway sway--slow" />
-          <Sprite name="wisteria-3" className="dest-hang dest-hang--3 sway" />
+          <Sprite name="strand-2" className="dest-hang dest-hang--1 sway" />
+          <Sprite name="strand-1" className="dest-hang dest-hang--2 sway sway--slow" />
+          <Sprite name="strand-3" className="dest-hang dest-hang--3 sway" />
         </div>
 
         <div className="dest-scene">
           <Pic src="/assets/img/cypress-avenue" alt="" className="dest-avenue" eager />
-          <Sprite name="trees-l" className="dest-near dest-near--l" />
-          <Sprite name="trees-r" className="dest-near dest-near--r" />
+          <Sprite name="cypress-l" className="dest-near dest-near--l" />
+          <Sprite name="cypress-r" className="dest-near dest-near--r" />
           <div className="dest-veil" aria-hidden="true" />
 
           <div className="dest-title">

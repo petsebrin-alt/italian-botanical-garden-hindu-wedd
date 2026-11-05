@@ -9,9 +9,9 @@
 .rsvp-cypress--l { left: -12vw; }
 .rsvp-cypress--r { right: -8vw; }
 @media (min-width: 1024px) { .rsvp-cypress--l { left: 2vw; } .rsvp-cypress--r { right: 3vw; } }
-.rsvp-bloom { bottom: -60px; width: clamp(220px, 34vw, 540px); height: auto; z-index: 2; }
-.rsvp-bloom--l { left: -12vw; }
-.rsvp-bloom--r { right: -12vw; }
+.rsvp-bloom { bottom: -30px; width: clamp(170px, 24vw, 390px); height: auto; z-index: 2; }
+.rsvp-bloom--l { left: -3vw; }
+.rsvp-bloom--r { right: -3vw; }
 
 .rsvp-wrap { position: relative; z-index: 3; display: grid; place-items: center; }
 .rsvp-card {

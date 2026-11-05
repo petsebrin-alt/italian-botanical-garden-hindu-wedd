@@ -41,12 +41,12 @@ export default function ThankYou() {
         <span className="ty-sun" aria-hidden="true" />
         <span className="ty-motes ambient" aria-hidden="true">{Array.from({ length: 9 }, (_, i) => <i key={i} style={{ "--i": i } as React.CSSProperties} />)}</span>
         <Pic src="/assets/img/tuscan-hills-strip" alt="" className="ty-hills" />
-        <Sprite name="trees-l" className="ty-cypress ty-cypress--l" />
+        <Sprite name="cypress-l" className="ty-cypress ty-cypress--l" />
         <div className="ty-ground" aria-hidden="true" />
-        <Sprite name="trees-r" className="ty-cypress ty-cypress--r" />
+        <Sprite name="cypress-r" className="ty-cypress ty-cypress--r" />
         <Sprite name="couple" className="ty-couple" />
-        <Sprite name="bloom-l" className="ty-bloom ty-bloom--l" />
-        <Sprite name="bloom-r" className="ty-bloom ty-bloom--r" />
+        <Sprite name="bed-l" className="ty-bloom ty-bloom--l" />
+        <Sprite name="bed-r" className="ty-bloom ty-bloom--r" />
 
         <div className="ty-text">
           <h2 id="ty-title" className="ty-lines">

@@ -37,6 +37,15 @@ Rules:
 
 Values in `[square brackets]` are placeholders still to confirm (PRD §24).
 
+### Personal guest links
+The opening screen greets each guest by name under the monogram ("Dear Sharma Family"). Send each guest their own link with their name in it:
+
+```
+https://<your-site>/?to=Sharma%20Family
+```
+
+(`?guest=` works too; spaces can be `%20` or `+`.) Without a name, the greeting reads "Dear Family & Friends"; change both words in `greeting` in `src/content/wedding.ts`.
+
 ## Parallax layers
 
 The opening screen has 13 separately moving layers, decomposed from `assets-src/ref-opening.webp` with no flattened background:
@@ -61,6 +70,12 @@ python3 tools/import_layers.py ~/hero-layers                  # write desktop + 
 The import writes a desktop set and a phone set, backs up the previous layers to `assets-src/backups/`, and versions every hero URL so the year-long cache never shows old layers. The hero reads all of its geometry from the manifest (canvas proportions, contact point, title position), so any master that follows the composition guide drops in. Full steps are in [docs/PHOTO-PROMPTS.md](docs/PHOTO-PROMPTS.md) §3.
 
 Finished section photos (portraits, story, gallery and so on) go in with `python3 tools/import_photos.py <folder>`.
+
+The flowers and trees that dress the sections (wisteria canopy and strands, hydrangea beds, cypress groups) and the opening screen's corner flower beds are cut from in-focus photographs in `assets-src/botanical/`, never from the hero's soft foreground:
+
+```bash
+python3 tools/build_botanicals.py      # writes public/assets/botanical/* and the S06 avenue photo
+```
 
 `tools/prepare_assets.py` produced the photo crops in `public/assets/img/` from the three references.
 

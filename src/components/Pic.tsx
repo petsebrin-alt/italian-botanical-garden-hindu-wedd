@@ -24,14 +24,20 @@ export default function Pic({
   );
 }
 
-/** A transparent botanical sprite cut from the hero layers. */
+/** Sharp botanical layers cut from in-focus photographs (tools/build_botanicals.py). */
+const BOTANICAL = new Set([
+  "canopy-l", "canopy-r", "strand-1", "strand-2", "strand-3",
+  "bed-l", "bed-r", "bed-wide", "cypress-l", "cypress-r",
+]);
+
+/** A transparent decorative sprite: a sharp botanical layer, or one cut from the hero layers. */
 export function Sprite({ name, className = "", depth, style }: {
   name: string; className?: string; depth?: number; style?: React.CSSProperties;
 }) {
   return (
     <img
       className={`sprite ${className}`}
-      src={heroAsset(`${name}.webp`)}
+      src={BOTANICAL.has(name) ? `/assets/botanical/${name}.webp` : heroAsset(`${name}.webp`)}
       alt=""
       aria-hidden="true"
       loading="lazy"
