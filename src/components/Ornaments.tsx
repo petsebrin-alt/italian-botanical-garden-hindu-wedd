@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { initials } from "@/content/wedding";
 
 /** Leaf positions along an open olive wreath (left half; the right half mirrors it). */
@@ -139,6 +140,111 @@ export function InvocationIcon({ className = "" }: { className?: string }) {
       <path className="draw" d="M32 34 C 27 30, 24 26, 23 21 C 28 23, 31 27, 32 34 C 33 27, 36 23, 41 21 C 40 26, 37 30, 32 34" />
       <path className="draw" d="M24 46 C 26 51, 38 51, 40 46" />
       <path className="draw" d="M20 54 H 44" />
+    </svg>
+  );
+}
+
+/** Realistic blooming watercolor flower with soft unfurling leaves and staggered petals. */
+export function BloomingFlower({
+  size = 40,
+  className = "",
+  idPrefix = "bf",
+}: {
+  size?: number | string;
+  className?: string;
+  idPrefix?: string;
+}) {
+  const uid = useId().replace(/:/g, "");
+  const pId = `${idPrefix}-${uid}`;
+
+  return (
+    <svg
+      className={`blooming-flower ${className}`}
+      width={size}
+      height={size}
+      viewBox="-60 -60 120 120"
+      role="img"
+      aria-hidden="true"
+      style={{ overflow: "visible" }}
+    >
+      <defs>
+        <radialGradient id={`${pId}-petal`} cx="50%" cy="100%" r="90%">
+          <stop offset="0%" stopColor="#913d44" />
+          <stop offset="18%" stopColor="#b6575e" />
+          <stop offset="45%" stopColor="#dd9893" />
+          <stop offset="75%" stopColor="#f0c2bd" />
+          <stop offset="100%" stopColor="#fae4e1" />
+        </radialGradient>
+        <linearGradient id={`${pId}-leaf`} x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#3d4928" />
+          <stop offset="50%" stopColor="#556639" />
+          <stop offset="100%" stopColor="#7a8d56" />
+        </linearGradient>
+        <radialGradient id={`${pId}-center`} cx="45%" cy="45%" r="60%">
+          <stop offset="0%" stopColor="#fff5b8" />
+          <stop offset="35%" stopColor="#e8c252" />
+          <stop offset="70%" stopColor="#b58728" />
+          <stop offset="100%" stopColor="#541b20" />
+        </radialGradient>
+        <filter id={`${pId}-shadow`} x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#4a1a1e" floodOpacity="0.22" />
+        </filter>
+      </defs>
+
+      {/* Leaves group */}
+      <g className="bf-leaves">
+        <g className="bf-leaf bf-leaf-0" transform="rotate(-130) translate(0, -8)" style={{ transformOrigin: "0px 0px" }}>
+          <path d="M 0 0 C -12 -15, -20 -35, 0 -62 C 20 -35, 12 -15, 0 0 Z" fill={`url(#${pId}-leaf)`} stroke="#343e22" strokeWidth="0.8" />
+          <line x1="0" y1="0" x2="0" y2="-56" stroke="#2a321b" strokeWidth="0.8" opacity="0.6" />
+          <path d="M 0 -18 Q -7 -25, -12 -28 M 0 -30 Q -6 -37, -10 -40 M 0 -18 Q 7 -25, 12 -28 M 0 -30 Q 6 -37, 10 -40" stroke="#2a321b" strokeWidth="0.6" fill="none" opacity="0.5" />
+        </g>
+        <g className="bf-leaf bf-leaf-1" transform="rotate(120) translate(0, -8)" style={{ transformOrigin: "0px 0px" }}>
+          <path d="M 0 0 C -10 -12, -18 -28, 0 -52 C 18 -28, 10 -12, 0 0 Z" fill={`url(#${pId}-leaf)`} stroke="#343e22" strokeWidth="0.8" />
+          <line x1="0" y1="0" x2="0" y2="-46" stroke="#2a321b" strokeWidth="0.8" opacity="0.6" />
+        </g>
+        <g className="bf-leaf bf-leaf-2" transform="rotate(55) translate(0, -6)" style={{ transformOrigin: "0px 0px" }}>
+          <path d="M 0 0 C -11 -14, -19 -32, 0 -58 C 19 -32, 11 -14, 0 0 Z" fill={`url(#${pId}-leaf)`} stroke="#343e22" strokeWidth="0.8" />
+          <line x1="0" y1="0" x2="0" y2="-52" stroke="#2a321b" strokeWidth="0.8" opacity="0.6" />
+        </g>
+      </g>
+
+      {/* 5 Botanical Petals */}
+      <g className="bf-petals" filter={`url(#${pId}-shadow)`}>
+        {[0, 72, 144, 216, 288].map((angle, i) => (
+          <g
+            key={i}
+            className={`bf-petal bf-petal-${i}`}
+            transform={`rotate(${angle})`}
+            style={{ transformOrigin: "0px 0px" }}
+          >
+            <path
+              d="M 0 0 C -14 -16, -26 -30, -22 -46 C -19 -54, -6 -56, 0 -50 C 6 -56, 19 -54, 22 -46 C 26 -30, 14 -16, 0 0 Z"
+              fill={`url(#${pId}-petal)`}
+              stroke="#8e3d44"
+              strokeWidth="0.6"
+            />
+            <path
+              d="M 0 -8 Q -6 -24, -9 -42 M 0 -8 Q 0 -28, 0 -48 M 0 -8 Q 6 -24, 9 -42"
+              stroke="#7e2b32"
+              strokeWidth="0.5"
+              fill="none"
+              opacity="0.35"
+            />
+          </g>
+        ))}
+      </g>
+
+      {/* Golden Floral Center */}
+      <g className="bf-center" style={{ transformOrigin: "0px 0px" }}>
+        <circle cx="0" cy="0" r="14" fill="#4d171d" />
+        <circle cx="0" cy="0" r="10.5" fill={`url(#${pId}-center)`} />
+        <circle cx="-5" cy="-5" r="1.6" fill="#fffbe0" />
+        <circle cx="5" cy="-5" r="1.6" fill="#fffbe0" />
+        <circle cx="6" cy="3" r="1.6" fill="#fffbe0" />
+        <circle cx="-1" cy="7" r="1.6" fill="#fffbe0" />
+        <circle cx="-6" cy="2" r="1.6" fill="#fffbe0" />
+        <circle cx="0" cy="0" r="2.4" fill="#350f13" />
+      </g>
     </svg>
   );
 }

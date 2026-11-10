@@ -5,6 +5,7 @@ import { clock, weekdayDate } from "@/lib/dates";
 import { gsap, tokens } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import AddToCalendar from "@/components/AddToCalendar";
+import { BloomingFlower } from "@/components/Ornaments";
 import Pic, { Sprite } from "@/components/Pic";
 import "./events.css";
 
@@ -50,10 +51,44 @@ export default function Events() {
       scrollTrigger: { trigger: q(".ev-list")[0], start: "top 62%", end: "bottom 62%", scrub: true },
     });
     items.forEach((item) => {
-      gsap.fromTo(item.querySelector(".ev-bud"), { scale: 0.35, rotation: -25, backgroundColor: "#A9BBA0" }, {
-        scale: 1, rotation: 0, backgroundColor: "#D9A5A0", duration: 0.6, ease: "back.out(1.6)",
-        scrollTrigger: { trigger: item, start: "top 58%", toggleActions: "play none none reverse" },
-      });
+      // Timeline marker flower blooming animation on scroll
+      const flower = item.querySelector(".ev-timeline-flower");
+      if (flower) {
+        const leaves = flower.querySelectorAll(".bf-leaf");
+        const petals = flower.querySelectorAll(".bf-petal");
+        const center = flower.querySelector(".bf-center");
+
+        gsap.set(leaves, { scale: 0.22, rotation: (idx: number) => (idx % 2 === 0 ? -28 : 28), opacity: 0.25, transformOrigin: "0px 0px" });
+        gsap.set(petals, { scale: 0.15, rotation: (idx: number) => -18 + idx * 4, opacity: 0.2, transformOrigin: "0px 0px" });
+        gsap.set(center, { scale: 0, opacity: 0, transformOrigin: "0px 0px" });
+
+        const tl = gsap.timeline({
+          scrollTrigger: { trigger: item, start: "top 62%", toggleActions: "play none none reverse" },
+        });
+        tl.to(leaves, { scale: 1, rotation: 0, opacity: 1, duration: 0.75, ease: "power2.out", stagger: 0.04 }, 0)
+          .to(petals, { scale: 1, rotation: 0, opacity: 1, duration: 0.95, ease: "back.out(1.4)", stagger: 0.06 }, 0.08)
+          .to(center, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 0.38);
+      }
+
+      // Mobile inline frame flower
+      const inlineFl = item.querySelector(".ev-inline-flower");
+      if (inlineFl) {
+        const leaves = inlineFl.querySelectorAll(".bf-leaf");
+        const petals = inlineFl.querySelectorAll(".bf-petal");
+        const center = inlineFl.querySelector(".bf-center");
+
+        gsap.set(leaves, { scale: 0.25, rotation: -25, opacity: 0.3, transformOrigin: "0px 0px" });
+        gsap.set(petals, { scale: 0.16, rotation: (idx: number) => -20 + idx * 4, opacity: 0.2, transformOrigin: "0px 0px" });
+        gsap.set(center, { scale: 0, opacity: 0, transformOrigin: "0px 0px" });
+
+        const tl = gsap.timeline({
+          scrollTrigger: { trigger: item, start: "top 68%", toggleActions: "play none none reverse" },
+        });
+        tl.to(leaves, { scale: 1, rotation: 0, opacity: 1, duration: 0.8, ease: "power2.out", stagger: 0.05 }, 0)
+          .to(petals, { scale: 1, rotation: 0, opacity: 1, duration: 1.0, ease: "back.out(1.4)", stagger: 0.07 }, 0.1)
+          .to(center, { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(2)" }, 0.42);
+      }
+
       gsap.from(item.querySelectorAll(".ev-reveal"), {
         y: 26, autoAlpha: 0, duration: 0.9, stagger: 0.09, ease: tokens.ease.reveal,
         scrollTrigger: { trigger: item, start: "top 78%", once: true },
@@ -67,9 +102,37 @@ export default function Events() {
     const photos = q(".ev-photo") as HTMLElement[];
     gsap.set(photos, { clipPath: "inset(100% 0% 0% 0%)", zIndex: 0 });
     gsap.set(photos[0], { clipPath: "inset(0% 0% 0% 0%)", zIndex: 1 });
+
+    // Desktop frame flower blooming animation: blossoms each time an event is revealed
+    const bloomStageFlower = () => {
+      const fl = q(".ev-stage-flower")[0];
+      if (!fl) return;
+      const leaves = fl.querySelectorAll(".bf-leaf");
+      const petals = fl.querySelectorAll(".bf-petal");
+      const center = fl.querySelector(".bf-center");
+      gsap.killTweensOf([leaves, petals, center]);
+      const tl = gsap.timeline();
+      tl.fromTo(leaves,
+        { scale: 0.28, rotation: (idx: number) => (idx % 2 === 0 ? -25 : 25), opacity: 0.4, transformOrigin: "0px 0px" },
+        { scale: 1, rotation: 0, opacity: 1, duration: 0.85, ease: "power2.out", stagger: 0.05 },
+        0
+      )
+      .fromTo(petals,
+        { scale: 0.18, rotation: (idx: number) => -18 + idx * 4, opacity: 0.3, transformOrigin: "0px 0px" },
+        { scale: 1, rotation: 0, opacity: 1, duration: 1.05, ease: "back.out(1.5)", stagger: 0.07 },
+        0.1
+      )
+      .fromTo(center,
+        { scale: 0, opacity: 0, transformOrigin: "0px 0px" },
+        { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(2)" },
+        0.45
+      );
+    };
+
     let current = 0;
     const show = (i: number) => {
       if (i === current) return;
+      bloomStageFlower();
       const down = i > current;
       const incoming = photos[i], outgoing = photos[current];
       // only two photographs are ever in play: the one leaving, and the one sliding in over it
@@ -134,6 +197,9 @@ export default function Events() {
               ))}
             </div>
             <img src="/assets/img/botanical-gold-frame.webp" className="ev-frame-overlay" alt="" aria-hidden="true" />
+            <div className="ev-frame-flower-wrap" aria-hidden="true">
+              <BloomingFlower size="100%" className="ev-stage-flower" idPrefix="stg" />
+            </div>
           </div>
           <p className="ev-caption caption">
             {events.map((e, i) => (
@@ -159,12 +225,17 @@ export default function Events() {
             const photo = PHOTOS[e.id] ?? PHOTOS.ceremony;
             return (
               <li key={e.id} className="ev-item">
-                <span className="ev-bud" aria-hidden="true" />
+                <div className="ev-flower-frame" aria-hidden="true">
+                  <BloomingFlower size={28} className="ev-timeline-flower" idPrefix={`tm-${e.id}`} />
+                </div>
                 <figure className="ev-inline ev-botanical-frame" data-reveal="mask">
                   <div className="ev-inline-inner">
                     <Pic src={photo.src} alt={photo.alt} inner />
                   </div>
                   <img src="/assets/img/botanical-gold-frame.webp" className="ev-frame-overlay" alt="" aria-hidden="true" />
+                  <div className="ev-frame-flower-wrap" aria-hidden="true">
+                    <BloomingFlower size="100%" className="ev-inline-flower" idPrefix={`inl-${e.id}`} />
+                  </div>
                 </figure>
                 <p className="ev-label eyebrow ev-reveal">
                   <span className="ev-num">{String(i + 1).padStart(2, "0")}</span> {weekdayDate(e.date!)}
