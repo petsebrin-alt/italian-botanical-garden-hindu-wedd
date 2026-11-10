@@ -125,12 +125,15 @@ export default function Events() {
 
       <div className="container ev-grid">
         <div className="ev-stage-wrap" aria-hidden="true">
-          <div className="ev-stage arch arch--frame">
-            {events.map((e) => (
-              <div key={e.id} className="ev-photo">
-                <Pic src={(PHOTOS[e.id] ?? PHOTOS.ceremony).src} alt="" />
-              </div>
-            ))}
+          <div className="ev-stage ev-botanical-frame">
+            <div className="ev-stage-inner">
+              {events.map((e) => (
+                <div key={e.id} className="ev-photo">
+                  <Pic src={(PHOTOS[e.id] ?? PHOTOS.ceremony).src} alt="" />
+                </div>
+              ))}
+            </div>
+            <img src="/assets/img/botanical-gold-frame.webp" className="ev-frame-overlay" alt="" aria-hidden="true" />
           </div>
           <p className="ev-caption caption">
             {events.map((e, i) => (
@@ -157,8 +160,11 @@ export default function Events() {
             return (
               <li key={e.id} className="ev-item">
                 <span className="ev-bud" aria-hidden="true" />
-                <figure className="ev-inline arch arch--frame" data-reveal="mask">
-                  <Pic src={photo.src} alt={photo.alt} inner />
+                <figure className="ev-inline ev-botanical-frame" data-reveal="mask">
+                  <div className="ev-inline-inner">
+                    <Pic src={photo.src} alt={photo.alt} inner />
+                  </div>
+                  <img src="/assets/img/botanical-gold-frame.webp" className="ev-frame-overlay" alt="" aria-hidden="true" />
                 </figure>
                 <p className="ev-label eyebrow ev-reveal">
                   <span className="ev-num">{String(i + 1).padStart(2, "0")}</span> {weekdayDate(e.date!)}

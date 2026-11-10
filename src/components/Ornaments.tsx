@@ -18,36 +18,71 @@ function wreathLeaves(cx: number, cy: number, r: number) {
 
 const LEAF = "M0 0 C 3.6 -4.2, 10.4 -4.4, 15 0 C 10.4 4.4, 3.6 4.2, 0 0 Z";
 
-export function Monogram({ size = 132, className = "" }: { size?: number; className?: string }) {
+export function Monogram({ size = 140, className = "" }: { size?: number; className?: string }) {
   const [a, b] = initials();
-  const leaves = wreathLeaves(70, 70, 54);
-  const arcL = "M 63 124 A 54 54 0 0 1 22 40";
-  const arcR = "M 77 124 A 54 54 0 0 0 118 40";
+  const circleD = "M 100 50 A 50 50 0 1 1 99.9 50 Z";
+
   return (
     <svg
       className={`monogram ${className}`}
       width={size}
       height={size}
-      viewBox="0 0 140 140"
+      viewBox="0 0 200 200"
       role="img"
       aria-label={`${a} and ${b} monogram`}
+      style={{ overflow: "visible" }}
     >
-      <g fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" className="mono-stems">
-        <path className="mono-draw" d={arcL} />
-        <path className="mono-draw" d={arcR} />
+      <defs>
+        <linearGradient id="mono-gold-rope" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#E2C886" />
+          <stop offset="35%" stopColor="#FFF4D0" />
+          <stop offset="65%" stopColor="#C4A66A" />
+          <stop offset="100%" stopColor="#7A5E2A" />
+        </linearGradient>
+      </defs>
+
+      {/* Circular golden flower rope: draws from one end to the other to make a complete circle */}
+      <g className="mono-stems">
+        <path
+          className="mono-draw"
+          d={circleD}
+          fill="none"
+          stroke="url(#mono-gold-rope)"
+          strokeWidth="3.2"
+          strokeLinecap="round"
+        />
       </g>
-      <g fill="currentColor" className="mono-leaves">
-        {leaves.map((l, i) => (
-          <path key={`l${i}`} d={LEAF} transform={`translate(${l.x} ${l.y}) rotate(${l.rot}) scale(${l.s})`} opacity="0.9" />
-        ))}
-        {leaves.map((l, i) => (
-          <path key={`r${i}`} d={LEAF} transform={`translate(${140 - l.x} ${l.y}) rotate(${180 - l.rot}) scale(${l.s})`} opacity="0.9" />
-        ))}
+
+      {/* Grand floral rope with blooming pink roses, blossoms & leaves */}
+      <g className="mono-wreath mono-leaves">
+        <image
+          href="/assets/img/monogram-wreath.webp"
+          x="0"
+          y="0"
+          width="200"
+          height="200"
+          preserveAspectRatio="xMidYMid meet"
+        />
       </g>
-      <g className="mono-letters" fontFamily="var(--font-names), serif" fontSize="34" fontWeight="500" fill="currentColor" textAnchor="middle">
-        <text x="52" y="82">{a}</text>
-        <line x1="70" y1="54" x2="70" y2="90" stroke="currentColor" strokeWidth="1" />
-        <text x="89" y="82">{b}</text>
+
+      {/* Grand golden metallic 3D initials J | R */}
+      <g className="mono-letters">
+        {a === "J" && b === "R" ? (
+          <image
+            href="/assets/img/monogram-letters.webp"
+            x="0"
+            y="0"
+            width="200"
+            height="200"
+            preserveAspectRatio="xMidYMid meet"
+          />
+        ) : (
+          <g fontFamily="var(--font-names), serif" fontSize="48" fontWeight="500" fill="url(#mono-gold-rope)" textAnchor="middle">
+            <text x="75" y="116">{a}</text>
+            <line x1="100" y1="76" x2="100" y2="128" stroke="url(#mono-gold-rope)" strokeWidth="1.6" />
+            <text x="127" y="116">{b}</text>
+          </g>
+        )}
       </g>
     </svg>
   );

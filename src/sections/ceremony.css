@@ -53,7 +53,7 @@
 .diya-flame { transform-origin: 50% 100%; animation: flame 0.9s ease-in-out infinite alternate; }
 @keyframes flicker { from { opacity: 0.82; } to { opacity: 1; } }
 @keyframes flame { from { transform: scaleY(0.92) rotate(-2deg); } to { transform: scaleY(1.06) rotate(2deg); } }
-.motion-paused .diya-glow, .motion-paused .diya-flame, .motion-paused .jas-strand { animation-play-state: paused; }
+.motion-paused .diya-glow, .motion-paused .diya-flame { animation-play-state: paused; }
 
 .cer-text {
   position: absolute;
@@ -76,11 +76,26 @@
 .cer-petals { position: absolute; inset: 0; pointer-events: none; }
 .cer-petal { position: absolute; top: 0; will-change: transform; }
 
-.jas { position: absolute; top: 0; height: 100%; width: 52%; will-change: transform; transform-origin: 50% 0%; }
-.jas--l { left: 0; }
-.jas--r { right: 0; }
-.jas-strand { transform-box: fill-box; transform-origin: 50% 0%; animation: strand 4.6s ease-in-out infinite alternate; }
-@keyframes strand { from { rotate: -0.8deg; } to { rotate: 0.8deg; } }
-[data-tier="C"] .jas { display: none; }
+.crys {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 52%;
+  object-fit: cover;
+  pointer-events: none;
+  z-index: 4;
+  will-change: transform;
+  transform-origin: 50% 0%;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.28));
+}
+.crys--l {
+  left: 0;
+  object-position: top right;
+}
+.crys--r {
+  right: 0;
+  object-position: top left;
+}
+[data-tier="C"] .crys { display: none; }
 
 /* ritual guide */

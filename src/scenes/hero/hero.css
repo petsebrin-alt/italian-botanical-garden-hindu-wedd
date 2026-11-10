@@ -35,7 +35,7 @@
   --Wf: max(var(--Wc), min(68cqw, calc(var(--Wc) * 1.15)));
   /* how far a frame sits outside the screen: 0 on wide screens, the crop on phones */
   --edge: min(0px, calc((100cqw - var(--Wc)) / 2));
-  --monoW: clamp(84px, calc(var(--Wc) * 0.17), 168px);
+  --monoW: clamp(110px, calc(var(--Wc) * 0.22), 200px);
 }
 /* upright screens frame the whole poster: garden height = screen height. Tall phones crop the
  * photo's sides a little; wider ones (older phones, tablets) see the sharp continued garden. */

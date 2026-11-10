@@ -200,8 +200,8 @@ export default function Hero() {
         if (!behindGate) intro.from(opening, { autoAlpha: 0, scale: 1.05, yPercent: -2, duration: 1.6, ease: tokens.ease.settle, stagger: 0.12 }, 0);
         intro
           .from(q(".mono-draw"), { drawSVG: "0%", duration: 1.5, ease: tokens.ease.cinematic }, behindGate ? 0.35 : 0.7)
-          .from(q(".mono-leaves path"), { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%", duration: 0.6, stagger: 0.03 }, 0.9)
-          .from(q(".mono-letters"), { autoAlpha: 0, duration: 0.7 }, 1.7)
+          .from(q(".mono-wreath, .mono-leaves"), { autoAlpha: 0, scale: 0.5, transformOrigin: "50% 50%", duration: 0.8, ease: "back.out(1.4)" }, 0.9)
+          .from(q(".mono-letters"), { autoAlpha: 0, scale: 0.8, transformOrigin: "50% 50%", duration: 0.7, ease: "power2.out" }, 1.5)
           .from(q(".hero-cue"), { autoAlpha: 0, y: -8, duration: 0.6 }, 2.2);
       }
       // only the live mount may start its intro (React dev mounts effects twice)

@@ -8,50 +8,15 @@ import { useScene } from "@/lib/scene";
 import { Sprite } from "@/components/Pic";
 import "./ceremony.css";
 
-/** Deterministic RNG so the server and the browser draw the same jasmine. */
-function rng(seed: number) {
-  return () => {
-    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** A curtain half: strands of jasmine (mogra) buds with the odd blush rose. */
-function JasmineCurtain({ side }: { side: "l" | "r" }) {
-  const strands = useMemo(() => {
-    const r = rng(side === "l" ? 11 : 29);
-    const out: { x: number; len: number; buds: { y: number; s: number; rose: boolean; dx: number }[] }[] = [];
-    const n = 17;
-    for (let i = 0; i < n; i++) {
-      const x = 8 + (i / (n - 1)) * 284 + (r() - 0.5) * 6;
-      const len = 560 + r() * 280 - (side === "l" ? i : n - i) * 6;
-      const buds = [];
-      for (let y = 10 + r() * 14; y < len; y += 15 + r() * 7) buds.push({ y, s: 0.75 + r() * 0.5, rose: r() < 0.06, dx: (r() - 0.5) * 3 });
-      out.push({ x, len, buds });
-    }
-    return out;
-  }, [side]);
+/** Realistic beaded crystal, pearl, and butterfly curtain half. */
+function CrystalCurtain({ side }: { side: "l" | "r" }) {
   return (
-    <svg className={`jas jas--${side}`} viewBox="0 0 300 900" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
-      <defs>
-        <radialGradient id={`bud-${side}`} cx="40%" cy="35%" r="70%">
-          <stop offset="0" stopColor="#fffdf7" />
-          <stop offset="0.7" stopColor="#f3eedf" />
-          <stop offset="1" stopColor="#d9d2bd" />
-        </radialGradient>
-      </defs>
-      <rect x="0" y="0" width="300" height="10" fill="#c4a66a" />
-      {strands.map((s, i) => (
-        <g key={i} className="jas-strand" style={{ animationDelay: `${(i % 5) * -0.7}s` }}>
-          <line x1={s.x} y1="8" x2={s.x} y2={s.len} stroke="#6f8a5c" strokeWidth="0.8" />
-          {s.buds.map((b, j) => b.rose
-            ? <circle key={j} cx={s.x + b.dx} cy={b.y} r={4.6 * b.s} fill="#d9a5a0" stroke="#9c5b55" strokeWidth="0.5" />
-            : <ellipse key={j} cx={s.x + b.dx} cy={b.y} rx={3.1 * b.s} ry={4.2 * b.s} fill={`url(#bud-${side})`} stroke="#cfc6ad" strokeWidth="0.4" />)}
-        </g>
-      ))}
-    </svg>
+    <img
+      src={`/assets/img/crystal-curtain-${side}.webp`}
+      className={`crys crys--${side} jas--${side}`}
+      alt=""
+      aria-hidden="true"
+    />
   );
 }
 
@@ -164,8 +129,8 @@ export default function Ceremony() {
             </svg>
           ))}
         </div>
-        <JasmineCurtain side="l" />
-        <JasmineCurtain side="r" />
+        <CrystalCurtain side="l" />
+        <CrystalCurtain side="r" />
       </div>
 
     </section>
