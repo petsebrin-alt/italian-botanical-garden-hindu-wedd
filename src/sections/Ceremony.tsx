@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useCallback } from "react";
 import { wedding } from "@/content/wedding";
 import { clock, weekdayDate } from "@/lib/dates";
 import { gsap, scrub, tokens } from "@/lib/gsap";
@@ -8,7 +8,7 @@ import { useScene } from "@/lib/scene";
 import { Sprite } from "@/components/Pic";
 import "./ceremony.css";
 
-/** Realistic beaded crystal, pearl, and butterfly curtain half. */
+/** Realistic beaded crystal, pearl, and butterfly curtain half hanging full section height. */
 function CrystalCurtain({ side }: { side: "l" | "r" }) {
   return (
     <img
@@ -20,54 +20,106 @@ function CrystalCurtain({ side }: { side: "l" | "r" }) {
   );
 }
 
-/** Seven-lobed (scalloped) mandap arch, as an SVG path in a 600 × 700 box. */
-function scallopPath() {
-  const cx = 300, cy = 340, R = 168, lobes = 9;
-  const pts = Array.from({ length: lobes + 1 }, (_, i) => {
-    const a = Math.PI - (i / lobes) * Math.PI;
-    // rounded so the server and the browser print the identical path
-    return [Math.round((cx + R * Math.cos(a)) * 10) / 10, Math.round((cy - R * Math.sin(a) * 1.08) * 10) / 10];
-  });
-  let d = `M ${cx - R} 660 L ${pts[0][0]} ${pts[0][1]}`;
-  for (let i = 1; i < pts.length; i++) {
-    const [x, y] = pts[i];
-    const chord = Math.hypot(x - pts[i - 1][0], y - pts[i - 1][1]);
-    const rr = (chord * 0.56).toFixed(1);
-    d += ` A ${rr} ${rr} 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}`;
-  }
-  return d + ` L ${cx + R} 660 Z`;
-}
+/** Rustic Italian floral window with 3D opening shutters, flying butterfly, and couple reveal. */
+function FloralWindow() {
+  const [accepted, setAccepted] = useState(false);
+  const [animating, setAnimating] = useState(false);
 
-function Mandap() {
-  const arch = useMemo(scallopPath, []);
+  const handleAccept = useCallback(() => {
+    if (accepted || animating) return;
+    setAnimating(true);
+    setAccepted(true);
+    setTimeout(() => setAnimating(false), 2600);
+  }, [accepted, animating]);
+
+  const handleReplay = useCallback(() => {
+    setAccepted(false);
+    setAnimating(false);
+  }, []);
+
   return (
-    <svg className="mandap" viewBox="0 0 600 700" role="img" aria-label="A wedding mandap with a scalloped arch, framing Janvi and Rohit exchanging garlands">
-      <defs>
-        <clipPath id="mandap-open"><path d={arch} /></clipPath>
-        <linearGradient id="pillar" x1="0" x2="1">
-          <stop offset="0" stopColor="#efe6d2" /><stop offset="0.5" stopColor="#fbf7ee" /><stop offset="1" stopColor="#e6dbc3" />
-        </linearGradient>
-      </defs>
-      <image href="/assets/img/ceremony-arch.webp" x="120" y="150" width="360" height="520" preserveAspectRatio="xMidYMax slice" clipPath="url(#mandap-open)" />
-      <g className="mandap-lines" fill="none" stroke="#7a5e2a" strokeWidth="1.6" strokeLinejoin="round">
-        <path d={arch} />
-        {/* canopy and finial */}
-        <path d="M 70 196 C 150 120, 230 86, 300 70 C 370 86, 450 120, 530 196" />
-        <path d="M 54 206 H 546" />
-        <path d="M 300 70 V 44 M 288 44 C 288 30, 312 30, 312 44 Z M 300 30 V 16" />
-        <path d="M 120 150 C 120 136, 136 136, 136 150 M 464 150 C 464 136, 480 136, 480 150" />
-        {/* front pillars */}
-        <rect x="76" y="206" width="52" height="454" fill="url(#pillar)" />
-        <rect x="472" y="206" width="52" height="454" fill="url(#pillar)" />
-        <path d="M 70 236 H 134 M 70 630 H 134 M 466 236 H 530 M 466 630 H 530" />
-        <path d="M 102 260 V 606 M 498 260 V 606" strokeDasharray="2 10" />
-        {/* garland swags */}
-        <path className="mandap-swag" d="M 102 230 Q 200 300, 300 236 Q 400 300, 498 230" stroke="#c4a66a" strokeDasharray="0.1 9" strokeWidth="6" strokeLinecap="round" />
-        <path d="M 102 230 Q 200 300, 300 236 Q 400 300, 498 230" stroke="#9c5b55" strokeWidth="0.8" />
-        {/* plinth */}
-        <path d="M 40 660 H 560 M 28 676 H 572 M 28 676 V 690 H 572 V 676" fill="#f3ecdc" />
-      </g>
-    </svg>
+    <div className={`cer-window ${accepted ? "cer-window--open" : "cer-window--closed"}`}>
+      {/* 1. Behind the window: The couple exchanging garlands in Tuscany */}
+      <div className="win-opening">
+        <img
+          src="/assets/img/ceremony-arch.webp"
+          alt="Janvi and Rohit exchanging wedding garlands under the Tuscan sun"
+          className="win-couple-img"
+        />
+        <div className="win-sunbeam" aria-hidden="true" />
+      </div>
+
+      {/* 2. 3D Shutters that swing open when invitation is accepted */}
+      <div className="win-shutters-stage" aria-hidden="true">
+        <div className="win-shutter win-shutter--l">
+          <img src="/assets/img/window-shutter-l.webp" alt="" className="win-shutter-tex" />
+        </div>
+        <div className="win-shutter win-shutter--r">
+          <img src="/assets/img/window-shutter-r.webp" alt="" className="win-shutter-tex" />
+        </div>
+      </div>
+
+      {/* 3. The Floral Stone Window Frame with Climbing Roses, Ivy, Daisies & Butterflies */}
+      <img
+        src="/assets/img/floral-window-frame.webp"
+        className="win-frame-overlay"
+        alt="Italian rustic floral arched window frame"
+        aria-hidden="true"
+      />
+
+      {/* 4. Flying butterfly that flutters across the window when accepted */}
+      <div
+        className={`win-flying-bf ${accepted ? "win-flying-bf--flying" : ""}`}
+        aria-hidden="true"
+      >
+        <img
+          src="/assets/img/window-butterfly-pink.webp"
+          alt=""
+          className="win-bf-wing"
+        />
+        <div className="win-bf-sparkle" />
+      </div>
+
+      {/* 5. "Invite the Guest" RSVP Section on the Window */}
+      <div className={`win-invite-card ${accepted ? "win-invite-card--hidden" : ""}`}>
+        <div className="win-card-inner">
+          <span className="win-badge">Tuscan Villa Wedding</span>
+          <h3 className="win-title">Invite the Guest · RSVP</h3>
+          <p className="win-couple">Janvi &amp; Rohit</p>
+          <p className="win-quote">
+            “Two souls, one heart, united forever under the Tuscan sun.”
+          </p>
+          <p className="win-note">
+            Together with their families, Janvi &amp; Rohit warmly invite you to celebrate their sacred union.
+          </p>
+          <button
+            type="button"
+            className="win-accept-btn"
+            onClick={handleAccept}
+            aria-label="Accept our invitation"
+          >
+            <span className="win-btn-shimmer" aria-hidden="true" />
+            <span className="win-btn-text">Accept Our Invitation 💌</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 6. Confirmation Banner after acceptance */}
+      {accepted && (
+        <div className="win-accepted-banner" role="status">
+          <span className="win-accepted-text">✨ Invitation Accepted · See you in Tuscany! ✨</span>
+          <button
+            type="button"
+            className="win-replay-btn"
+            onClick={handleReplay}
+            title="Replay window animation"
+            aria-label="Replay window animation"
+          >
+            ↺ Replay
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -83,15 +135,22 @@ export default function Ceremony() {
     const vw = window.innerWidth, vh = window.innerHeight;
     const tl = gsap.timeline({
       defaults: { ease: "none" },
-      scrollTrigger: { trigger: q(".cer-stage")[0], start: "top top", end: `+=${(mobile ? 1.7 : 2.2) * vh}`, pin: true, scrub: scrub(), anticipatePin: 1 },
+      scrollTrigger: {
+        trigger: q(".cer-stage")[0],
+        start: "top top",
+        end: `+=${(mobile ? 1.1 : 1.3) * vh}`,
+        pin: true,
+        scrub: scrub(),
+        anticipatePin: 1,
+      },
     });
     tl.to(q(".jas--l"), { x: -(mobile ? 0.72 : 0.62) * vw, rotation: -2, y: -0.04 * vh, ease: "power1.in", duration: 0.35 }, 0)
       .to(q(".jas--r"), { x: (mobile ? 0.72 : 0.62) * vw, rotation: 2, y: -0.04 * vh, ease: "power1.in", duration: 0.35 }, 0)
-      .fromTo(q(".cer-mandap"), { scale: 1.12, y: 0.04 * vh }, { scale: 1, y: 0, ease: "power2.out", duration: 0.45 }, 0.1)
+      .fromTo(q(".cer-window-wrap"), { scale: 1.08, y: 0.04 * vh }, { scale: 1, y: 0, ease: "power2.out", duration: 0.45 }, 0.08)
       .fromTo(q(".cer-garden"), { scale: 1.05 }, { scale: 1, duration: 0.55 }, 0)
-      .fromTo(q(".diya-glow"), { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 0.12, stagger: { each: 0.03, from: "center" } }, 0.4)
-      .fromTo(q(".cer-petal"), { y: -0.15 * vh }, { y: 1.1 * vh, rotation: (i: number) => 140 + i * 37, x: (i: number) => (i % 2 ? 1 : -1) * 0.05 * vw, duration: 0.4, stagger: 0.012 }, 0.4)
-      .from(q(".cer-text > *"), { y: 30, autoAlpha: 0, duration: 0.1, stagger: 0.03, ease: tokens.ease.reveal }, 0.46)
+      .fromTo(q(".diya-glow"), { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 0.12, stagger: { each: 0.03, from: "center" } }, 0.35)
+      .fromTo(q(".cer-petal"), { y: -0.15 * vh }, { y: 1.1 * vh, rotation: (i: number) => 140 + i * 37, x: (i: number) => (i % 2 ? 1 : -1) * 0.05 * vw, duration: 0.4, stagger: 0.012 }, 0.35)
+      .from(q(".cer-text > *"), { y: 30, autoAlpha: 0, duration: 0.1, stagger: 0.03, ease: tokens.ease.reveal }, 0.4)
       .to({}, { duration: 0.15 });
   });
 
@@ -103,8 +162,8 @@ export default function Ceremony() {
           <Sprite name="cypress-r" className="cer-cypress cer-cypress--r" />
           <div className="cer-lawn" />
         </div>
-        <div className="cer-mandap">
-          <Mandap />
+        <div className="cer-window-wrap">
+          <FloralWindow />
           <div className="cer-diyas" aria-hidden="true">
             {DIYAS.map((d) => (
               <span key={d} className="diya" style={{ "--i": d } as React.CSSProperties}>
@@ -132,7 +191,6 @@ export default function Ceremony() {
         <CrystalCurtain side="l" />
         <CrystalCurtain side="r" />
       </div>
-
     </section>
   );
 }

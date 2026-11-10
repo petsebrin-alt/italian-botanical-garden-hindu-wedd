@@ -19,24 +19,389 @@
   background: linear-gradient(180deg, #a6c06a, #8daa52 40%, #7c9a49);
 }
 
-.cer-mandap {
+/* Floral Window Stage replacing mandap */
+.cer-window-wrap {
   position: absolute;
   left: 50%;
-  bottom: 6%;
-  width: min(88vw, 62vh, 620px);
+  bottom: 5%;
+  width: min(88vw, 68vh, 620px);
+  aspect-ratio: 1 / 1;
   translate: -50% 0;
   transform-origin: 50% 100%;
   will-change: transform;
+  z-index: 3;
 }
-.mandap { width: 100%; height: auto; display: block; filter: drop-shadow(0 18px 30px rgb(41 69 53 / 0.25)); }
 
+.cer-window {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Arch Opening: Coordinates matching the stone arch (x: 31.5%..68.6%, y: 21%..65.8%) */
+.win-opening {
+  position: absolute;
+  left: 31.5%;
+  top: 21%;
+  width: 37.1%;
+  height: 44.8%;
+  border-radius: 48% 48% 3px 3px / 22% 22% 0 0;
+  overflow: hidden;
+  z-index: 1;
+  background: #c2dcf0;
+  box-shadow: inset 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+
+.win-couple-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  transform: scale(1.08);
+  filter: brightness(0.92) contrast(1.02);
+  transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1), filter 1.6s ease-out;
+}
+
+.cer-window--open .win-couple-img {
+  transform: scale(1);
+  filter: brightness(1.04) contrast(1.02);
+}
+
+.win-sunbeam {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 15%, rgba(255, 248, 220, 0.45) 0%, rgba(255, 230, 180, 0.1) 60%, transparent 100%);
+  opacity: 0.3;
+  transition: opacity 1.4s ease-out;
+}
+
+.cer-window--open .win-sunbeam {
+  opacity: 0.85;
+}
+
+/* 3D Shutters Stage */
+.win-shutters-stage {
+  position: absolute;
+  left: 31.5%;
+  top: 21%;
+  width: 37.1%;
+  height: 44.8%;
+  border-radius: 48% 48% 0 0 / 22% 22% 0 0;
+  perspective: 1100px;
+  perspective-origin: 50% 50%;
+  pointer-events: none;
+  z-index: 2;
+  overflow: visible;
+}
+
+.win-shutter {
+  position: absolute;
+  top: 0;
+  width: 50.4%;
+  height: 100%;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(40, 30, 20, 0.28);
+  transition: transform 1.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 1.35s ease-out;
+  transform-style: preserve-3d;
+  background: #fbf9f4;
+}
+
+.win-shutter--l {
+  left: 0;
+  transform-origin: 0% 50%;
+  border-radius: 46% 0 0 0 / 22% 0 0 0;
+  border-right: 1px solid rgba(175, 160, 140, 0.55);
+}
+
+.win-shutter--r {
+  right: 0;
+  transform-origin: 100% 50%;
+  border-radius: 0 46% 0 0 / 0 22% 0 0;
+  border-left: 1px solid rgba(175, 160, 140, 0.55);
+}
+
+.win-shutter-tex {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cer-window--open .win-shutter--l {
+  transform: rotateY(-118deg);
+  opacity: 0.15;
+}
+
+.cer-window--open .win-shutter--r {
+  transform: rotateY(118deg);
+  opacity: 0.15;
+}
+
+/* Floral Window Frame Overlay */
+.win-frame-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  z-index: 3;
+  filter: drop-shadow(0 14px 28px rgba(35, 55, 42, 0.24));
+}
+
+/* Flying Butterfly */
+.win-flying-bf {
+  position: absolute;
+  left: 60%;
+  top: 62%;
+  width: clamp(38px, 6vw, 54px);
+  height: auto;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(0, 0) scale(0.6);
+}
+
+.win-bf-wing {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
+}
+
+.win-flying-bf--flying {
+  animation: win-butterfly-flight 2.6s cubic-bezier(0.25, 1, 0.4, 1) forwards;
+}
+
+.win-flying-bf--flying .win-bf-wing {
+  animation: win-wing-flap 0.14s ease-in-out infinite alternate;
+}
+
+@keyframes win-butterfly-flight {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.65) rotate(10deg);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-15px, -24px) scale(0.9) rotate(-10deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(-90px, -95px) scale(1.05) rotate(-26deg);
+  }
+  65% {
+    opacity: 1;
+    transform: translate(-175px, -170px) scale(1.1) rotate(-16deg);
+  }
+  88% {
+    opacity: 0.85;
+    transform: translate(-250px, -250px) scale(0.95) rotate(-32deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-320px, -320px) scale(0.7) rotate(-40deg);
+  }
+}
+
+@keyframes win-wing-flap {
+  0%, 100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.18);
+  }
+}
+
+/* "Invite the Guest" RSVP Section on the Window */
+.win-invite-card {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  translate: -50% -50%;
+  width: min(84%, 350px);
+  padding: clamp(14px, 3.2vw, 22px);
+  border-radius: 16px;
+  background: linear-gradient(155deg, rgba(255, 253, 248, 0.96) 0%, rgba(250, 246, 236, 0.93) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(196, 166, 106, 0.45);
+  box-shadow: 0 16px 36px rgba(45, 60, 48, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+  text-align: center;
+  z-index: 5;
+  transition: opacity 0.75s cubic-bezier(0.2, 0.8, 0.3, 1), transform 0.75s cubic-bezier(0.2, 0.8, 0.3, 1);
+  pointer-events: auto;
+}
+
+.win-invite-card--hidden {
+  opacity: 0;
+  transform: translate(-50%, -64%) scale(0.9);
+  pointer-events: none;
+}
+
+.win-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.win-badge {
+  font-family: var(--font-cinzel), serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7a5e2a;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.win-title {
+  font-family: var(--font-cinzel), serif;
+  font-size: clamp(0.92rem, 0.82rem + 0.35vw, 1.12rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2c4436;
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.win-couple {
+  font-family: var(--font-alex-brush), cursive;
+  font-size: clamp(1.5rem, 1.25rem + 0.9vw, 2rem);
+  color: #9c6d32;
+  margin: 0 0 6px;
+  line-height: 1.1;
+}
+
+.win-quote {
+  font-family: var(--font-cormorant), serif;
+  font-style: italic;
+  font-size: clamp(0.85rem, 0.78rem + 0.25vw, 0.98rem);
+  color: #44594a;
+  line-height: 1.4;
+  margin: 0 0 6px;
+  padding: 0 4px;
+}
+
+.win-note {
+  font-family: var(--font-cormorant), serif;
+  font-size: clamp(0.76rem, 0.7rem + 0.18vw, 0.86rem);
+  color: #6d7c71;
+  line-height: 1.45;
+  margin: 0 0 14px;
+}
+
+.win-accept-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid #b8934b;
+  background: linear-gradient(135deg, #c9a45c 0%, #ad8539 100%);
+  color: #ffffff;
+  font-family: var(--font-cinzel), serif;
+  font-size: clamp(0.74rem, 0.68rem + 0.22vw, 0.86rem);
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(184, 147, 75, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  overflow: hidden;
+}
+
+.win-accept-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(184, 147, 75, 0.48);
+  filter: brightness(1.06);
+}
+
+.win-accept-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.win-btn-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: win-shimmer 2.8s infinite;
+}
+
+@keyframes win-shimmer {
+  0% { transform: translateX(-100%); }
+  40%, 100% { transform: translateX(100%); }
+}
+
+.win-btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Accepted Confirmation Banner */
+.win-accepted-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 115%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(196, 166, 106, 0.4);
+  box-shadow: 0 6px 20px rgba(45, 60, 48, 0.16);
+  font-family: var(--font-cinzel), serif;
+  font-size: clamp(0.72rem, 0.68rem + 0.2vw, 0.84rem);
+  letter-spacing: 0.08em;
+  color: #2c4436;
+  white-space: nowrap;
+  z-index: 6;
+  animation: win-banner-in 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes win-banner-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 130%) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 115%) scale(1);
+  }
+}
+
+.win-replay-btn {
+  background: transparent;
+  border: 1px solid rgba(196, 166, 106, 0.6);
+  color: #7a5e2a;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.74rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.win-replay-btn:hover {
+  background: #7a5e2a;
+  color: #ffffff;
+}
+
+/* Diya Lamps */
 .cer-diyas {
   position: absolute;
   left: 50%;
-  bottom: 3.6%;
+  bottom: -2%;
   translate: -50% 0;
   display: flex;
   gap: clamp(14px, 4vw, 34px);
+  z-index: 4;
 }
 .diya { position: relative; display: block; width: 40px; }
 .diya svg { position: relative; display: block; }
@@ -55,6 +420,7 @@
 @keyframes flame { from { transform: scaleY(0.92) rotate(-2deg); } to { transform: scaleY(1.06) rotate(2deg); } }
 .motion-paused .diya-glow, .motion-paused .diya-flame { animation-play-state: paused; }
 
+/* Ceremony Text Header */
 .cer-text {
   position: absolute;
   left: 50%;
@@ -76,17 +442,19 @@
 .cer-petals { position: absolute; inset: 0; pointer-events: none; }
 .cer-petal { position: absolute; top: 0; will-change: transform; }
 
+/* Full-Height Crystal Curtain: spans 100% of the section height from top to lawn */
 .crys {
   position: absolute;
   top: 0;
-  height: 92%;
+  bottom: 0;
+  height: 100%;
   width: 52%;
-  object-fit: contain;
+  object-fit: fill;
   pointer-events: none;
-  z-index: 4;
+  z-index: 10;
   will-change: transform;
   transform-origin: 50% 0%;
-  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.22));
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.28));
 }
 .crys--l {
   left: 0;
@@ -98,10 +466,8 @@
 }
 @media (min-width: 1024px) {
   .crys {
-    height: 90%;
+    height: 100%;
     width: 52%;
   }
 }
 [data-tier="C"] .crys { display: none; }
-
-/* ritual guide */
