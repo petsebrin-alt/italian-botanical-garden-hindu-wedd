@@ -41,10 +41,9 @@ export default function Family() {
         <h2 id="family-title" className="script" data-reveal="up">With Love &amp; Blessings</h2>
       </header>
       <div className="container fam-grid">
-        {[{ k: "bride", f: bride }, { k: "groom", f: groom }].map(({ k, f }, i) => (
+        {[{ k: "bride", f: bride }, { k: "groom", f: groom }].map(({ k, f }) => (
           <article key={k} className={`fam-card fam-card--${k}`}>
             <ArchFrame />
-            <Sprite name={i ? "strand-2" : "strand-1"} className="fam-wisteria sway" />
             <div className="fam-body">
               <p className="eyebrow">{f.title}</p>
               <p className="fam-names names">

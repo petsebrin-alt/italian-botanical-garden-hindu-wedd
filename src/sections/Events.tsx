@@ -117,9 +117,6 @@ export default function Events() {
 
   return (
     <section ref={ref} id="events" className="events section paper" aria-labelledby="events-title" data-stage>
-      <Sprite name="strand-1" className="hang hang--l sway" depth={-0.18} />
-      <Sprite name="strand-2" className="hang hang--r sway sway--slow" depth={-0.22} />
-
       <header className="container center events-head">
         <p className="eyebrow" data-reveal="fade">Join us for</p>
         <h2 id="events-title" className="script" data-reveal="up">Wedding Celebrations</h2>

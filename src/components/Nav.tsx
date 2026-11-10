@@ -11,8 +11,7 @@ const LINKS = [
   { href: "#memories", label: "Memories" },
   { href: "#events", label: "Celebrations", needs: "events" },
   { href: "#dress-code", label: "Dress Code" },
-  { href: "#venue", label: "Venue" },
-  { href: "#rsvp", label: "RSVP" },
+  { href: "#venue", label: wedding.venue.name || "The Villa" },
   { href: "#wishes", label: "Wishes" },
   { href: "#help", label: "Help" },
 ];

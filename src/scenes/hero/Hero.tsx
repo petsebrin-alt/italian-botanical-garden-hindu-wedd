@@ -69,6 +69,24 @@ const readGuest = () => {
   return (p.get("to") ?? p.get("guest") ?? "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 48);
 };
 
+const FONT_MAP: Record<string, string> = {
+  "great-vibes": "var(--font-calligraphy-great-vibes)",
+  "greatvibes": "var(--font-calligraphy-great-vibes)",
+  "pinyon": "var(--font-calligraphy-pinyon)",
+  "pinyon-script": "var(--font-calligraphy-pinyon)",
+  "alex-brush": "var(--font-calligraphy-alex-brush)",
+  "alex": "var(--font-calligraphy-alex-brush)",
+  "allura": "var(--font-calligraphy-allura)",
+  "parisienne": "var(--font-calligraphy-parisienne)",
+};
+
+const readFont = () => {
+  if (typeof window === "undefined") return "";
+  const p = new URLSearchParams(window.location.search);
+  const f = p.get("font")?.toLowerCase() ?? "";
+  return FONT_MAP[f] ?? "";
+};
+
 type LayerName = keyof typeof M.layers;
 const WIDE = new Set(["hills", "far", "cypress-l", "cypress-r", "ground", "couple", "frame-l", "frame-r", "bloom-l", "bloom-r"]);
 
@@ -145,6 +163,7 @@ export default function Hero() {
   pausedNow.current = paused;
   const { bride, groom } = wedding.couple;
   const guest = useSyncExternalStore(noSubscribe, readGuest, () => "") || wedding.greeting.fallback;
+  const customFont = useSyncExternalStore(noSubscribe, readFont, () => "");
 
   useEffect(() => {
     loops.current.forEach((t) => (paused || !visible.current || tier === "C" ? t.pause() : t.play()));
@@ -161,7 +180,7 @@ export default function Hero() {
       const inner = (n: string) => layer(n)?.querySelector("picture");
       const titleEl = q(".hero-title")[0] as HTMLElement;
       const nameEls = q(".hero-name");
-      const split = new SplitText(nameEls, { type: "chars", mask: "chars" });
+      const split = new SplitText(nameEls, { type: "words", mask: "words" });
 
       const images = q("img") as HTMLImageElement[];
       const decoded = Promise.race([
@@ -271,7 +290,7 @@ export default function Hero() {
           .fromTo(r(".hero-guest"), { autoAlpha: 0, y: 18, letterSpacing: "0.18em" }, { autoAlpha: 1, y: 0, letterSpacing: "0.03em", duration: 0.45, ease: "power2.out" }, 0.25)
           .fromTo(r(".hero-eyebrow .rule"), { scaleX: 0 }, { scaleX: 1, duration: 0.5, transformOrigin: (i: number) => (i ? "0% 50%" : "100% 50%") }, 0.55)
           .fromTo(r(".hero-eyebrow span:not(.rule)"), { autoAlpha: 0, letterSpacing: "0.5em" }, { autoAlpha: 1, letterSpacing: spacing, duration: 0.6 }, 0.55)
-          .fromTo(split.chars, { yPercent: 110 }, { yPercent: 0, duration: 0.45, stagger: 0.06, ease: tokens.ease.title }, 0.75)
+          .fromTo(split.words, { yPercent: 110 }, { yPercent: 0, duration: 0.55, stagger: 0.1, ease: tokens.ease.title }, 0.75)
           .fromTo(r(".hero-amp"), { autoAlpha: 0, scale: 0.9, rotation: -4 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.5 }, 1.05)
           .fromTo(r(".hero-ornament, .hero-date"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.12 }, 1.4)
           .fromTo(q(".sprig-stem"), { drawSVG: "0%" }, { drawSVG: "100%", duration: 0.5 }, 1.45)
@@ -345,7 +364,7 @@ export default function Hero() {
         scroll?.revert();
       };
     },
-    { scope: root, dependencies: [tier, guest], revertOnUpdate: true },
+    { scope: root, dependencies: [tier, guest, customFont], revertOnUpdate: true },
   );
 
   return (
@@ -369,7 +388,7 @@ export default function Hero() {
         <Layer name="hills" />
         <Layer name="far" />
 
-        <div className="hero-title">
+        <div className="hero-title" style={customFont ? ({ "--font-couple-calligraphy": customFont } as React.CSSProperties) : undefined}>
           <Monogram className="hero-mono" size={128} />
           <p className="hero-greeting hero-reveal">
             <span className="hero-dear">{wedding.greeting.dear}</span>
@@ -379,9 +398,9 @@ export default function Hero() {
             <span className="rule" /> <span>The wedding of</span> <span className="rule" />
           </p>
           <h1 id="hero-title" className="hero-names hero-reveal" aria-label={`The wedding of ${bride.name} and ${groom.name}`}>
-            <span className="hero-name names" aria-hidden="true">{bride.name}</span>
+            <span className="hero-name" aria-hidden="true">{bride.name}</span>
             <span className="hero-amp" aria-hidden="true">&amp;</span>
-            <span className="hero-name names" aria-hidden="true">{groom.name}</span>
+            <span className="hero-name" aria-hidden="true">{groom.name}</span>
           </h1>
           <LotusDivider className="hero-ornament hero-reveal" />
           <p className="hero-date date-display hero-reveal">

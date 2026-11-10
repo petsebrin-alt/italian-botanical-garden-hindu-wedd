@@ -28,11 +28,9 @@ export default function Venue() {
 
   return (
     <section ref={ref} id="venue" className="venue section paper" aria-labelledby="venue-title" data-stage>
-      <Sprite name="strand-2" className="hang hang--l sway" depth={-0.18} />
-      <Sprite name="strand-3" className="hang hang--r sway sway--slow" depth={-0.22} />
       <header className="container center venue-head">
         <p className="eyebrow" data-reveal="fade">Travel &amp; stay</p>
-        <h2 id="venue-title" className="script" data-reveal="up">The Venue</h2>
+        <h2 id="venue-title" className="script" data-reveal="up">{v.name || "Villa La Foce"}</h2>
       </header>
 
       <div className="container">

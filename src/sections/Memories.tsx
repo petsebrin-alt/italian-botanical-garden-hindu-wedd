@@ -2,15 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { wedding } from "@/content/wedding";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useMotion } from "@/lib/motion";
 import { useScene } from "@/lib/scene";
 import { LensCarousel, type LensLayout } from "@/lib/lens";
 import { LotusDivider } from "@/components/Ornaments";
-import { Sprite } from "@/components/Pic";
 import "./memories.css";
 
-const AUTOPLAY = 4800;
+const AUTOPLAY = 2200;
 const mod = (a: number, n: number) => ((a % n) + n) % n;
 
 function Arrow({ flip = false }: { flip?: boolean }) {
@@ -125,10 +124,45 @@ export default function Memories() {
     stage.addEventListener("pointerenter", enter);
     stage.addEventListener("pointerleave", leave);
 
-    // it turns on its own while it is on screen and nobody is holding it
+    // dynamic auto-slide: turns automatically while visible and idle
+    let isScrolling = false;
+    let scrollTimer: ReturnType<typeof setTimeout>;
+
     const timer = window.setInterval(() => {
-      if (visible && !dragging && !hover && !pausedNow.current && !still && document.visibilityState === "visible") step(1);
+      if (visible && !dragging && !hover && !isScrolling && !pausedNow.current && !still && document.visibilityState === "visible") {
+        step(1);
+      }
     }, AUTOPLAY);
+
+    // scroll-driven: automatically slides through all slides as the user scrolls down the section
+    const scrollTrig = ScrollTrigger.create({
+      trigger: stage,
+      start: "top 85%",
+      end: "bottom 15%",
+      onUpdate: (self) => {
+        if (dragging) return;
+        isScrolling = true;
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => { isScrolling = false; }, 350);
+
+        const target = self.progress * (n - 1);
+        if (still) {
+          st.pos = target;
+          sync();
+          dirty = true;
+          draw();
+        } else {
+          gsap.to(st, {
+            pos: target,
+            duration: 0.45,
+            ease: "power1.out",
+            overwrite: "auto",
+            onUpdate: () => { sync(); dirty = true; draw(); },
+          });
+        }
+      },
+    });
+
     const io = new IntersectionObserver(([e]) => {
       visible = e.isIntersecting;
       if (visible) { dirty = true; gsap.ticker.add(tick); } else gsap.ticker.remove(tick);
@@ -156,6 +190,8 @@ export default function Memories() {
     return () => {
       alive = false;
       window.clearInterval(timer);
+      clearTimeout(scrollTimer);
+      scrollTrig.kill();
       near.disconnect(); io.disconnect(); ro.disconnect();
       gsap.ticker.remove(tick);
       gsap.killTweensOf(st);
@@ -177,8 +213,6 @@ export default function Memories() {
 
   return (
     <section ref={ref} id="memories" className={`mem section paper${flat ? " mem--flat" : ""}`} aria-labelledby="mem-title" data-stage>
-      <Sprite name="strand-3" className="hang hang--l sway" depth={-0.16} />
-      <Sprite name="strand-1" className="hang hang--r sway sway--slow" depth={-0.2} />
       <header className="container center mem-head">
         <p className="eyebrow" data-reveal="fade">Moments we treasure</p>
         <h2 id="mem-title" className="script" data-reveal="up">Sweet Memories</h2>

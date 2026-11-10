@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Great+Vibes&family=Italianno&family=Parisienne&family=Pinyon+Script&display=swap');
+
 /* ------------------------------------------------------------------ tokens (PRD §10–11) */
 :root {
   --forest: #294535;
@@ -12,6 +14,19 @@
   --rose-ink: #9c5b55;
   --error: #9e3a2f;
   --ink: #1f2a22;
+
+  /* Calligraphy font options for couple names */
+  --font-calligraphy-great-vibes: 'Great Vibes', cursive;
+  --font-calligraphy-pinyon: 'Pinyon Script', var(--font-script), cursive;
+  --font-calligraphy-alex-brush: 'Alex Brush', cursive;
+  --font-calligraphy-allura: 'Allura', cursive;
+  --font-calligraphy-parisienne: 'Parisienne', cursive;
+
+  /* Active couple name calligraphy font (Alex Brush) */
+  --font-couple-calligraphy: var(--font-calligraphy-alex-brush);
+
+  /* Remove hanging pink flower strands across all section corners/edges */
+  --hang-display: none;
 
   --sky-top: #6ea6da;
   --sky-mid: #a7cdec;
@@ -38,6 +53,11 @@
 
 /* ------------------------------------------------------------------ base */
 *, *::before, *::after { box-sizing: border-box; }
+
+/* Remove hanging pink flower strands across all sections */
+.hang, .dest-hang, .std-w, .fam-wisteria, .cpl-hang {
+  display: none !important;
+}
 
 html {
   -webkit-text-size-adjust: 100%;

@@ -165,7 +165,7 @@
 }
 .hero-dear {
   font-family: var(--font-script), var(--font-names), serif;
-  font-size: clamp(2.6rem, calc(var(--Wc) * 0.085), 5.4rem);
+  font-size: clamp(2.1rem, calc(var(--Wc) * 0.065), 4.2rem);
   line-height: 0.95;
   color: var(--gold-ink);
 }
@@ -174,7 +174,7 @@
   max-width: 100%;
   font-family: var(--font-names), serif;
   font-weight: 600;
-  font-size: clamp(1.9rem, calc(var(--Wc) * 0.07), 4.6rem);
+  font-size: clamp(1.6rem, calc(var(--Wc) * 0.052), 3.4rem);
   letter-spacing: 0.03em;
   line-height: 1.05;
   color: var(--forest);
@@ -186,22 +186,27 @@
   gap: 12px;
   color: var(--forest);
   font-size: clamp(0.75rem, calc(var(--Wc) * 0.0145), 0.95rem);
+  margin-top: 0.25em;
+  margin-bottom: 0.1em;
 }
 .hero-eyebrow .rule { width: 22px; background: var(--gold-ink); }
 
-.hero-names { display: grid; justify-items: center; line-height: 0.92; }
+.hero-names { display: grid; justify-items: center; line-height: 0.95; }
 .hero-name {
   display: block;
-  font-size: clamp(2.6rem, calc(var(--Wc) * 0.098), 6.2rem);
-  letter-spacing: 0.04em;
+  font-family: var(--font-couple-calligraphy, 'Alex Brush', cursive);
+  font-size: clamp(3.4rem, calc(var(--Wc) * 0.125), 7.2rem);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0.01em;
   color: var(--gold-ink);
 }
 .hero-amp {
   display: block;
-  font-family: var(--font-script), var(--font-names), serif;
-  font-size: clamp(2.2rem, calc(var(--Wc) * 0.078), 5rem);
-  line-height: 0.72;
-  margin: 0.02em 0 0.06em;
+  font-family: var(--font-couple-calligraphy, 'Alex Brush', cursive);
+  font-size: clamp(2.4rem, calc(var(--Wc) * 0.08), 5.2rem);
+  line-height: 0.75;
+  margin: 0.04em 0 0.06em;
   color: var(--gold-ink);
 }
 .hero-ornament { color: var(--gold-ink); }

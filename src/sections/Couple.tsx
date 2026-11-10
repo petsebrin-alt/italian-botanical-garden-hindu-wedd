@@ -54,8 +54,6 @@ export default function Couple() {
         <div className="cpl-horizon" data-depth="-0.06"><Pic src="/assets/img/fields-hills" alt="" className="cpl-fields" /></div>
         <Sprite name="canopy-l" className="cpl-vine cpl-vine--l" depth={-0.1} />
         <Sprite name="canopy-r" className="cpl-vine cpl-vine--r" depth={-0.1} />
-        <Sprite name="strand-1" className="cpl-hang cpl-hang--l sway" depth={-0.04} />
-        <Sprite name="strand-2" className="cpl-hang cpl-hang--r sway sway--slow" depth={-0.04} />
         <Sprite name="bed-l" className="cpl-bed cpl-bed--l" depth={0.28} />
         <Sprite name="bed-r" className="cpl-bed cpl-bed--r" depth={0.28} />
       </div>

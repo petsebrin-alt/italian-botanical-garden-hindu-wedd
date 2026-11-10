@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-GB" suppressHydrationWarning className={`${names.variable} ${head.variable} ${body.variable} ${script.variable} ${deva.variable}`}>
       <body>
-        <a className="skip-link" href="#rsvp">Skip to RSVP</a>
+        <a className="skip-link" href="#venue">Skip to Venue</a>
         <MotionProvider>{children}</MotionProvider>
       </body>
     </html>

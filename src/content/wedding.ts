@@ -137,9 +137,9 @@ export const wedding = {
   ] as GalleryImage[],
   venue: {
     /** Every celebration's "Location" button opens maps on this (the villa's name or address once confirmed). */
-    mapsQuery: "Tuscany, Italy",
-    name: "", // [Venue to be announced]
-    address: "",
+    mapsQuery: "Villa La Foce, Tuscany, Italy",
+    name: "Villa La Foce",
+    address: "Strada della Vittoria, 2, 53042 Chianciano Terme SI, Tuscany, Italy",
     lat: undefined as number | undefined,
     lng: undefined as number | undefined,
     note: "We will share the exact estate, address and map here as soon as it is confirmed.",

@@ -15,7 +15,6 @@ export default function Help() {
 
   return (
     <section ref={ref} id="help" className="help section paper" aria-labelledby="help-title" data-stage>
-      <Sprite name="strand-1" className="hang hang--r sway" depth={-0.18} />
       <header className="container center help-head">
         <p className="eyebrow" data-reveal="fade">Questions &amp; answers</p>
         <h2 id="help-title" className="script" data-reveal="up">Need Help?</h2>

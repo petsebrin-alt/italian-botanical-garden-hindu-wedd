@@ -162,13 +162,6 @@ export default function SaveTheDate() {
 
       <div className="container std-wrap">
         <div className="std-card card">
-          <div className="std-garland" aria-hidden="true">
-            <Sprite name="strand-2" className="std-w std-w--1 sway" />
-            <Sprite name="strand-1" className="std-w std-w--2 sway sway--slow" />
-            <Sprite name="strand-3" className="std-w std-w--3 sway" />
-            <Sprite name="strand-1" className="std-w std-w--4 sway" />
-            <Sprite name="strand-2" className="std-w std-w--5 sway sway--slow" />
-          </div>
           <h2 id="std-title" className="script" data-reveal="up">Save the Date</h2>
 
           <div className="std-dial" aria-hidden="true">
