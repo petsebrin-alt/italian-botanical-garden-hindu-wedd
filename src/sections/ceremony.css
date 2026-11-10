@@ -79,14 +79,14 @@
 .crys {
   position: absolute;
   top: 0;
-  height: 100%;
+  height: 92%;
   width: 52%;
-  object-fit: cover;
+  object-fit: contain;
   pointer-events: none;
   z-index: 4;
   will-change: transform;
   transform-origin: 50% 0%;
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.28));
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.22));
 }
 .crys--l {
   left: 0;
@@ -95,6 +95,12 @@
 .crys--r {
   right: 0;
   object-position: top left;
+}
+@media (min-width: 1024px) {
+  .crys {
+    height: 90%;
+    width: 52%;
+  }
 }
 [data-tier="C"] .crys { display: none; }
 
