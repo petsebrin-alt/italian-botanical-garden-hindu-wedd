@@ -2,13 +2,18 @@
 
 import { publishedEvents, wedding } from "@/content/wedding";
 import { clock, weekdayDate } from "@/lib/dates";
-import { gsap, tokens } from "@/lib/gsap";
+import { gsap, ScrollTrigger, tokens } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import AddToCalendar from "@/components/AddToCalendar";
-import Pic, { Sprite } from "@/components/Pic";
+import Pic from "@/components/Pic";
+import Bloom, { bloomTimeline } from "@/components/Bloom";
 import "./events.css";
 
 /** Each celebration's photograph (tools/build_events.py), with a description for screen readers. */
+/** The flower that blooms on the timeline at each celebration (tools/build_events.py). */
+const NODE_FLOWER = "/assets/img/bloom-hydrangea.webp";
+const FRAME = "/assets/img/botanical-gold-frame-wide.webp";
+
 const PHOTOS: Record<string, { src: string; alt: string }> = {
   haldi: { src: "/assets/img/event-haldi", alt: "The Haldi set in a villa garden: yellow drapes, marigold strings, a bowl of turmeric and lemons" },
   mehendi: { src: "/assets/img/event-mehendi", alt: "The Mehendi lounge: a carved bench with jewel cushions under bougainvillea and brass lanterns" },
@@ -50,28 +55,15 @@ export default function Events() {
       scrollTrigger: { trigger: q(".ev-list")[0], start: "top 62%", end: "bottom 62%", scrub: true },
     });
     items.forEach((item) => {
-      // Timeline node blossom on scroll
-      const nodeBlossom = item.querySelector(".ev-node-blossom");
-      if (nodeBlossom) {
-        gsap.fromTo(nodeBlossom,
-          { scale: 0.25, rotation: -25, opacity: 0.3, transformOrigin: "50% 50%" },
-          {
-            scale: 1, rotation: 0, opacity: 1, duration: 0.85, ease: "back.out(1.5)",
-            scrollTrigger: { trigger: item, start: "top 62%", toggleActions: "play none none reverse" }
-          }
-        );
-      }
-
-      // Mobile inline corner flower blossom
-      const inlineBlossom = item.querySelector(".ev-inline-blossom");
-      if (inlineBlossom) {
-        gsap.fromTo(inlineBlossom,
-          { scale: 0.2, rotation: -30, opacity: 0.25, transformOrigin: "50% 50%" },
-          {
-            scale: 1, rotation: 0, opacity: 1, duration: 1.0, ease: "back.out(1.6)",
-            scrollTrigger: { trigger: item, start: "top 68%", toggleActions: "play none none reverse" }
-          }
-        );
+      // the flower on the timeline opens as the celebration arrives, and closes again going back
+      for (const sel of [".ev-node-bloom", ".ev-inline-bloom"]) {
+        const el = item.querySelector(sel);
+        if (!el) continue;
+        const open = bloomTimeline(el);
+        ScrollTrigger.create({
+          trigger: item, start: sel === ".ev-node-bloom" ? "top 64%" : "top 70%",
+          onEnter: () => open.play(), onLeaveBack: () => open.reverse(),
+        });
       }
 
       gsap.from(item.querySelectorAll(".ev-reveal"), {
@@ -88,16 +80,11 @@ export default function Events() {
     gsap.set(photos, { clipPath: "inset(100% 0% 0% 0%)", zIndex: 0 });
     gsap.set(photos[0], { clipPath: "inset(0% 0% 0% 0%)", zIndex: 1 });
 
-    // Desktop corner flower blooming animation: only the corner of the flower blossoms on scroll
-    const bloomCornerFlower = () => {
-      const blossom = q(".ev-stage-blossom")[0];
-      if (!blossom) return;
-      gsap.killTweensOf(blossom);
-      gsap.fromTo(blossom,
-        { scale: 0.2, rotation: -35, opacity: 0.25, transformOrigin: "50% 50%" },
-        { scale: 1, rotation: 0, opacity: 1, duration: 1.1, ease: "back.out(1.5)" }
-      );
-    };
+    // the frame's corner flower opens again each time the photograph changes
+    const cornerEl = q(".ev-stage-bloom")[0];
+    const corner = cornerEl ? bloomTimeline(cornerEl, 1.25) : null;
+    corner?.progress(1);
+    const bloomCornerFlower = () => corner?.restart();
 
     let current = 0;
     const show = (i: number) => {
@@ -166,9 +153,9 @@ export default function Events() {
                 </div>
               ))}
             </div>
-            <img src="/assets/img/botanical-gold-frame-stem.webp" className="ev-frame-overlay" alt="" aria-hidden="true" />
+            <img src={FRAME} className="ev-frame-overlay" alt="" aria-hidden="true" />
             <div className="ev-corner-bloom" aria-hidden="true">
-              <img src="/assets/img/corner-blossom.webp" className="ev-stage-blossom" alt="" />
+              <Bloom src="/assets/img/corner-blossom.webp" className="ev-stage-bloom" />
             </div>
           </div>
           <p className="ev-caption caption">
@@ -196,15 +183,15 @@ export default function Events() {
             return (
               <li key={e.id} className="ev-item">
                 <div className="ev-timeline-node" aria-hidden="true">
-                  <img src="/assets/img/corner-blossom.webp" className="ev-node-blossom" alt="" />
+                  <Bloom src={NODE_FLOWER} className="ev-node-bloom" />
                 </div>
                 <figure className="ev-inline ev-botanical-frame" data-reveal="mask">
                   <div className="ev-inline-inner">
-                    <Pic src={photo.src} alt={photo.alt} inner />
+                    <Pic src={photo.src} alt={photo.alt} className="ev-inline-photo" />
                   </div>
-                  <img src="/assets/img/botanical-gold-frame-stem.webp" className="ev-frame-overlay" alt="" aria-hidden="true" />
+                  <img src={FRAME} className="ev-frame-overlay" alt="" aria-hidden="true" />
                   <div className="ev-corner-bloom" aria-hidden="true">
-                    <img src="/assets/img/corner-blossom.webp" className="ev-inline-blossom" alt="" />
+                    <Bloom src="/assets/img/corner-blossom.webp" className="ev-inline-bloom" />
                   </div>
                 </figure>
                 <p className="ev-label eyebrow ev-reveal">

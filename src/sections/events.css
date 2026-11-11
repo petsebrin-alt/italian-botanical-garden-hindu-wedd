@@ -14,15 +14,17 @@
   .ev-stage-wrap {
     display: grid;
     position: sticky;
-    top: calc(50vh - min(36vw, 70vh) / 2);
+    top: calc(50vh - (min(36vw, 62vh) * 1.2133 + 64px) / 2);
     align-self: start;
     justify-items: center;
     gap: 14px;
   }
 }
+/* the frame (botanical-gold-frame-wide, 844 x 1024) and its photo window: each photograph fills
+ * exactly the window (80..742 x 106..913), so nothing of it is hidden behind the frame */
 .ev-stage {
-  width: min(32vw, 54vh);
-  aspect-ratio: 686 / 1024;
+  width: min(36vw, 62vh);
+  aspect-ratio: 844 / 1024;
   position: relative;
   background: transparent;
   box-shadow: none;
@@ -33,8 +35,8 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  -webkit-mask-image: url(/assets/img/botanical-gold-frame-mask.png);
-  mask-image: url(/assets/img/botanical-gold-frame-mask.png);
+  -webkit-mask-image: url(/assets/img/botanical-gold-frame-wide-mask.png);
+  mask-image: url(/assets/img/botanical-gold-frame-wide-mask.png);
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   background: var(--beige);
@@ -50,7 +52,7 @@
   z-index: 5;
   filter: drop-shadow(0 6px 18px rgba(41, 69, 53, 0.18));
 }
-.ev-photo { position: absolute; inset: 0; }
+.ev-photo, .ev-inline-photo { position: absolute; left: 9%; right: 11.6%; top: 9.9%; bottom: 10.4%; }
 .ev-photo picture, .ev-photo img { width: 100%; height: 100%; }
 .ev-photo img { object-fit: cover; }
 .ev-caption { position: relative; height: 1.4em; width: 100%; text-align: center; color: var(--gold-ink); }
@@ -77,59 +79,50 @@
 @media (min-width: 1024px) { .ev-vine { left: 14px; } }
 
 .ev-item { position: relative; display: grid; justify-items: start; gap: 8px; }
+/* the flower on the timeline: a real hydrangea that opens as its celebration arrives */
 .ev-timeline-node {
   position: absolute;
-  left: -48px;
-  top: -2px;
-  width: 36px;
-  height: 36px;
+  left: -54px;
+  top: -9px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fffdfa 40%, #fbf5eb 100%);
-  border: 1.5px solid var(--gold);
-  box-shadow: 0 2px 10px rgba(122, 94, 42, 0.22), 0 0 0 4px var(--ivory);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: radial-gradient(circle, #fffdfa 55%, #f6efe2 100%);
+  border: 1px solid rgb(196 166 106 / 0.75);
+  box-shadow: 0 2px 10px rgba(122, 94, 42, 0.18), 0 0 0 4px var(--ivory);
+  display: grid;
+  place-items: center;
   z-index: 3;
-  overflow: hidden;
 }
 @media (min-width: 1024px) {
-  .ev-timeline-node {
-    left: -56px;
-    width: 38px;
-    height: 38px;
-    top: -2px;
-  }
+  .ev-timeline-node { left: -65px; width: 58px; height: 58px; top: -12px; }
 }
-.ev-node-blossom {
-  width: 84%;
-  height: 84%;
-  object-fit: contain;
-  display: block;
-}
+.ev-node-bloom { width: 112%; height: 112%; filter: drop-shadow(0 2px 3px rgb(90 50 60 / 0.25)); }
+
+/* Bloom: one photograph, stacked as the flower's heart, middle and outer petals */
+.bloom { position: relative; display: block; will-change: transform; }
+.bloom-l { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; will-change: transform, opacity; }
+.bloom-l--core { -webkit-mask-image: radial-gradient(circle closest-side, #000 30%, transparent 37%); mask-image: radial-gradient(circle closest-side, #000 30%, transparent 37%); }
+.bloom-l--mid { -webkit-mask-image: radial-gradient(circle closest-side, transparent 30%, #000 37%, #000 60%, transparent 67%); mask-image: radial-gradient(circle closest-side, transparent 30%, #000 37%, #000 60%, transparent 67%); }
+.bloom-l--outer { -webkit-mask-image: radial-gradient(circle closest-side, transparent 60%, #000 67%); mask-image: radial-gradient(circle closest-side, transparent 60%, #000 67%); }
 
 .ev-corner-bloom {
   position: absolute;
-  left: 23.8%;
+  left: 19.35%;
   top: 20.9%;
-  width: 20.3%;
+  width: 16.5%;
   aspect-ratio: 1 / 1;
   translate: -50% -50%;
   pointer-events: none;
   z-index: 6;
   filter: drop-shadow(0 4px 10px rgba(41, 69, 53, 0.22));
 }
-.ev-stage-blossom, .ev-inline-blossom {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-}
+.ev-stage-bloom, .ev-inline-bloom { width: 100%; height: 100%; }
 
 .ev-inline {
   width: 100%;
-  max-width: 440px;
-  aspect-ratio: 686 / 1024;
+  max-width: 460px;
+  aspect-ratio: 844 / 1024;
   margin: 0 0 10px;
   position: relative;
   background: transparent;
@@ -141,20 +134,13 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  -webkit-mask-image: url(/assets/img/botanical-gold-frame-mask.png);
-  mask-image: url(/assets/img/botanical-gold-frame-mask.png);
+  -webkit-mask-image: url(/assets/img/botanical-gold-frame-wide-mask.png);
+  mask-image: url(/assets/img/botanical-gold-frame-wide-mask.png);
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   box-shadow: var(--shadow-card);
 }
-.ev-inline-inner picture,
-.ev-inline-inner img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.ev-inline-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
 @media (min-width: 1024px) { .ev-inline { display: none; } }
 
 .ev-label { color: var(--gold-ink); }

@@ -6,19 +6,10 @@ import { clock, weekdayDate } from "@/lib/dates";
 import { gsap, scrub, tokens } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import { Sprite } from "@/components/Pic";
+import { CrystalCurtain, type AtlasMeta } from "./crystal-curtain";
+import atlasMeta from "../../public/assets/img/crystal-atlas.json";
 import "./ceremony.css";
 
-/** Realistic beaded crystal, pearl, and butterfly curtain half hanging full section height. */
-function CrystalCurtain({ side }: { side: "l" | "r" }) {
-  return (
-    <img
-      src={`/assets/img/crystal-curtain-${side}.webp`}
-      className={`crys crys--${side} jas--${side}`}
-      alt=""
-      aria-hidden="true"
-    />
-  );
-}
 
 /** Rustic Italian floral window with 3D opening shutters, flying butterfly, and couple reveal. */
 function FloralWindow() {
@@ -130,28 +121,48 @@ export default function Ceremony() {
   const c = wedding.ceremony;
   const event = wedding.events.find((e) => e.type === "ceremony");
   const ref = useScene<HTMLElement>((root, q, tier) => {
-    if (tier === "C") return;
+    // the crystal curtain, drawn live from the real crystals (crystal-curtain.ts)
+    const canvas = q(".crys-canvas")[0] as HTMLCanvasElement;
+    const atlas = new Image();
+    atlas.decoding = "async";
+    atlas.src = "/assets/img/crystal-atlas.webp";
+    let curtain: CrystalCurtain | null = null;
+    const pending = { wave: 0, open: 0 };
+    let alive = true;
+    atlas.decode().catch(() => undefined).then(() => {
+      if (!alive) return;
+      curtain = new CrystalCurtain(canvas, atlas, atlasMeta as AtlasMeta, tier === "C");
+      curtain.state = pending;
+      curtain.draw();
+    });
+    const cleanup = () => { alive = false; curtain?.destroy(); };
+    if (tier === "C") return cleanup;
+
     const mobile = window.innerWidth < 768;
     const vw = window.innerWidth, vh = window.innerHeight;
+    void vw;
     const tl = gsap.timeline({
       defaults: { ease: "none" },
       scrollTrigger: {
         trigger: q(".cer-stage")[0],
         start: "top top",
-        end: `+=${(mobile ? 1.1 : 1.3) * vh}`,
+        end: `+=${(mobile ? 1.5 : 1.8) * vh}`,
         pin: true,
         scrub: scrub(),
         anticipatePin: 1,
       },
     });
-    tl.to(q(".jas--l"), { x: -(mobile ? 0.72 : 0.62) * vw, rotation: -2, y: -0.04 * vh, ease: "power1.in", duration: 0.35 }, 0)
-      .to(q(".jas--r"), { x: (mobile ? 0.72 : 0.62) * vw, rotation: 2, y: -0.04 * vh, ease: "power1.in", duration: 0.35 }, 0)
+    // the curtain ripples first, then its strands are drawn open to both sides
+    tl.to(pending, { wave: 1, duration: 0.16, ease: "sine.inOut" }, 0)
+      .to(pending, { open: 1, duration: 0.42, ease: "power1.inOut" }, 0.15)
+      .to(pending, { wave: 0.2, duration: 0.25, ease: "sine.inOut" }, 0.42)
       .fromTo(q(".cer-window-wrap"), { scale: 1.08, y: 0.04 * vh }, { scale: 1, y: 0, ease: "power2.out", duration: 0.45 }, 0.08)
       .fromTo(q(".cer-garden"), { scale: 1.05 }, { scale: 1, duration: 0.55 }, 0)
       .fromTo(q(".diya-glow"), { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 0.12, stagger: { each: 0.03, from: "center" } }, 0.35)
       .fromTo(q(".cer-petal"), { y: -0.15 * vh }, { y: 1.1 * vh, rotation: (i: number) => 140 + i * 37, x: (i: number) => (i % 2 ? 1 : -1) * 0.05 * vw, duration: 0.4, stagger: 0.012 }, 0.35)
       .from(q(".cer-text > *"), { y: 30, autoAlpha: 0, duration: 0.1, stagger: 0.03, ease: tokens.ease.reveal }, 0.4)
       .to({}, { duration: 0.15 });
+    return cleanup;
   });
 
   return (
@@ -188,8 +199,7 @@ export default function Ceremony() {
             </svg>
           ))}
         </div>
-        <CrystalCurtain side="l" />
-        <CrystalCurtain side="r" />
+        <canvas className="crys-canvas" aria-hidden="true" />
       </div>
     </section>
   );

@@ -80,6 +80,20 @@ Seven photographs of the couple on a curved lens carousel (`src/sections/Memorie
 python3 tools/build_memories.py        # writes public/assets/img/memory-1..7.webp/.avif
 ```
 
+## Celebrations: photographs and flowers
+
+Each celebration's photograph shows its whole scene and its sign. `tools/build_events.py` cuts each one from `assets-src/botanical/ref-events.webp` to the exact shape of the frame's window, and widens the gold botanical frame through its plain middle (its flowers and curves are untouched) so the window fits the photographs.
+
+The flower on the timeline is a real pink hydrangea (`bloom-hydrangea.webp`). It opens as its celebration scrolls into view and closes again going back: its heart first, then each ring of florets unfurling outward (`src/components/Bloom.tsx`). To use another flower, replace `NODE_FLOWER` in `src/sections/Events.tsx` with any flower photo on a transparent background.
+
+## Crystal curtain
+
+The bead curtain over the ceremony window is drawn live (`src/sections/crystal-curtain.ts`) from the real crystals of `assets-src/botanical/ref-crystal-curtain.webp`. Each crystal is cut at no more than its photographed size, so the curtain stays sharp on any screen. It hangs from the rose-gold rod at the top of the section to its foot. Each crystal glows softly and catches the light in small glints, more often while it moves. Scrolling into the section ripples the strands, then draws them open to both sides, the lower beads trailing behind the top.
+
+```bash
+python3 tools/build_crystals.py        # writes public/assets/img/crystal-atlas.webp + .json
+```
+
 ## Venue, RSVP and Need Help
 
 - **Venue:** the villa in a wide arch with a Location button, and the travel notes as tiles. Set `venue.name` and `venue.address` and the Location buttons (here and in Celebrations) point at the villa.

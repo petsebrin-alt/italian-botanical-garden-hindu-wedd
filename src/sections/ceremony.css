@@ -443,31 +443,13 @@
 .cer-petal { position: absolute; top: 0; will-change: transform; }
 
 /* Full-Height Crystal Curtain: spans 100% of the section height from top to lawn */
-.crys {
+/* the crystal curtain: one canvas over the whole stage, top to foot (crystal-curtain.ts) */
+.crys-canvas {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  width: 52%;
-  object-fit: fill;
   pointer-events: none;
   z-index: 10;
-  will-change: transform;
-  transform-origin: 50% 0%;
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.28));
 }
-.crys--l {
-  left: 0;
-  object-position: top right;
-}
-.crys--r {
-  right: 0;
-  object-position: top left;
-}
-@media (min-width: 1024px) {
-  .crys {
-    height: 100%;
-    width: 52%;
-  }
-}
-[data-tier="C"] .crys { display: none; }
+[data-tier="C"] .crys-canvas { display: none; }
