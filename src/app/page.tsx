@@ -7,7 +7,6 @@ import Events from "@/sections/Events";
 import Memories from "@/sections/Memories";
 import Ceremony from "@/sections/Ceremony";
 import Family from "@/sections/Family";
-import DressCode from "@/sections/DressCode";
 import Venue from "@/sections/Venue";
 import Wishes from "@/sections/Wishes";
 import Help from "@/sections/Help";
@@ -27,9 +26,8 @@ export default function Page() {
         <Events />
         <Ceremony />
         <Family />
-        <DressCode />
-        <Venue />
         <Wishes />
+        <Venue />
         <Help />
         <ThankYou />
       </main>

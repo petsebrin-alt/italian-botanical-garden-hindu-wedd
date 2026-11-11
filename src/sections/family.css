@@ -1,56 +1,81 @@
-/* S09 · Family */
-/* the fields band (--fields tall) lies below the names, never behind them */
-.family { overflow: clip; --fields: clamp(150px, 19vw, 300px); padding-bottom: calc(var(--fields) * 0.82 + clamp(2rem, 4vw, 4rem)); }
-
-/* the garden around the families: wisteria above, the fields and hydrangeas below */
-.fam-scene { position: absolute; inset: 0; pointer-events: none; }
-.fam-meadow {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: var(--fields);
-  -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent);
-  mask-image: linear-gradient(180deg, #000 72%, transparent);
+/* S09 · Family: one screen tall on the ivory paper (Family.tsx pins it while the camera comes
+ * closer). Back to front: the families, the hydrangeas, the wisteria. */
+.family {
+  position: relative;
+  height: 100vh;
+  height: 100lvh;
+  min-height: 620px;
+  overflow: clip;
+  /* each oval frame: fits the screen's width and its height */
+  --frame: min(290px, 25vw, 35vh);
 }
-.fam-fields, .fam-fields img { display: block; width: 100%; height: 100%; }
-.fam-fields img { object-fit: cover; object-position: 50% 0%; }
-/* (each sized by its image's own proportions, so it has a box before it loads: a lazy image
- * with no height sits outside the clipped section and would never be fetched) */
-.fam-vine { top: -2%; width: clamp(180px, 21vw, 400px); height: auto; aspect-ratio: 612 / 579; }
-.fam-vine--l { left: -3%; transform-origin: 0% 0%; }
-.fam-vine--r { right: -3%; transform-origin: 100% 0%; }
-.fam-head { position: relative; z-index: 1; display: grid; gap: 6px; margin-bottom: clamp(3rem, 7vw, 4.5rem); }
-.fam-bloom { bottom: -2%; width: clamp(200px, 25vw, 440px); height: auto; aspect-ratio: 562 / 423; }
+
+.fam-scene { position: absolute; inset: 0; pointer-events: none; }
+/* (each sprite is sized by its image's own proportions, so it has a box before it loads: a lazy
+ * image with no height sits outside the clipped section and would never be fetched) */
+.fam-bloom { bottom: -3%; width: clamp(200px, 25vw, 460px); height: auto; aspect-ratio: 562 / 423; z-index: 4; }
 .fam-bloom--l { left: -3vw; }
 .fam-bloom--r { right: -3vw; }
+.fam-vine { top: -2%; width: clamp(190px, 23vw, 440px); height: auto; aspect-ratio: 612 / 579; z-index: 5; }
+.fam-vine--l { left: -3%; }
+.fam-vine--r { right: -3%; }
 
-.fam-grid { position: relative; z-index: 1; display: grid; justify-items: center; gap: 0; }
-@media (min-width: 900px) { .fam-grid { grid-template-columns: 1fr minmax(80px, 160px) 1fr; align-items: center; } }
+/* the heading and the families, centred in the space under the menu */
+.fam-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(0.8rem, 3vh, 2rem);
+  padding: calc(var(--nav-h) + 1vh) 16px 9vh;
+}
+.fam-head { display: grid; gap: 4px; }
+.fam-head .script { font-size: clamp(2.5rem, 1.4rem + 4.4vw, 4.6rem); }
 
-.fam-card { position: relative; width: min(78vw, 340px); display: grid; justify-items: center; gap: clamp(14px, 2vw, 22px); color: var(--gold-ink); }
-/* the oval beaded frame, hung on the wall with its own soft shadow */
+.fam-grid {
+  display: grid;
+  grid-template-columns: var(--frame) minmax(70px, 170px) var(--frame);
+  align-items: center;
+  justify-items: center;
+  column-gap: clamp(0.5rem, 2.5vw, 2.5rem);
+}
+.fam-card { position: relative; width: var(--frame); display: grid; justify-items: center; gap: clamp(8px, 1.6vh, 16px); color: var(--gold-ink); }
+/* the oval beaded frame, with its own soft shadow */
 .fam-photo {
   display: block;
-  will-change: transform;
   width: 100%;
   height: auto;
+  will-change: transform;
   filter: drop-shadow(0 16px 18px rgb(60 44 20 / 0.26)) drop-shadow(0 2px 3px rgb(60 44 20 / 0.18));
 }
-.fam-wisteria { top: 6%; left: 18%; width: 12%; }
-.fam-card--groom .fam-wisteria { left: auto; right: 16%; width: 15%; }
-.fam-body { position: relative; display: grid; justify-items: center; gap: 8px; text-align: center; }
+.fam-body { position: relative; display: grid; justify-items: center; gap: 4px; text-align: center; }
 .fam-body .eyebrow { color: var(--botanical); }
-.fam-names { display: grid; justify-items: center; gap: 0; font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.4rem); line-height: 1.1; color: var(--forest); }
+.fam-names {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0 0.3em;
+  white-space: nowrap;
+  font-size: clamp(1.15rem, 0.8rem + 1vw, 1.65rem);
+  line-height: 1.15;
+  color: var(--forest);
+}
 .fam-amp { font-family: var(--font-script), serif; text-transform: none; font-size: 1.1em; color: var(--rose-ink); line-height: 1; }
 
-.fam-link { width: 2px; height: 90px; overflow: visible; }
+.fam-link { width: 100%; height: 60px; overflow: visible; }
 .fam-link path { fill: none; stroke: var(--gold-ink); stroke-width: 1.4; }
-@media (max-width: 899px) {
-  .fam-link { width: 60px; height: 110px; rotate: 90deg; margin-block: -10px; }
-}
-@media (min-width: 900px) { .fam-link { width: 100%; height: 60px; } }
-@media (max-width: 560px) {
+
+/* phones: the two frames side by side, the names beneath them stacked */
+@media (max-width: 699px) {
+  .family { --frame: min(42vw, 30vh); }
+  .fam-grid { grid-template-columns: var(--frame) var(--frame); column-gap: clamp(10px, 4vw, 20px); }
+  .fam-link { display: none; }
+  .fam-names { display: grid; justify-items: center; gap: 0; font-size: 1.15rem; }
+  .fam-body .eyebrow { font-size: 0.56rem; letter-spacing: 0.1em; }
   .fam-vine { width: 40vw; }
-  .fam-bloom { width: 46vw; }
+  .fam-bloom { width: 42vw; }
   .fam-bloom--l { left: -6vw; }
   .fam-bloom--r { right: -6vw; }
 }

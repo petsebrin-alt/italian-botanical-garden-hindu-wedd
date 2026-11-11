@@ -157,7 +157,7 @@ export const wedding = {
    */
   help: {
     faqs: [
-      { q: "What should I wear?", a: "Each celebration has its own colours, from sunny yellow at the Haldi to champagne and midnight at the Reception. The Dress Code section has the palettes. The lawns are grass and gravel, so comfortable heels or flats are wise.", link: { href: "#dress-code", label: "See the dress code" } },
+      { q: "What should I wear?", a: "Each celebration has its own colours, from sunny yellow at the Haldi to champagne and midnight at the Reception. The lawns are grass and gravel, so comfortable heels or flats are wise." },
       { q: "Which airport should I fly into?", a: "Florence (FLR) and Pisa (PSA) are the closest. Long-haul flights often connect through Rome (FCO) or Milan (MXP)." },
       { q: "How do I get to the villa?", a: "Transfer details between the hotels and the villa will be shared closer to the date. A hire car is useful for exploring the hills." },
       { q: "Do I need a visa?", a: "If you need a Schengen visa, please apply well in advance. Italy uses the euro and type C, F and L plugs." },

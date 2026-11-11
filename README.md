@@ -27,7 +27,7 @@ On the next build, these update automatically:
 - the hero, monogram initials, page title and OG data
 - the countdown and calendar files
 - the event timeline, including its node count and curved connectors
-- the dress-code cards and RSVP event choices
+- the RSVP event choices
 - the menu
 
 Rules:
@@ -70,7 +70,7 @@ The ironwork is keyed so the sky shows between the bars. Where the bow and vines
 
 ## Page order
 
-Gate → Opening (sky, monogram, names) → Save the Date (in the garden) → The Couple → Sweet Memories → Celebrations → Ceremony (garden window invitation) → Family → Dress Code → Venue → Wishes → Need Help → Thank You.
+Gate → Opening (sky, monogram, names) → Save the Date (in the garden) → The Couple → Sweet Memories → Celebrations → Ceremony (garden window invitation) → Our Families → Wishing Wall → Venue → Need Help → Thank You.
 
 ## Sweet Memories
 
@@ -197,7 +197,9 @@ As the section scrolls in, the bride's arched portrait comes in from the left ed
 
 ## Our Families
 
-The parents' portraits hang in oval beaded frames, the bride's family on the left and the groom's on the right, joined by a drawn garland (`src/sections/Family.tsx`). The section has a garden of its own, like The Couple: wisteria above, the Tuscan fields and hydrangeas below. With the scroll, the bride's family's frame comes in from the left edge of the screen and the groom's from the right, while each layer moves at its own depth (the wisteria comes down, the heading and the fields lag, the frames float a little ahead, the hydrangeas rise). Scrolling back up plays it in reverse. The frames are cut from `assets-src/family/ref-parents.webp`: each oval is found from its green frame and cut cleanly on it, leaving the white sheet and its shadow behind (the page draws its own soft shadow).
+The parents' portraits, in oval beaded frames joined by a drawn garland, are set in layers on the ivory paper, like the opening (`src/sections/Family.tsx`): wisteria overhead, the families, and hydrangeas in front. As the section scrolls up into view, every layer rises at its own speed, and the bride's family's frame comes in from the left edge while the groom's comes in from the right. The section then holds on screen while the camera comes closer: the wisteria and the hydrangeas grow and part to the sides, the frames come nearer and the garland draws itself between them. Both parts follow the scroll, so scrolling back up plays them in reverse. On phones the two frames sit side by side.
+
+The frames are cut from `assets-src/family/ref-parents.webp`: each oval is found from its green frame and cut cleanly on it, leaving the white sheet and its shadow behind (the page draws its own soft shadow).
 
 ```bash
 python3 tools/build_parents.py         # writes public/assets/img/family-bride.webp, family-groom.webp

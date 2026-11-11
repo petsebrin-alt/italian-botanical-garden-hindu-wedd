@@ -10,9 +10,8 @@ const LINKS = [
   { href: "#couple", label: "The Couple" },
   { href: "#memories", label: "Memories" },
   { href: "#events", label: "Celebrations", needs: "events" },
-  { href: "#dress-code", label: "Dress Code" },
-  { href: "#venue", label: wedding.venue.name || "The Villa" },
   { href: "#wishes", label: "Wishes" },
+  { href: "#venue", label: wedding.venue.name || "The Villa" },
   { href: "#help", label: "Help" },
 ];
 
