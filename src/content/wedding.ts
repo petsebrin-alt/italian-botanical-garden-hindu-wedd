@@ -152,6 +152,20 @@ export const wedding = {
     hotels: [] as { name: string; distance: string; price: string; url?: string; code?: string }[],
   },
   /**
+   * S · The wishing booth. Guests' wishes stack up as cards; until there are a few, these cards
+   * from the couple keep the booth company (they sit under the real wishes and leave once five
+   * guests have written). Every guest wish waits for the couple's approval in /studio.
+   */
+  wishBooth: {
+    prompts: [
+      { message: "Every wish you leave here, we will keep, and read again on each anniversary.", name: "Janvi & Rohit" },
+      { message: "A blessing for the journey we begin together…", name: "Waiting for your words" },
+      { message: "A wish for our first home…", name: "Waiting for your words" },
+      { message: "Your favourite memory of us…", name: "Waiting for your words" },
+      { message: "Your advice for a long and happy marriage…", name: "Waiting for your words" },
+    ],
+  },
+  /**
    * "Need help?": the questions guests ask most, and who to call. A contact appears once it has a
    * phone number (WhatsApp is offered for it too).
    */

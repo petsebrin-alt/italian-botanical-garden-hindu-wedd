@@ -205,6 +205,12 @@ The frames are cut from `assets-src/family/ref-parents.webp`: each oval is found
 python3 tools/build_parents.py         # writes public/assets/img/family-bride.webp, family-groom.webp
 ```
 
+## The wishing booth
+
+Guests' wishes stand as cards in a booth on a gold ledge (`src/sections/Wishes.tsx`). As the section scrolls, it holds on screen while the newest cards rise one by one and settle on the deck, each at its own small tilt. Then the form comes up beneath it, with just two fields: name and wish. Sending folds the wish into a paper plane, which loops once off the button and flies along a fine gold trail into the booth. The new card lands on top, and the button turns to "Delivered". "View all wishes" opens every wish in a pop-up at the centre of the screen.
+
+The booth holds the latest 25 wishes. Every guest wish waits for the couple's approval in `/studio` before anyone else sees it; the sender sees their own card at once. Until five guests have written, the couple's own cards keep the booth company (`wishBooth.prompts` in `src/content/wedding.ts`).
+
 ## Motion engine
 
 - `src/scenes/hero/`: the opening scene. The camera opens on the sky with the J|R monogram; scrolling writes in the names, descends as every layer rises at its own speed, then steps through the arch. Geometry is pure CSS, so the server render is already the opening frame.

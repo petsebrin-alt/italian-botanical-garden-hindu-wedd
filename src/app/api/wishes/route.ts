@@ -5,11 +5,14 @@ export const dynamic = "force-dynamic";
 
 const PAGE = 12;
 
-/** Approved wishes only: pending ones are never readable from the public site. */
+/** Approved wishes only: pending ones are never readable from the public site. `limit` (up to 50)
+ * sets the page size: the wishing booth holds the latest 25, the "all wishes" view pages by 24. */
 export async function GET(req: Request) {
-  const page = Math.max(0, Number(new URL(req.url).searchParams.get("page") || 0) || 0);
+  const params = new URL(req.url).searchParams;
+  const page = Math.max(0, Number(params.get("page") || 0) || 0);
+  const limit = Math.min(50, Math.max(1, Number(params.get("limit") || PAGE) || PAGE));
   try {
-    const { wishes, more } = await (await getStore()).listWishes({ approvedOnly: true, offset: page * PAGE, limit: PAGE });
+    const { wishes, more } = await (await getStore()).listWishes({ approvedOnly: true, offset: page * limit, limit });
     return Response.json({ ok: true, wishes: wishes.map(({ id, name, relation, message, pinned }) => ({ id, name, relation, message, pinned })), more });
   } catch (e) {
     return storeError(e);

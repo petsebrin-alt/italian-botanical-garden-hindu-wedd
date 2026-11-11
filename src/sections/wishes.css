@@ -1,69 +1,291 @@
-/* S14 · Wishing wall */
-.wishes-head { display: grid; gap: 6px; margin-bottom: clamp(2.5rem, 6vw, 4rem); }
-.wishes-grid { display: grid; gap: clamp(2rem, 5vw, 3.5rem); }
-@media (min-width: 1024px) { .wishes-grid { grid-template-columns: 4fr 7fr; align-items: start; } }
-.wish-form-wrap { position: relative; }
-@media (min-width: 1024px) { .wish-form-wrap { position: sticky; top: calc(var(--nav-h) + 24px); } }
-.wish-form, .wish-thanks { padding: clamp(1.5rem, 4vw, 2.25rem); display: grid; gap: 16px; }
-.wish-thanks { text-align: center; justify-items: center; }
-.wish-consent { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9375rem; cursor: pointer; }
-.wish-consent input { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--forest); }
-
-.wish-wall { columns: 1; column-gap: 18px; }
-@media (min-width: 700px) { .wish-wall { columns: 2; } }
-.wish {
+/* S · The wishing booth: one screen tall (Wishes.tsx pins it while the cards rise). */
+.wishes {
   position: relative;
-  break-inside: avoid;
-  margin: 0 0 18px;
-  padding: 30px 26px 22px;
-  background: #fbf8f0;
-  border: 1px solid rgb(196 166 106 / 0.45);
-  border-radius: 3px;
-  box-shadow: var(--shadow-card);
-  rotate: var(--tilt, 0deg);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  height: 100vh;
+  height: 100lvh;
+  min-height: 660px;
+  overflow: clip;
+  background:
+    radial-gradient(46% 42% at 50% 47%, rgb(250 232 224 / 0.85), rgb(250 232 224 / 0) 72%),
+    radial-gradient(90% 60% at 50% 110%, rgb(226 214 186 / 0.45), rgb(226 214 186 / 0) 70%),
+    var(--ivory);
+  /* each card: fits the screen's width and its height */
+  --card-w: clamp(200px, min(24vw, 35vh), 290px);
 }
-.wish:hover { transform: translateY(-4px); box-shadow: var(--shadow-lift); }
-/* pressed-flower corners: six botanical variants drawn as tiny SVGs */
-.wish::before {
-  content: "";
+.wb-stage {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  align-items: center;
+  gap: clamp(0.6rem, 2vh, 1.4rem);
+  padding: calc(var(--nav-h) + 1.5vh) 16px clamp(1rem, 4vh, 2.6rem);
+}
+
+/* a large, faint word behind the booth */
+.wb-watermark {
   position: absolute;
-  top: -10px;
-  left: -8px;
-  width: 64px;
-  height: 64px;
-  background: no-repeat center / contain;
+  left: 50%;
+  top: 50%;
+  translate: -50% -58%;
+  font-family: var(--font-script), serif;
+  font-size: clamp(6rem, 24vw, 21rem);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--gold);
+  opacity: 0.1;
   pointer-events: none;
+  user-select: none;
 }
-.wish[data-variant="0"]::before, .wish[data-variant="3"]::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M8 56 C 20 40, 30 28, 52 10' fill='none' stroke='%23405A43' stroke-width='1.2'/%3E%3Cg fill='%23A9BBA0'%3E%3Cellipse cx='20' cy='40' rx='7' ry='3' transform='rotate(-50 20 40)'/%3E%3Cellipse cx='32' cy='28' rx='7' ry='3' transform='rotate(-35 32 28)'/%3E%3Cellipse cx='42' cy='18' rx='6' ry='2.6' transform='rotate(-60 42 18)'/%3E%3C/g%3E%3Ccircle cx='52' cy='10' r='5' fill='%23D9A5A0'/%3E%3C/svg%3E");
-}
-.wish[data-variant="1"]::before, .wish[data-variant="4"]::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='%23D9A5A0'%3E%3Ccircle cx='22' cy='22' r='6'/%3E%3Ccircle cx='32' cy='16' r='5'/%3E%3Ccircle cx='16' cy='32' r='5'/%3E%3C/g%3E%3Ccircle cx='22' cy='22' r='2.4' fill='%23C4A66A'/%3E%3Cpath d='M22 22 C 30 34, 40 44, 56 54' stroke='%23405A43' stroke-width='1.1' fill='none'/%3E%3C/svg%3E");
-}
-.wish[data-variant="2"]::before, .wish[data-variant="5"]::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M10 10 C 24 24, 32 40, 34 58' stroke='%23405A43' stroke-width='1.1' fill='none'/%3E%3Cg fill='%23F3EEDF' stroke='%23C4A66A' stroke-width='0.6'%3E%3Cellipse cx='16' cy='16' rx='3' ry='4'/%3E%3Cellipse cx='23' cy='24' rx='3' ry='4'/%3E%3Cellipse cx='28' cy='33' rx='3' ry='4'/%3E%3Cellipse cx='32' cy='43' rx='3' ry='4'/%3E%3C/g%3E%3C/svg%3E");
-}
-.wish[data-variant="3"]::before, .wish[data-variant="4"]::before, .wish[data-variant="5"]::before { left: auto; right: -8px; transform: scaleX(-1); }
-.wish-msg { font-family: var(--font-head), serif; font-style: italic; font-size: 1.1rem; line-height: 1.6; color: var(--forest); }
-.wish-by { margin-top: 12px; font-size: 0.875rem; color: var(--botanical); }
-.wish--mine { border-style: dashed; }
-.wish-seal {
+.wb-head { position: relative; display: grid; gap: 2px; }
+.wb-head .script { font-size: clamp(2.5rem, 1.5rem + 3.6vw, 4.4rem); }
+
+/* ------------------------------------------------------------------ the booth */
+.wb-booth-wrap { position: relative; width: var(--card-w); }
+.wb-booth { position: relative; width: 100%; aspect-ratio: 3 / 3.9; }
+.wb-booth > .wb-card {
   position: absolute;
-  right: 14px;
-  top: -14px;
+  inset: 0;
+  translate: var(--dx, 0) var(--dy, 0);
+  rotate: var(--tilt, 0deg);
+  will-change: transform;
+}
+/* the gold ledge the cards stand in, with its little name plate */
+.wb-ledge {
+  position: absolute;
+  z-index: 200;
+  left: -14%;
+  right: -14%;
+  bottom: -12px;
+  height: 20px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f1dfae 0%, #c9a764 38%, #a17a38 100%);
+  box-shadow: 0 10px 18px -6px rgb(70 50 20 / 0.45), inset 0 1px 0 rgb(255 248 225 / 0.8);
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 64px;
+}
+.wb-ledge::after {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 100%;
+  height: 26px;
+  background: radial-gradient(closest-side, rgb(60 44 20 / 0.28), rgb(60 44 20 / 0));
+}
+.wb-plate {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #4a3714;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgb(255 245 215 / 0.6);
+}
+.wb-glow {
+  position: absolute;
+  z-index: 150;
+  inset: -12%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #b5554d, #8e3a33);
-  color: #f8f4e9;
-  font-size: 0.6875rem;
+  background: radial-gradient(closest-side, rgb(255 241 200 / 0.9), rgb(255 241 200 / 0));
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ a wish card */
+.wb-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11% 10% 12%;
+  text-align: center;
+  border-radius: 8px;
+  background: var(--paper-grain, none), linear-gradient(180deg, var(--c1), var(--c2));
+  box-shadow:
+    0 18px 30px -16px rgb(60 44 20 / 0.45),
+    0 2px 5px rgb(60 44 20 / 0.12),
+    inset 0 0 0 1px rgb(196 166 106 / 0.75),
+    inset 0 0 0 6px var(--c1),
+    inset 0 0 0 7px rgb(196 166 106 / 0.4);
+  --c1: #fffdf6;
+  --c2: #f5ecd8;
+  color: var(--forest);
+  overflow: hidden;
+}
+.wb-card[data-tone="1"] { --c1: #fff8f4; --c2: #f6e4dc; }
+.wb-card[data-tone="2"] { --c1: #fbfcf6; --c2: #e8eedf; }
+.wb-card[data-tone="3"] { --c1: #fffbf0; --c2: #f2e5c6; }
+.wb-card-bloom { width: 22px; height: 22px; color: var(--gold); flex: none; }
+.wb-card-msg {
+  font-family: var(--font-head), serif;
+  font-style: italic;
+  font-size: clamp(0.95rem, 0.78rem + 0.45vw, 1.12rem);
+  line-height: 1.45;
+  color: var(--forest);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
+}
+.wb-card-rule { width: 38%; height: 1px; margin-top: 4px; background: linear-gradient(90deg, transparent, var(--gold), transparent); flex: none; }
+.wb-card-name { font-family: var(--font-script), serif; font-size: clamp(1.45rem, 1.1rem + 0.8vw, 1.85rem); line-height: 1.1; color: var(--gold-ink); }
+.wb-card-rel { font-family: var(--font-body), sans-serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--botanical); }
+.wb-card-tag {
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: #2f6a45;
+  background: rgb(63 125 85 / 0.12);
+}
+/* the couple's cards, there until guests have written */
+.wb-card--prompt .wb-card-msg { color: #6c6a58; }
+.wb-card--prompt .wb-card-name { font-family: var(--font-body), sans-serif; font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--botanical); }
+/* (the couple's own card is signed like a guest's) */
+.wb-card--couple .wb-card-msg { color: var(--forest); }
+.wb-card--couple .wb-card-name { font-family: var(--font-script), serif; font-size: clamp(1.45rem, 1.1rem + 0.8vw, 1.85rem); letter-spacing: 0; text-transform: none; color: var(--gold-ink); }
+
+/* ------------------------------------------------------------------ the form */
+.wb-send { position: relative; z-index: 300; width: min(100%, 720px); display: grid; justify-items: center; gap: 8px; }
+.wb-form {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgb(255 253 247 / 0.94);
+  box-shadow: 0 14px 34px -18px rgb(60 44 20 / 0.5), inset 0 0 0 1px rgb(196 166 106 / 0.6);
+}
+.wb-input {
+  min-width: 0;
+  height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(243 236 220 / 0.7);
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  color: var(--forest);
+  outline: none;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.wb-input::placeholder { color: #8a8672; }
+.wb-input:focus-visible { background: #fffdf7; box-shadow: inset 0 0 0 1.5px var(--gold); }
+.wb-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px #b0473b; }
+.wb-input--name { flex: 0 0 30%; }
+.wb-input--wish { flex: 1; resize: none; padding-top: 13px; line-height: 1.3; overflow: hidden; }
+.wb-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 46px;
+  padding: 0 20px 0 22px;
+  border: 0;
+  border-radius: 999px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  rotate: -6deg;
-  box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.4);
+  white-space: nowrap;
+  color: #fffaf0;
+  background: linear-gradient(180deg, #34513f, #243a2d);
+  box-shadow: 0 8px 18px -8px rgb(30 50 35 / 0.7);
+  cursor: pointer;
+  transition: background 0.4s, transform 0.2s;
 }
-.wish-empty { color: var(--botanical); padding: 40px 0; column-span: all; }
-.wish-more { column-span: all; display: flex; margin: 10px auto 0; }
+.wb-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.wb-btn:disabled { cursor: default; }
+.wb-btn svg { width: 22px; height: 18px; overflow: visible; }
+.wb-btn.is-folding svg, .wb-btn.is-flying svg { opacity: 0; }
+.wb-btn.is-delivered { background: linear-gradient(180deg, #4b8d60, #357049); }
+.wb-msgs { min-height: 1.2em; text-align: center; }
+.wb-error { color: #a8402f; font-size: 0.85rem; }
+.wb-note { color: var(--botanical); font-size: 0.85rem; max-width: 52ch; }
+.wb-view {
+  border: 0;
+  background: none;
+  padding: 6px 4px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+  border-bottom: 1px solid rgb(196 166 106 / 0.7);
+  cursor: pointer;
+}
+.wb-view:hover { color: var(--forest); }
+/* a field for bots only */
+.wb-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ------------------------------------------------------------------ the flight */
+.wb-flight { position: absolute; inset: 0; z-index: 400; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.wb-trail { fill: none; stroke: #9c7a3c; stroke-width: 1.3; stroke-linecap: round; opacity: 0; }
+.wb-plane { opacity: 0; filter: drop-shadow(0 4px 4px rgb(60 44 20 / 0.25)); }
+
+/* ------------------------------------------------------------------ every wish, in a pop-up */
+.wb-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(26 34 28 / 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.wb-modal-panel {
+  position: relative;
+  width: min(100%, 1040px);
+  max-height: min(88vh, 900px);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border-radius: 14px;
+  background: radial-gradient(70% 40% at 50% 0%, rgb(250 232 224 / 0.7), rgb(250 232 224 / 0)), var(--ivory);
+  box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.55), inset 0 0 0 1px rgb(196 166 106 / 0.8), inset 0 0 0 7px var(--ivory), inset 0 0 0 8px rgb(196 166 106 / 0.35);
+  overflow: hidden;
+}
+.wb-close {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(243 236 220 / 0.9);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--forest);
+  cursor: pointer;
+}
+.wb-all-head { padding: clamp(1.4rem, 3.5vh, 2.2rem) 56px 0.6rem; }
+.wb-all-head .script { font-size: clamp(2.2rem, 1.6rem + 2.4vw, 3.4rem); }
+.wb-all-body { overflow-y: auto; overscroll-behavior: contain; padding: 0.6rem clamp(1rem, 3vw, 2.2rem) 2rem; }
+.wb-all-grid { columns: 3 250px; column-gap: 16px; }
+.wb-all-grid .wb-card { break-inside: avoid; margin-bottom: 16px; padding: 22px 20px 20px; }
+.wb-all-grid .wb-card-msg { -webkit-line-clamp: unset; display: block; }
+.wb-all-empty { padding: 3rem 0; color: var(--botanical); }
+
+/* ------------------------------------------------------------------ phones */
+@media (max-width: 699px) {
+  .wishes { --card-w: min(58vw, 31vh); }
+  .wb-form { flex-wrap: wrap; border-radius: 22px; padding: 8px; }
+  .wb-input--name { flex: 1 1 100%; }
+  .wb-input--wish { flex: 1 1 100%; height: 64px; overflow: auto; }
+  .wb-btn { flex: 1 1 100%; justify-content: center; }
+  .wb-card { padding: 10% 9%; gap: 4px; }
+  .wb-card-msg { font-size: 0.86rem; -webkit-line-clamp: 7; }
+  .wb-card-name { font-size: 1.3rem; }
+  .wb-plate { font-size: 0.5rem; letter-spacing: 0.18em; }
+  .wb-note { font-size: 0.78rem; }
+}
