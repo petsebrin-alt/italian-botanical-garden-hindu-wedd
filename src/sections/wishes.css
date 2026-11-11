@@ -1,16 +1,18 @@
-/* S · The wishing booth: one screen tall (Wishes.tsx pins it while the cards rise). */
+/* S · The wishing booth: one screen tall (Wishes.tsx pins it while the cards rise over the big
+ * "Wishing Booth" title), on a soft garden green. */
 .wishes {
   position: relative;
   height: 100vh;
   height: 100lvh;
   min-height: 660px;
   overflow: clip;
-  background:
-    radial-gradient(46% 42% at 50% 47%, rgb(250 232 224 / 0.85), rgb(250 232 224 / 0) 72%),
-    radial-gradient(90% 60% at 50% 110%, rgb(226 214 186 / 0.45), rgb(226 214 186 / 0) 70%),
-    var(--ivory);
-  /* each card: fits the screen's width and its height */
-  --card-w: clamp(200px, min(24vw, 35vh), 290px);
+  background-color: #e3ead8;
+  background-image:
+    radial-gradient(52% 46% at 50% 50%, rgb(246 249 238 / 0.9), rgb(246 249 238 / 0) 75%),
+    radial-gradient(100% 60% at 50% 115%, rgb(178 199 160 / 0.45), rgb(178 199 160 / 0) 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .3 0 0 0 0 .18 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* each card: fits the screen's width and its height (the frame is 640 x 969) */
+  --card-w: clamp(200px, min(25vw, 36vh), 330px);
 }
 .wb-stage {
   position: relative;
@@ -19,31 +21,58 @@
   grid-template-rows: auto 1fr auto;
   justify-items: center;
   align-items: center;
-  gap: clamp(0.6rem, 2vh, 1.4rem);
-  padding: calc(var(--nav-h) + 1.5vh) 16px clamp(1rem, 4vh, 2.6rem);
+  gap: clamp(0.5rem, 1.6vh, 1.2rem);
+  padding: calc(var(--nav-h) + 1.2vh) 16px clamp(1rem, 3.5vh, 2.4rem);
 }
 
-/* a large, faint word behind the booth */
-.wb-watermark {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  translate: -50% -58%;
-  font-family: var(--font-script), serif;
-  font-size: clamp(6rem, 24vw, 21rem);
-  line-height: 1;
-  white-space: nowrap;
-  color: var(--gold);
-  opacity: 0.1;
-  pointer-events: none;
-  user-select: none;
+/* "Leave a blessing", and the hint to scroll (it fades as the cards come up) */
+.wb-head { position: relative; z-index: 2; display: grid; justify-items: center; gap: 6px; }
+.wb-head .eyebrow { color: var(--botanical); }
+.wb-hint {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  font-family: var(--font-head), serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--forest);
+  margin-top: 4px;
 }
-.wb-head { position: relative; display: grid; gap: 2px; }
-.wb-head .script { font-size: clamp(2.5rem, 1.5rem + 3.6vw, 4.4rem); }
+.wb-hint-line { position: relative; width: 1px; height: 26px; background: rgb(64 90 67 / 0.25); overflow: hidden; }
+.wb-hint-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -40%;
+  width: 1px;
+  height: 40%;
+  background: var(--forest);
+  animation: wb-hint 1.8s cubic-bezier(0.6, 0, 0.3, 1) infinite;
+}
+@keyframes wb-hint { to { top: 100%; } }
 
 /* ------------------------------------------------------------------ the booth */
 .wb-booth-wrap { position: relative; width: var(--card-w); }
-.wb-booth { position: relative; width: 100%; aspect-ratio: 3 / 3.9; }
+/* the title, large, behind the cards (they come up over it) */
+.wb-word {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 56%;
+  translate: -50% -50%;
+  margin: 0;
+  font-family: var(--font-head), serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(3.2rem, 12vw, 11.5rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: var(--botanical);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.5);
+  pointer-events: none;
+}
+.wb-booth { position: relative; z-index: 1; width: 100%; aspect-ratio: 640 / 969; }
 .wb-booth > .wb-card {
   position: absolute;
   inset: 0;
@@ -51,104 +80,78 @@
   rotate: var(--tilt, 0deg);
   will-change: transform;
 }
-/* the gold ledge the cards stand in, with its little name plate */
-.wb-ledge {
-  position: absolute;
-  z-index: 200;
-  left: -14%;
-  right: -14%;
-  bottom: -12px;
-  height: 20px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #f1dfae 0%, #c9a764 38%, #a17a38 100%);
-  box-shadow: 0 10px 18px -6px rgb(70 50 20 / 0.45), inset 0 1px 0 rgb(255 248 225 / 0.8);
-  display: grid;
-  place-items: center;
-}
-.wb-ledge::after {
+/* the deck's soft shadow on the page */
+.wb-booth::before {
   content: "";
   position: absolute;
-  left: 4%;
-  right: 4%;
-  top: 100%;
-  height: 26px;
-  background: radial-gradient(closest-side, rgb(60 44 20 / 0.28), rgb(60 44 20 / 0));
-}
-.wb-plate {
-  font-family: var(--font-body), sans-serif;
-  font-size: 0.58rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: #4a3714;
-  white-space: nowrap;
-  text-shadow: 0 1px 0 rgb(255 245 215 / 0.6);
+  left: 6%;
+  right: 6%;
+  bottom: -5%;
+  height: 10%;
+  background: radial-gradient(closest-side, rgb(40 60 40 / 0.28), rgb(40 60 40 / 0));
+  opacity: var(--shade, 1);
 }
 .wb-glow {
   position: absolute;
   z-index: 150;
-  inset: -12%;
+  inset: -14%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(255 241 200 / 0.9), rgb(255 241 200 / 0));
+  background: radial-gradient(closest-side, rgb(255 250 228 / 0.95), rgb(255 250 228 / 0));
   opacity: 0;
   pointer-events: none;
 }
 
-/* ------------------------------------------------------------------ a wish card */
+/* ------------------------------------------------------------------ a wish card: the scalloped
+ * green frame with its painted flowers, the wish written in the cream space inside it */
 .wb-card {
+  aspect-ratio: 640 / 969;
+  background: url("/assets/img/wish-frame.webp") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 10px 12px rgb(36 56 38 / 0.22)) drop-shadow(0 1px 2px rgb(36 56 38 / 0.2));
+  color: var(--forest);
+  container-type: inline-size;
+}
+/* the writing area, clear of the flowers */
+.wb-card-text {
+  position: absolute;
+  inset: 15% 23% 31%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 11% 10% 12%;
+  gap: 1.6cqw;
   text-align: center;
-  border-radius: 8px;
-  background: var(--paper-grain, none), linear-gradient(180deg, var(--c1), var(--c2));
-  box-shadow:
-    0 18px 30px -16px rgb(60 44 20 / 0.45),
-    0 2px 5px rgb(60 44 20 / 0.12),
-    inset 0 0 0 1px rgb(196 166 106 / 0.75),
-    inset 0 0 0 6px var(--c1),
-    inset 0 0 0 7px rgb(196 166 106 / 0.4);
-  --c1: #fffdf6;
-  --c2: #f5ecd8;
-  color: var(--forest);
   overflow: hidden;
 }
-.wb-card[data-tone="1"] { --c1: #fff8f4; --c2: #f6e4dc; }
-.wb-card[data-tone="2"] { --c1: #fbfcf6; --c2: #e8eedf; }
-.wb-card[data-tone="3"] { --c1: #fffbf0; --c2: #f2e5c6; }
-.wb-card-bloom { width: 22px; height: 22px; color: var(--gold); flex: none; }
 .wb-card-msg {
   font-family: var(--font-head), serif;
   font-style: italic;
-  font-size: clamp(0.95rem, 0.78rem + 0.45vw, 1.12rem);
-  line-height: 1.45;
+  font-size: max(11px, 5.4cqw);
+  line-height: 1.42;
   color: var(--forest);
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 8;
+  -webkit-line-clamp: 7;
   overflow: hidden;
 }
-.wb-card-rule { width: 38%; height: 1px; margin-top: 4px; background: linear-gradient(90deg, transparent, var(--gold), transparent); flex: none; }
-.wb-card-name { font-family: var(--font-script), serif; font-size: clamp(1.45rem, 1.1rem + 0.8vw, 1.85rem); line-height: 1.1; color: var(--gold-ink); }
-.wb-card-rel { font-family: var(--font-body), sans-serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--botanical); }
+.wb-card-rule { width: 46%; height: 1px; margin-top: 1cqw; background: linear-gradient(90deg, transparent, #7f9a6b, transparent); flex: none; }
+.wb-card-name { font-family: var(--font-script), serif; font-size: max(17px, 8.6cqw); line-height: 1.1; color: var(--rose-ink); }
+.wb-card-rel { font-family: var(--font-body), sans-serif; font-size: max(8px, 2.7cqw); letter-spacing: 0.2em; text-transform: uppercase; color: var(--botanical); }
 .wb-card-tag {
-  margin-top: 4px;
-  padding: 3px 10px;
+  margin-top: 1cqw;
+  padding: 2px 8px;
   border-radius: 999px;
   font-family: var(--font-body), sans-serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
+  font-size: max(8px, 2.6cqw);
+  letter-spacing: 0.06em;
   color: #2f6a45;
   background: rgb(63 125 85 / 0.12);
 }
 /* the couple's cards, there until guests have written */
-.wb-card--prompt .wb-card-msg { color: #6c6a58; }
-.wb-card--prompt .wb-card-name { font-family: var(--font-body), sans-serif; font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--botanical); }
+.wb-card--prompt .wb-card-msg { color: #5f6b55; }
+.wb-card--prompt .wb-card-name { font-family: var(--font-body), sans-serif; font-size: max(8px, 2.7cqw); letter-spacing: 0.22em; text-transform: uppercase; color: var(--botanical); }
 /* (the couple's own card is signed like a guest's) */
 .wb-card--couple .wb-card-msg { color: var(--forest); }
-.wb-card--couple .wb-card-name { font-family: var(--font-script), serif; font-size: clamp(1.45rem, 1.1rem + 0.8vw, 1.85rem); letter-spacing: 0; text-transform: none; color: var(--gold-ink); }
+.wb-card--couple .wb-card-name { font-family: var(--font-script), serif; font-size: max(17px, 8.6cqw); letter-spacing: 0; text-transform: none; color: var(--rose-ink); }
 
 /* ------------------------------------------------------------------ the form */
 .wb-send { position: relative; z-index: 300; width: min(100%, 720px); display: grid; justify-items: center; gap: 8px; }
@@ -159,8 +162,8 @@
   gap: 6px;
   padding: 6px;
   border-radius: 999px;
-  background: rgb(255 253 247 / 0.94);
-  box-shadow: 0 14px 34px -18px rgb(60 44 20 / 0.5), inset 0 0 0 1px rgb(196 166 106 / 0.6);
+  background: rgb(252 253 247 / 0.95);
+  box-shadow: 0 14px 34px -18px rgb(36 56 38 / 0.5), inset 0 0 0 1px rgb(127 154 107 / 0.55);
 }
 .wb-input {
   min-width: 0;
@@ -168,15 +171,15 @@
   padding: 0 18px;
   border: 0;
   border-radius: 999px;
-  background: rgb(243 236 220 / 0.7);
+  background: rgb(232 238 223 / 0.75);
   font-family: var(--font-body), sans-serif;
   font-size: 0.95rem;
   color: var(--forest);
   outline: none;
   transition: background 0.2s, box-shadow 0.2s;
 }
-.wb-input::placeholder { color: #8a8672; }
-.wb-input:focus-visible { background: #fffdf7; box-shadow: inset 0 0 0 1.5px var(--gold); }
+.wb-input::placeholder { color: #7d8a74; }
+.wb-input:focus-visible { background: #fdfdf8; box-shadow: inset 0 0 0 1.5px #7f9a6b; }
 .wb-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px #b0473b; }
 .wb-input--name { flex: 0 0 30%; }
 .wb-input--wish { flex: 1; resize: none; padding-top: 13px; line-height: 1.3; overflow: hidden; }
@@ -204,7 +207,9 @@
 .wb-btn:hover:not(:disabled) { transform: translateY(-1px); }
 .wb-btn:disabled { cursor: default; }
 .wb-btn svg { width: 22px; height: 18px; overflow: visible; }
-.wb-btn.is-folding svg, .wb-btn.is-flying svg { opacity: 0; }
+.wb-btn svg path { fill: #fdfcf6; stroke: #c9d4bd; stroke-width: 0.6; stroke-linejoin: round; }
+.wb-btn svg .wb-plane-fold { fill: #a9b99d; }
+.wb-btn.is-folding svg { opacity: 0; }
 .wb-btn.is-delivered { background: linear-gradient(180deg, #4b8d60, #357049); }
 .wb-msgs { min-height: 1.2em; text-align: center; }
 .wb-error { color: #a8402f; font-size: 0.85rem; }
@@ -217,18 +222,21 @@
   font-size: 0.78rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold-ink);
-  border-bottom: 1px solid rgb(196 166 106 / 0.7);
+  color: var(--forest);
+  border-bottom: 1px solid rgb(64 90 67 / 0.5);
   cursor: pointer;
 }
-.wb-view:hover { color: var(--forest); }
+.wb-view:hover { color: var(--rose-ink); }
 /* a field for bots only */
 .wb-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 
-/* ------------------------------------------------------------------ the flight */
+/* ------------------------------------------------------------------ the flight: a pencil line,
+ * drawn by the paper plane as it goes */
 .wb-flight { position: absolute; inset: 0; z-index: 400; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.wb-trail { fill: none; stroke: #9c7a3c; stroke-width: 1.3; stroke-linecap: round; opacity: 0; }
-.wb-plane { opacity: 0; filter: drop-shadow(0 4px 4px rgb(60 44 20 / 0.25)); }
+.wb-trail { fill: none; stroke: #3c4a3b; stroke-opacity: 0.62; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+.wb-plane { opacity: 0; }
+.wb-plane path { fill: #fdfcf6; stroke: #2f3b2f; stroke-width: 1; stroke-linejoin: round; stroke-linecap: round; }
+.wb-plane .wb-plane-fold { fill: #d9dfcc; }
 
 /* ------------------------------------------------------------------ every wish, in a pop-up */
 .wb-modal {
@@ -249,8 +257,8 @@
   display: grid;
   grid-template-rows: auto 1fr;
   border-radius: 14px;
-  background: radial-gradient(70% 40% at 50% 0%, rgb(250 232 224 / 0.7), rgb(250 232 224 / 0)), var(--ivory);
-  box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.55), inset 0 0 0 1px rgb(196 166 106 / 0.8), inset 0 0 0 7px var(--ivory), inset 0 0 0 8px rgb(196 166 106 / 0.35);
+  background: radial-gradient(70% 40% at 50% 0%, rgb(248 251 240 / 0.9), rgb(248 251 240 / 0)), #e3ead8;
+  box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.55), inset 0 0 0 1px rgb(127 154 107 / 0.7), inset 0 0 0 7px #e3ead8, inset 0 0 0 8px rgb(127 154 107 / 0.35);
   overflow: hidden;
 }
 .wb-close {
@@ -262,30 +270,34 @@
   height: 40px;
   border: 0;
   border-radius: 50%;
-  background: rgb(243 236 220 / 0.9);
+  background: rgb(252 253 247 / 0.9);
   font-size: 1.5rem;
   line-height: 1;
   color: var(--forest);
   cursor: pointer;
 }
 .wb-all-head { padding: clamp(1.4rem, 3.5vh, 2.2rem) 56px 0.6rem; }
-.wb-all-head .script { font-size: clamp(2.2rem, 1.6rem + 2.4vw, 3.4rem); }
+.wb-all-head .eyebrow { color: var(--botanical); }
+.wb-all-head h3 { font-family: var(--font-head), serif; font-style: italic; font-weight: 400; font-size: clamp(2rem, 1.4rem + 2.4vw, 3.2rem); color: var(--botanical); }
 .wb-all-body { overflow-y: auto; overscroll-behavior: contain; padding: 0.6rem clamp(1rem, 3vw, 2.2rem) 2rem; }
-.wb-all-grid { columns: 3 250px; column-gap: 16px; }
-.wb-all-grid .wb-card { break-inside: avoid; margin-bottom: 16px; padding: 22px 20px 20px; }
-.wb-all-grid .wb-card-msg { -webkit-line-clamp: unset; display: block; }
+.wb-all-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 18px; }
+.wb-all-grid .wb-card { position: relative; width: 100%; }
+/* in the pop-up the whole wish is there to read (it scrolls inside the frame if it is long) */
+.wb-all-grid .wb-card-text { justify-content: safe center; overflow-y: auto; scrollbar-width: thin; }
+.wb-all-grid .wb-card-msg { -webkit-line-clamp: unset; display: block; overflow: visible; }
 .wb-all-empty { padding: 3rem 0; color: var(--botanical); }
 
 /* ------------------------------------------------------------------ phones */
 @media (max-width: 699px) {
-  .wishes { --card-w: min(58vw, 31vh); }
+  .wishes { --card-w: min(56vw, 29vh); }
+  .wb-word { font-size: 14vw; top: 54%; }
+  .wb-hint { font-size: 0.85rem; }
+  .wb-hint-line { height: 18px; }
   .wb-form { flex-wrap: wrap; border-radius: 22px; padding: 8px; }
   .wb-input--name { flex: 1 1 100%; }
-  .wb-input--wish { flex: 1 1 100%; height: 64px; overflow: auto; }
+  .wb-input--wish { flex: 1 1 100%; height: 52px; overflow: auto; }
   .wb-btn { flex: 1 1 100%; justify-content: center; }
-  .wb-card { padding: 10% 9%; gap: 4px; }
-  .wb-card-msg { font-size: 0.86rem; -webkit-line-clamp: 7; }
-  .wb-card-name { font-size: 1.3rem; }
-  .wb-plate { font-size: 0.5rem; letter-spacing: 0.18em; }
   .wb-note { font-size: 0.78rem; }
+  .wb-msgs { min-height: 2.6em; }
 }
+.wb-word > span { display: inline-block; }

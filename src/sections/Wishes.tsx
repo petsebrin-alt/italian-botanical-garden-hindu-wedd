@@ -28,48 +28,37 @@ function lay(id: string) {
     x ^= x >>> 13; x = Math.imul(x, 0xc2b2ae35); x ^= x >>> 16;
     return ((x >>> 0) / 4294967295) * 2 - 1;
   };
-  return { tilt: r(1) * 6, dx: r(2) * 12, dy: r(3) * 6, tone: Math.floor(((r(4) + 1) / 2) * 3.999) };
+  return { tilt: r(1) * 5, dx: r(2) * 10, dy: r(3) * 6 };
 }
 
-/** A small gold five-petal blossom, the seal at the head of each card. */
-function Blossom() {
-  return (
-    <svg className="wb-card-bloom" viewBox="0 0 26 26" aria-hidden="true" fill="currentColor">
-      {[0, 72, 144, 216, 288].map((r) => (
-        <path key={r} d="M13 13 C 10 9, 10.5 4.5, 13 2.5 C 15.5 4.5, 16 9, 13 13 Z" transform={`rotate(${r} 13 13)`} />
-      ))}
-      <circle cx="13" cy="13" r="2" fill="#fffaf0" />
-    </svg>
-  );
-}
-
-function WishCard({ c, z, still }: { c: Card; z?: number; still?: boolean }) {
+function WishCard({ c, z, still, fresh }: { c: Card; z?: number; still?: boolean; fresh?: boolean }) {
   const s = lay(c.id);
   const style = still ? undefined : ({ "--tilt": `${s.tilt}deg`, "--dx": `${s.dx}px`, "--dy": `${s.dy}px`, zIndex: z } as React.CSSProperties);
   return (
     <article
-      className={`wb-card${c.prompt ? " wb-card--prompt" : ""}${c.couple ? " wb-card--couple" : ""}${c.mine ? " wb-card--mine" : ""}`}
-      data-tone={s.tone}
+      className={`wb-card${c.prompt ? " wb-card--prompt" : ""}${c.couple ? " wb-card--couple" : ""}${c.mine ? " wb-card--mine" : ""}${fresh ? " is-new" : ""}`}
       style={style}
       data-tilt={s.tilt.toFixed(2)} data-dx={s.dx.toFixed(1)} data-dy={s.dy.toFixed(1)}
       aria-hidden={c.prompt || undefined}
     >
-      <Blossom />
-      <p className="wb-card-msg">{c.prompt ? c.message : `“${c.message}”`}</p>
-      <span className="wb-card-rule" aria-hidden="true" />
-      <p className="wb-card-name">{c.name}</p>
-      {c.relation && <p className="wb-card-rel">{c.relation}</p>}
-      {c.mine && <p className="wb-card-tag">Delivered · the couple will read it soon</p>}
+      <div className="wb-card-text">
+        <p className="wb-card-msg">{c.prompt ? c.message : `“${c.message}”`}</p>
+        <span className="wb-card-rule" aria-hidden="true" />
+        <p className="wb-card-name">{c.name}</p>
+        {c.relation && <p className="wb-card-rel">{c.relation}</p>}
+        {c.mine && <p className="wb-card-tag">Delivered</p>}
+      </div>
     </article>
   );
 }
 
-/** The folded paper plane that carries a wish (drawn pointing right, centred on 0,0). */
+/** The folded paper plane that carries a wish, a line drawing (pointing right, centred on 0,0). */
 function Plane() {
   return (
     <g className="wb-plane-art">
-      <path d="M15 0 L-13 -11 L-5 0 L-13 11 Z" fill="#fffdf6" stroke="#8a6a32" strokeWidth="1.1" strokeLinejoin="round" />
-      <path d="M15 0 L-5 0 L-9 6.5 Z" fill="#eadcbc" stroke="#8a6a32" strokeWidth="1" strokeLinejoin="round" />
+      <path className="wb-plane-wing" pathLength={1} d="M15 0 L-11 -9.5 L-3 -0.5 Z" />
+      <path className="wb-plane-wing" pathLength={1} d="M15 0 L-3 -0.5 L-12.5 8.5 Z" />
+      <path className="wb-plane-fold" pathLength={1} d="M15 0 L-3 -0.5 L-5.5 5 Z" />
     </g>
   );
 }
@@ -77,21 +66,63 @@ function Plane() {
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * S · The wishing booth. Guests' wishes stand as cards in a booth on a gold ledge. With the scroll,
- * the newest cards rise one by one and settle on the deck, each at its own small tilt; then the
- * two-field form comes up beneath. Sending folds the wish into a paper plane, which loops once and
- * flies along a fine gold trail into the booth, where the new card lands on top. "View all wishes"
- * opens every wish in a pop-up. Guests' wishes wait for the couple's approval in /studio before
- * anyone else sees them.
+ * The guest's own wishes, kept in their browser: they see them on the booth until the couple have
+ * approved them, and a wish the booth could not take just then (no connection, the database
+ * resting) is sent again quietly, on this visit or the next.
+ */
+type Kept = { id: string; name: string; message: string; at: number; sent: boolean };
+const KEEP = "wb-mine";
+function readKept(): Kept[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(KEEP) || "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+function writeKept(k: Kept[]) {
+  try { localStorage.setItem(KEEP, JSON.stringify(k.slice(-8))); } catch { /* private mode */ }
+}
+
+type Outcome = "ok" | "later" | { error: string; final: boolean };
+/** Send one wish. "later" when the booth cannot be reached; an error only for a wish it refuses. */
+async function post(name: string, message: string, website = ""): Promise<Outcome> {
+  try {
+    const r = await fetch("/api/wishes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, message, consent: true, website }),
+    });
+    if (r.ok) return "ok";
+    if (r.status === 400 || r.status === 422 || r.status === 429) {
+      const d = await r.json().catch(() => ({}));
+      return { error: d.fields?.message || d.fields?.name || d.error || "Please check your wish and try again.", final: r.status !== 429 };
+    }
+    return "later";
+  } catch {
+    return "later";
+  }
+}
+
+/**
+ * S · The wishing booth, on a soft garden green. "Wishing Booth" is written large across the
+ * screen; with the scroll, the section holds and the guests' wish cards (each in its scalloped
+ * green frame with painted flowers) come up one by one over the title and settle into a deck,
+ * each at its own small tilt. Then the two-field form comes up beneath. Sending folds the wish
+ * into a little paper plane (a line drawing), which loops once and flies up over the deck,
+ * drawing a pencil line behind it, and dips into the top of the deck, where the new card is
+ * slipped in. "View all wishes" opens every wish in a pop-up. Guests' wishes wait for the
+ * couple's approval in /studio before anyone else sees them.
  */
 export default function Wishes() {
   const { tier } = useMotion();
   const still = tier === "C";
   const [wishes, setWishes] = useState<Wish[]>([]);
+  const [saved, setSaved] = useState<Card[]>([]);
   const [mine, setMine] = useState<Card[]>([]);
   const [form, setForm] = useState({ name: "", message: "", website: "" });
   const [errors, setErrors] = useState<{ name?: string; message?: string; form?: string }>({});
-  const [phase, setPhase] = useState<"idle" | "folding" | "flying" | "delivered">("idle");
+  const [phase, setPhase] = useState<"idle" | "folding" | "delivered">("idle");
   const [open, setOpen] = useState(false);
 
   const stageRef = useRef<HTMLDivElement>(null);
@@ -100,26 +131,61 @@ export default function Wishes() {
   const trailRef = useRef<SVGPathElement>(null);
   const planeRef = useRef<SVGGElement>(null);
   const viewRef = useRef<HTMLButtonElement>(null);
+  const flushRef = useRef<() => void>(() => {});
 
+  // the approved wishes, then the guest's own (those not yet approved) on top
   useEffect(() => {
     let alive = true;
     fetch(`/api/wishes?limit=${DECK}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (alive && d?.wishes) setWishes(d.wishes); })
-      .catch(() => {});
+      .catch(() => null)
+      .then((d) => {
+        if (!alive) return;
+        const list: Wish[] = d?.wishes ?? [];
+        setWishes(list);
+        const seen = new Set(list.map((w) => `${w.name}\n${w.message}`));
+        setSaved(readKept().filter((k) => !seen.has(`${k.name}\n${k.message}`)).slice(-3)
+          .map((k) => ({ id: k.id, name: k.name, message: k.message, mine: true })));
+      });
     return () => { alive = false; };
   }, []);
 
-  // bottom to top: the couple's cards (while the booth is young), then the wishes, newest on top
+  // wishes that could not be sent yet go again, quietly, every minute while the page is open
+  useEffect(() => {
+    let alive = true, timer = 0, busy = false;
+    const flush = async () => {
+      if (busy) return;
+      busy = true;
+      window.clearTimeout(timer);
+      const done = new Set<string>();
+      for (const k of readKept().filter((x) => !x.sent)) {
+        const r = await post(k.name, k.message);
+        if (r === "ok" || (typeof r === "object" && r.final)) done.add(k.id);
+        else break;
+      }
+      const now = readKept();
+      if (done.size) writeKept(now.map((k) => (done.has(k.id) ? { ...k, sent: true } : k)));
+      busy = false;
+      if (alive && now.some((k) => !k.sent && !done.has(k.id))) timer = window.setTimeout(flush, 60_000);
+    };
+    flushRef.current = () => { window.clearTimeout(timer); timer = window.setTimeout(flush, 60_000); };
+    timer = window.setTimeout(flush, 3000);
+    window.addEventListener("online", flush);
+    return () => { alive = false; window.clearTimeout(timer); window.removeEventListener("online", flush); };
+  }, []);
+
+  // bottom to top: the couple's cards (while the booth is young), the wishes, newest on top, and
+  // the guest's own
   const prompts: Card[] = wishes.length < MIN_WISHES
     ? wedding.wishBooth.prompts.map((p, i) => ({ id: `prompt-${i}`, name: p.name, message: p.message, prompt: true, couple: i === 0 })).reverse()
     : [];
-  const deck: Card[] = [...prompts, ...wishes.slice(0, DECK).reverse()];
+  const deck: Card[] = [...prompts, ...wishes.slice(0, DECK).reverse(), ...saved];
 
   const ref = useScene<HTMLElement>((root, q, t) => {
     if (t === "C") return;
-    const cards = q(".wb-booth > .wb-card:not(.wb-card--mine)") as HTMLElement[];
+    const cards = q(".wb-booth > .wb-card:not(.is-new)") as HTMLElement[];
     const rising = cards.slice(-RISE);
+    const under = cards.slice(0, Math.max(0, cards.length - RISE));
     const tl = gsap.timeline({
       defaults: { ease: "none" },
       scrollTrigger: {
@@ -128,92 +194,139 @@ export default function Wishes() {
         pin: true, scrub: scrub(), anticipatePin: 1, invalidateOnRefresh: true,
       },
     });
-    // each card rises from below the screen and settles on the deck, swinging into its tilt
-    // (GSAP takes over the card's transform, so the tilt and offset are tweened here)
+    // the title stands alone at first; the hint to scroll fades as the first card comes up
+    tl.to(q(".wb-hint"), { autoAlpha: 0, y: -10, duration: 0.5 }, 0);
+    // each card comes up from below the screen, over the title, and settles on the deck, swinging
+    // into its tilt (GSAP takes over the card's transform, so the tilt and offset are tweened here)
     rising.forEach((c, i) => {
       const tilt = Number(c.dataset.tilt), dx = Number(c.dataset.dx), dy = Number(c.dataset.dy);
       tl.fromTo(c,
-        { x: dx, y: () => window.innerHeight * 0.95, rotation: tilt + (i % 2 ? 10 : -10), translate: "none", rotate: "none" },
+        { x: dx, y: () => window.innerHeight * 0.95, rotation: tilt + (i % 2 ? 9 : -9), translate: "none", rotate: "none" },
         { x: dx, y: dy, rotation: tilt, duration: 1, ease: "power2.out" }, i * 0.8);
     });
+    // (the deck's shadow comes with the first card)
+    tl.fromTo(q(".wb-booth"), { "--shade": 0 }, { "--shade": 1, duration: 0.6 }, 0.4);
+    // (the older cards are already in the deck beneath the first one up)
+    if (under.length) tl.fromTo(under, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0.75);
     // then the form comes up beneath the booth
     tl.fromTo(q(".wb-send"), { y: 36, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8, ease: "power2.out" }, Math.max(0, rising.length * 0.8 - 0.2));
   }, [deck.length]);
   useEffect(() => { queueRefresh(); }, [deck.length]);
 
-  // a delivered wish lands on top of the booth
+  // a sent wish is slipped into the top of the deck
   useEffect(() => {
     if (!mine.length || still) return;
-    const card = boothRef.current?.querySelector<HTMLElement>(".wb-card--mine:last-of-type");
+    const card = boothRef.current?.querySelector<HTMLElement>(".wb-card.is-new:last-of-type");
     const glow = boothRef.current?.querySelector<HTMLElement>(".wb-glow");
     if (!card) return;
     const tilt = Number(card.dataset.tilt) * 0.5;
     gsap.fromTo(card,
-      { x: 0, y: -70, scale: 1.08, rotation: tilt + 8, autoAlpha: 0, translate: "none", rotate: "none" },
-      { y: 0, scale: 1, rotation: tilt, autoAlpha: 1, duration: 0.9, ease: "back.out(1.4)" });
+      { x: 0, yPercent: -16, y: 0, scale: 1.03, rotation: tilt - 5, autoAlpha: 0, translate: "none", rotate: "none" },
+      { yPercent: 0, scale: 1, rotation: tilt, autoAlpha: 1, duration: 0.95, ease: "back.out(1.3)" });
     if (glow) gsap.fromTo(glow, { autoAlpha: 0.9, scale: 0.7 }, { autoAlpha: 0, scale: 1.35, duration: 1.3, ease: "power2.out" });
   }, [mine.length, still]);
 
-  /** Where the plane starts (at the button) and where it lands (in the top of the booth), in stage px. */
+  /** The button and the deck, in stage px. */
   const geometry = () => {
     const st = stageRef.current!.getBoundingClientRect();
     const b = btnRef.current!.getBoundingClientRect();
     const d = boothRef.current!.getBoundingClientRect();
     return {
-      S: { x: b.right - st.left - 30, y: b.top - st.top + b.height / 2 },
-      T: { x: d.left - st.left + d.width / 2, y: d.top - st.top + d.height * 0.28 },
+      W: st.width,
+      S: { x: b.right - st.left - 34, y: b.top - st.top + 6 },
+      D: { l: d.left - st.left, r: d.right - st.left, t: d.top - st.top, w: d.width, h: d.height },
     };
   };
   const placePlane = (x: number, y: number, a: number, s: number) =>
-    planeRef.current?.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${a.toFixed(1)}) scale(${s.toFixed(3)})`);
+    planeRef.current?.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${a.toFixed(1)}) scale(${(s * 1.2).toFixed(3)})`);
 
-  /** Folding: the plane takes shape on the button and lifts off it. */
+  /** Folding: the plane is drawn, line by line, just above the button, and lifts off it. */
   const fold = async () => {
     const { S } = geometry();
+    const g = planeRef.current!;
+    const lines = g.querySelectorAll("path");
+    gsap.set(lines, { strokeDasharray: 1, strokeDashoffset: 1, fillOpacity: 0 });
+    gsap.set(g, { autoAlpha: 1 });
     const p = { k: 0 };
-    gsap.set(planeRef.current, { autoAlpha: 1 });
-    await gsap.to(p, {
-      k: 1, duration: 0.75, ease: "back.out(1.6)",
-      onUpdate: () => placePlane(S.x + 8 * p.k, S.y - 26 * p.k, -40 + 30 * p.k, p.k),
-    });
+    placePlane(S.x, S.y, -30, 0.7);
+    await gsap.timeline()
+      .to(lines, { strokeDashoffset: 0, duration: 0.5, stagger: 0.1, ease: "power1.inOut" }, 0)
+      .to(lines, { fillOpacity: 1, duration: 0.3 }, 0.45)
+      .to(p, { k: 1, duration: 0.55, ease: "power2.out", onUpdate: () => placePlane(S.x + 6 * p.k, S.y - 22 * p.k, -30 + 18 * p.k, 0.7 + 0.3 * p.k) }, 0.3);
   };
 
-  /** The flight: one loop, then along a long gold trail into the booth. */
+  /** The flight: one loop above the button, then up beside the deck, over its top, and down into
+   * it, drawing a pencil line behind; once it is in, the line is taken up after it. */
   const fly = async () => {
-    const { S, T } = geometry();
-    const s0 = { x: S.x + 8, y: S.y - 26 };
-    const r = 30, c = { x: s0.x + 44, y: s0.y - 50 };
+    const { W, S, D } = geometry();
+    const p0 = { x: S.x + 6, y: S.y - 22 };
+    const r = 26;
+    const c = { x: Math.min(W - r - 12, p0.x + 34), y: p0.y - 44 };
+    const T = { x: D.l + D.w * 0.5, y: D.t + D.h * 0.05 };
+    const side = Math.min(W - 18, D.r + Math.max(48, D.w * 0.3));
+    const M = { x: side, y: D.t + D.h * 0.3 };
+    const A = { x: T.x + D.w * 0.16, y: Math.max(8, D.t - Math.max(56, D.h * 0.16)) };
     const d = [
-      `M ${s0.x} ${s0.y}`,
-      `C ${s0.x + 22} ${s0.y - 4} ${c.x + r} ${c.y + r * 0.7} ${c.x + r} ${c.y}`,
+      `M ${p0.x} ${p0.y}`,
+      `C ${p0.x + 18} ${p0.y - 2} ${c.x + r} ${c.y + r * 0.8} ${c.x + r} ${c.y}`,
       `A ${r} ${r} 0 1 0 ${c.x - r} ${c.y}`,
       `A ${r} ${r} 0 1 0 ${c.x + r} ${c.y}`,
-      `C ${c.x + r + 150} ${c.y - 60} ${T.x + 90} ${T.y - 260} ${T.x} ${T.y}`,
+      `C ${c.x + r} ${c.y - 80} ${M.x + 10} ${M.y + 110} ${M.x} ${M.y}`,
+      `C ${M.x - 6} ${D.t - 10} ${A.x + 80} ${A.y} ${A.x} ${A.y}`,
+      `C ${A.x - 60} ${A.y} ${T.x - 6} ${T.y - 70} ${T.x} ${T.y}`,
     ].join(" ");
     const path = trailRef.current!;
     path.setAttribute("d", d);
     const L = path.getTotalLength();
-    const TR = 280;
-    path.style.strokeDasharray = `${TR} ${L + TR}`;
+    path.style.strokeDasharray = `${L} ${L}`;
+    path.style.strokeDashoffset = `${L}`;
     gsap.set(path, { autoAlpha: 1 });
     const o = { l: 0 };
     await gsap.to(o, {
-      l: L, duration: 2.5, ease: "power1.inOut",
+      l: L, duration: Math.min(3.2, 1.9 + L / 1400), ease: "sine.inOut",
       onUpdate: () => {
         const pt = path.getPointAtLength(o.l);
         const ah = path.getPointAtLength(Math.min(L, o.l + 2));
-        const ang = Math.atan2(ah.y - pt.y, ah.x - pt.x) * 57.2958;
-        // it dips into the booth at the end of its flight
-        const end = Math.max(0, (o.l - (L - 120)) / 120);
-        placePlane(pt.x, pt.y, ang, 1 - 0.55 * end);
-        path.style.strokeDashoffset = `${TR - o.l}`;
+        const back = path.getPointAtLength(Math.max(0, o.l - 2));
+        const ang = Math.atan2(ah.y - back.y, ah.x - back.x) * 57.2958;
+        // it slips into the deck at the end of its flight
+        const end = Math.max(0, (o.l - (L - 90)) / 90);
+        placePlane(pt.x, pt.y, ang, 1 - 0.6 * end);
+        gsap.set(planeRef.current, { autoAlpha: 1 - 0.9 * end });
+        path.style.strokeDashoffset = `${L - o.l}`;
       },
     });
-    gsap.to(planeRef.current, { autoAlpha: 0, duration: 0.25 });
-    gsap.to(path, { autoAlpha: 0, duration: 0.6, delay: 0.1 });
+    gsap.set(planeRef.current, { autoAlpha: 0 });
+    // the pencil line is taken up from its start, after the plane
+    const e = { a: 0 };
+    gsap.to(e, {
+      a: L, duration: 1.1, ease: "power2.inOut", delay: 0.35,
+      onUpdate: () => {
+        path.style.strokeDasharray = `${Math.max(0, L - e.a)} ${L * 2}`;
+        path.style.strokeDashoffset = `${-e.a}`;
+      },
+      onComplete: () => { gsap.set(path, { autoAlpha: 0 }); },
+    });
   };
 
-  /** When a wish cannot be sent: the plane drifts down and fades. */
+  /** On a phone the keyboard (and the page with it) may have moved the booth: it is brought back
+   * into full view before the plane sets off. */
+  const settle = async () => {
+    const active = document.activeElement as HTMLElement | null;
+    if (active && stageRef.current?.contains(active)) {
+      active.blur();
+      await wait(250);
+    }
+    const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) || 64;
+    const deck = boothRef.current!.getBoundingClientRect();
+    const btn = btnRef.current!.getBoundingClientRect();
+    if (deck.top >= nav && btn.bottom <= window.innerHeight) return;
+    const top = stageRef.current!.parentElement!.getBoundingClientRect().top;
+    window.scrollTo({ top: window.scrollY + top, behavior: still ? "auto" : "smooth" });
+    await wait(still ? 50 : 700);
+  };
+
+  /** When a wish is refused (too short, too many from one place): the plane drifts down and fades. */
   const drop = () => {
     const g = planeRef.current;
     if (!g) return;
@@ -231,52 +344,49 @@ export default function Wishes() {
     if (errs.name || errs.message) return;
 
     setPhase("folding");
-    const send = fetch("/api/wishes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, message, consent: true, website: form.website }),
-    })
-      .then(async (r) => ({ ok: r.ok, data: await r.json().catch(() => ({})) }))
-      .catch(() => ({ ok: false, data: {} as Record<string, unknown> }));
-    const [res] = await Promise.all([send, still ? Promise.resolve() : fold().then(() => wait(150))]);
-    if (!res.ok) {
+    const sending = post(name, message, form.website);
+    await settle();
+    if (!still) await fold();
+    // (a refusal comes back quickly; anything slower simply flies, and is settled after)
+    const early = await Promise.race([sending, wait(still ? 4000 : 900).then(() => null)]);
+    if (early && typeof early === "object" && early.final) {
       if (!still) drop();
-      const d = res.data as { error?: string; fields?: Record<string, string> };
-      setErrors({ form: d.fields?.message || d.fields?.name || d.error || "Something went wrong. Please try again." });
+      setErrors({ form: early.error });
       setPhase("idle");
       return;
     }
-    if (!still) {
-      setPhase("flying");
-      await fly();
-    }
-    setMine((m) => [...m, { id: `mine-${Date.now()}`, name, message, mine: true }]);
+    if (!still) await fly();
+    const id = `mine-${Date.now()}`;
+    setMine((m) => [...m, { id, name, message, mine: true }]);
     setForm({ name: "", message: "", website: "" });
     setPhase("delivered");
+    if (!form.website) {
+      const outcome = await sending;
+      writeKept([...readKept(), { id, name, message, at: Date.now(), sent: outcome === "ok" || (typeof outcome === "object" && outcome.final) }]);
+      if (outcome !== "ok") flushRef.current();
+    }
     await wait(2800);
     setPhase("idle");
   }
 
-  const label = { idle: "Send your wish", folding: "Folding…", flying: "Sending…", delivered: "Delivered" }[phase];
-  const total = wishes.length + mine.length;
+  const label = { idle: "Send your wish", folding: "Folding…", delivered: "Delivered" }[phase];
+  const own = [...saved, ...mine];
+  const total = wishes.length + own.length;
 
   return (
-    <section ref={ref} id="wishes" className="wishes paper" aria-labelledby="wishes-title">
+    <section ref={ref} id="wishes" className="wishes" aria-labelledby="wishes-title">
       <div ref={stageRef} className="wb-stage">
-        <span className="wb-watermark" aria-hidden="true">Blessings</span>
         <header className="center wb-head">
           <p className="eyebrow" data-reveal="fade">Leave a blessing</p>
-          <h2 id="wishes-title" className="script" data-reveal="up">Wishing Booth</h2>
+          {!still && <p className="wb-hint" aria-hidden="true">Scroll down<span className="wb-hint-line" /></p>}
         </header>
 
         <div className="wb-booth-wrap">
+          <h2 id="wishes-title" className="wb-word"><span data-reveal="up">Wishing Booth</span></h2>
           <div ref={boothRef} className="wb-booth">
             {deck.map((c, i) => <WishCard key={c.id} c={c} z={i + 1} still={still} />)}
-            {mine.map((c, i) => <WishCard key={c.id} c={c} z={100 + i} still={still} />)}
+            {mine.map((c, i) => <WishCard key={c.id} c={c} z={100 + i} still={still} fresh />)}
             <span className="wb-glow" aria-hidden="true" />
-          </div>
-          <div className="wb-ledge" aria-hidden="true">
-            <span className="wb-plate">For {wedding.couple.bride.name} &amp; {wedding.couple.groom.name}</span>
           </div>
         </div>
 
@@ -308,21 +418,27 @@ export default function Wishes() {
             {(errors.name || errors.message || errors.form) && <p className="wb-error" role="alert">{errors.name || errors.message || errors.form}</p>}
             {phase === "delivered" && <p className="wb-note">Delivered. {wedding.couple.bride.name} &amp; {wedding.couple.groom.name} will read it, and it joins the booth for everyone soon.</p>}
           </div>
-          {total > 0 && (
-            <button ref={viewRef} type="button" className="wb-view" onClick={() => setOpen(true)}>
-              View all wishes <span aria-hidden="true">→</span>
-            </button>
-          )}
+          {/* (its place is kept while there is nothing to view, so the booth never shifts) */}
+          <button ref={viewRef} type="button" className="wb-view" onClick={() => setOpen(true)} style={total ? undefined : { visibility: "hidden" }}>
+            View all wishes <span aria-hidden="true">→</span>
+          </button>
         </div>
 
         {/* the paper plane's flight, over the whole stage */}
         <svg className="wb-flight" aria-hidden="true">
-          <path ref={trailRef} className="wb-trail" />
+          <defs>
+            {/* a pencil's slight unevenness */}
+            <filter id="wb-pencil" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" seed="3" />
+              <feDisplacementMap in="SourceGraphic" scale="1.6" />
+            </filter>
+          </defs>
+          <path ref={trailRef} className="wb-trail" filter="url(#wb-pencil)" />
           <g ref={planeRef} className="wb-plane"><Plane /></g>
         </svg>
       </div>
 
-      {open && <AllWishes mine={mine} onClose={() => { setOpen(false); viewRef.current?.focus(); }} still={still} />}
+      {open && <AllWishes mine={own} onClose={() => { setOpen(false); viewRef.current?.focus(); }} still={still} />}
     </section>
   );
 }
@@ -397,7 +513,7 @@ function AllWishes({ mine, onClose, still }: { mine: Card[]; onClose: () => void
         <button ref={closeBtn} type="button" className="wb-close" onClick={close} aria-label="Close">×</button>
         <header className="center wb-all-head">
           <p className="eyebrow">The wishing booth</p>
-          <h3 id="wb-all-title" className="script">Every Wish</h3>
+          <h3 id="wb-all-title">Every Wish</h3>
         </header>
         <div className="wb-all-body">
           {cards.length ? (

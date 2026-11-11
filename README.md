@@ -207,9 +207,15 @@ python3 tools/build_parents.py         # writes public/assets/img/family-bride.w
 
 ## The wishing booth
 
-Guests' wishes stand as cards in a booth on a gold ledge (`src/sections/Wishes.tsx`). As the section scrolls, it holds on screen while the newest cards rise one by one and settle on the deck, each at its own small tilt. Then the form comes up beneath it, with just two fields: name and wish. Sending folds the wish into a paper plane, which loops once off the button and flies along a fine gold trail into the booth. The new card lands on top, and the button turns to "Delivered". "View all wishes" opens every wish in a pop-up at the centre of the screen.
+The booth sits on a soft garden green (`src/sections/Wishes.tsx`), with "Wishing Booth" written large across the screen and a "Scroll down" hint above it. As the section scrolls, it holds on screen while the guests' wish cards come up one by one over the title and settle into a deck, each at its own small tilt. Then the form comes up beneath it, with just two fields: name and wish.
 
-The booth holds the latest 25 wishes. Every guest wish waits for the couple's approval in `/studio` before anyone else sees it; the sender sees their own card at once. Until five guests have written, the couple's own cards keep the booth company (`wishBooth.prompts` in `src/content/wedding.ts`).
+Each card is the scalloped green frame with painted flowers (`public/assets/img/wish-frame.webp`, cut from `assets-src/wishes/ref-frame.webp` by `python3 tools/build_wish_frame.py`), with the wish written in the cream space inside it.
+
+Sending draws a little paper plane, line by line, just above the button ("Folding…"). It loops once, then flies up beside the deck and over its top, drawing a pencil line behind it, and dips into the top of the deck. The new card is slipped in on top, and the button turns green: "Delivered". On a phone, the booth first glides back into full view. "View all wishes" opens every wish in a pop-up at the centre of the screen.
+
+The booth holds the latest 25 wishes. Every guest wish waits for the couple's approval in `/studio` before anyone else sees it. Until five guests have written, the couple's own cards keep the booth company (`wishBooth.prompts` in `src/content/wedding.ts`).
+
+A guest's own wishes are kept in their browser (`localStorage`, key `wb-mine`), so they see their cards on the booth until they are approved. If the booth can't be reached when they send (no connection, or no database yet), the wish still flies in and is sent again quietly: every minute while the page is open, and on their next visit. Only a wish the server refuses outright (too short, or too many from one place in an hour) shows a message.
 
 ## Motion engine
 
@@ -234,7 +240,7 @@ RSVPs, wishes and rate limits go through one interface (`src/lib/stores/types.ts
 | Where | Storage |
 |---|---|
 | `DATABASE_URL` (or `POSTGRES_URL`) is set | **Postgres** ([`src/lib/stores/postgres.ts`](src/lib/stores/postgres.ts)): Neon, Supabase or any host. The three tables (`rsvps`, `wishes`, `rate_limits`) are created automatically on the first request; the same SQL can be run by hand. |
-| On Vercel without a database | Nothing is saved: guests get a polite "try again" and the log names the missing variable. |
+| On Vercel without a database | Nothing is saved on the server, and the log names the missing variable. RSVPs get a polite "try again"; a wish is kept in the guest's browser and sent again later (see "The wishing booth"). |
 | Locally without a database | JSON files in `./data` (gitignored), for development. |
 
 ```bash
