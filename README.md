@@ -193,7 +193,15 @@ The countdown is four tear-off calendar pads on gold rings: days, hours, minutes
 
 ## The Couple
 
-The two arched portraits hang on gold cords from a picture rail across the section (`src/sections/Couple.tsx`). The rail draws itself, then the bride's frame glides in from the left and the groom's from the right. Each swings on its cord (a small pendulum simulation): it lags as it speeds up, leans forward as it slows, then rocks to rest. The photograph then comes up in each frame. While scrolling, the layers move at their own depths: the vines come down, the hills lag, the frames float a little ahead and the hydrangeas rise.
+As the section scrolls in, the bride's arched portrait comes in from the left edge of the screen and the groom's from the right, to meet in the middle (`src/sections/Couple.tsx`). Every layer moves at its own depth at the same time: the vines come down, the hills lag, the portraits float a little ahead and the hydrangeas rise. It is tied to the scroll, so scrolling back up plays it in reverse.
+
+## Our Families
+
+The parents' portraits hang in oval beaded frames, the bride's family on the left and the groom's on the right, joined by a drawn garland (`src/sections/Family.tsx`). The frames are cut from `assets-src/family/ref-parents.webp`: each oval is found from its green frame and cut cleanly on it, leaving the white sheet and its shadow behind (the page draws its own soft shadow).
+
+```bash
+python3 tools/build_parents.py         # writes public/assets/img/family-bride.webp, family-groom.webp
+```
 
 ## Motion engine
 

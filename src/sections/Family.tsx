@@ -6,16 +6,13 @@ import { useScene } from "@/lib/scene";
 import { Sprite } from "@/components/Pic";
 import "./family.css";
 
-function ArchFrame() {
-  return (
-    <svg className="fam-frame" viewBox="0 0 320 400" aria-hidden="true" data-reveal="draw">
-      <path d="M 12 396 V 160 A 148 148 0 0 1 308 160 V 396 Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M 24 396 V 164 A 136 136 0 0 1 296 164 V 396" fill="none" stroke="currentColor" strokeWidth="0.7" opacity="0.6" />
-    </svg>
-  );
-}
+/** The parents' portraits, each in its oval beaded frame (cut by tools/build_parents.py). */
+const PORTRAIT = {
+  bride: { src: "/assets/img/family-bride.webp", w: 679, h: 872 },
+  groom: { src: "/assets/img/family-groom.webp", w: 681, h: 874 },
+} as const;
 
-/** S09 · Family introduction: two arched frames joined by a drawn garland. */
+/** S09 · Family introduction: the parents' portraits in oval frames, joined by a drawn garland. */
 export default function Family() {
   const { bride, groom } = wedding.families;
   const ref = useScene<HTMLElement>((root, q, tier) => {
@@ -43,7 +40,15 @@ export default function Family() {
       <div className="container fam-grid">
         {[{ k: "bride", f: bride }, { k: "groom", f: groom }].map(({ k, f }) => (
           <article key={k} className={`fam-card fam-card--${k}`}>
-            <ArchFrame />
+            <img
+              className="fam-photo"
+              src={PORTRAIT[k as "bride" | "groom"].src}
+              width={PORTRAIT[k as "bride" | "groom"].w}
+              height={PORTRAIT[k as "bride" | "groom"].h}
+              alt={`${f.parents[0]} and ${f.parents[1]}, ${k === "bride" ? "the bride's" : "the groom's"} parents`}
+              loading="lazy"
+              decoding="async"
+            />
             <div className="fam-body">
               <p className="eyebrow">{f.title}</p>
               <p className="fam-names names">
