@@ -16,13 +16,13 @@
 }
 .cpl-fields, .cpl-fields img { display: block; width: 100%; height: 100%; }
 .cpl-fields img { object-fit: cover; object-position: 50% 0%; }
-.cpl-vine { top: -2%; width: clamp(200px, 27vw, 480px); height: auto; }
+.cpl-vine { top: -2%; width: clamp(200px, 27vw, 480px); height: auto; aspect-ratio: 612 / 579; }
 .cpl-vine--l { left: -3%; transform-origin: 0% 0%; }
 .cpl-vine--r { right: -3%; transform-origin: 100% 0%; }
 .cpl-hang { top: -10px; height: auto; transform-origin: 50% 0%; }
 .cpl-hang--l { left: clamp(4px, 3vw, 60px); width: clamp(46px, 5vw, 86px); }
 .cpl-hang--r { right: clamp(4px, 3vw, 60px); width: clamp(54px, 6vw, 104px); }
-.couple .cpl-bed { bottom: -2%; width: clamp(210px, 27vw, 470px); height: auto; }
+.couple .cpl-bed { bottom: -2%; width: clamp(210px, 27vw, 470px); height: auto; aspect-ratio: 562 / 423; }
 .cpl-bed--l { left: -3vw; transform-origin: 0% 100%; }
 .cpl-bed--r { right: -3vw; transform-origin: 100% 100%; }
 

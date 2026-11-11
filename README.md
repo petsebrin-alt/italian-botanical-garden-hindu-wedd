@@ -197,7 +197,7 @@ As the section scrolls in, the bride's arched portrait comes in from the left ed
 
 ## Our Families
 
-The parents' portraits hang in oval beaded frames, the bride's family on the left and the groom's on the right, joined by a drawn garland (`src/sections/Family.tsx`). The frames are cut from `assets-src/family/ref-parents.webp`: each oval is found from its green frame and cut cleanly on it, leaving the white sheet and its shadow behind (the page draws its own soft shadow).
+The parents' portraits hang in oval beaded frames, the bride's family on the left and the groom's on the right, joined by a drawn garland (`src/sections/Family.tsx`). The section has a garden of its own, like The Couple: wisteria above, the Tuscan fields and hydrangeas below. With the scroll, the bride's family's frame comes in from the left edge of the screen and the groom's from the right, while each layer moves at its own depth (the wisteria comes down, the heading and the fields lag, the frames float a little ahead, the hydrangeas rise). Scrolling back up plays it in reverse. The frames are cut from `assets-src/family/ref-parents.webp`: each oval is found from its green frame and cut cleanly on it, leaving the white sheet and its shadow behind (the page draws its own soft shadow).
 
 ```bash
 python3 tools/build_parents.py         # writes public/assets/img/family-bride.webp, family-groom.webp
