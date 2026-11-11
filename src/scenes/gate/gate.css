@@ -45,9 +45,38 @@
 .gate-door { backface-visibility: hidden; }
 .gate-ribbon { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.7s ease-out; }
 .gate[data-ready] .gate-ribbon { opacity: 1; }
-.gate-atlas { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-/* the satin lifts off the gate a little: a soft shadow under the whole bow */
-.gate-ribbon { filter: drop-shadow(0 calc(5 * var(--u)) calc(6 * var(--u)) rgb(40 34 22 / 0.22)); }
+.gate-posy-src { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+/* the satin lifts off the gate a little: a soft shadow under the bow and the flowers */
+.gate-ribbon { filter: drop-shadow(0 calc(6 * var(--u)) calc(7 * var(--u)) rgb(40 34 22 / 0.24)); }
+
+/* "Tap to open": waits under the bow, then bows out as the ribbon starts to move */
+.gate-hint {
+  position: absolute;
+  left: 50%;
+  bottom: max(22px, 5cqh);
+  translate: -50% 0;
+  margin: 0;
+  padding: 9px 20px;
+  border-radius: 999px;
+  background: rgb(248 244 233 / 0.86);
+  box-shadow: 0 8px 24px -12px rgb(41 52 35 / 0.45);
+  color: var(--forest);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease-out 0.8s;
+}
+.gate[data-ready] .gate-hint { opacity: 1; animation: gate-hint 2.6s ease-in-out 1.4s infinite; }
+.gate[data-opening] .gate-hint { opacity: 0; animation: none; transition: opacity 0.4s ease-out; }
+@keyframes gate-hint { 50% { translate: -50% -4px; box-shadow: 0 12px 26px -12px rgb(41 52 35 / 0.5); } }
+.gate-hint-click { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .gate-hint-touch { display: none; }
+  .gate-hint-click { display: inline; }
+}
 
 /* beyond the gate: the sky (the opening screen's colours), clouds drifting low */
 .gate-sky {

@@ -48,13 +48,22 @@ https://<your-site>/?to=Sharma%20Family
 
 ## The garden gate (splash screen)
 
-The site opens on a closed garden gate tied with a satin bow (`src/scenes/gate/`). The right tail of the bow is pulled down and its loop slides through the knot. The other loop loosens, the knot gives, and the posy of flowers drops away. Each half of the ribbon is then drawn out past its pillar, trailing and twisting. The two iron leaves swing inward onto open sky, the camera walks through, and the gate dissolves into the opening screen, where the J|R monogram draws itself. It runs about six seconds. A tap, scroll or key press starts it at once or speeds it up. Links to a section (`/#events`) skip it, and with reduced motion the gate simply fades out.
+The site opens on a closed garden gate tied with an ivory satin bow, with a posy of flowers on its knot (`src/scenes/gate/`). It waits for the guest: "Tap to open" (or a scroll or key press, or six seconds of waiting).
+1. The tails stir, then both loops slide slowly back through the knot as it turns and loosens, twisting and untwisting.
+2. The knot band unwraps and the knot gives. The two halves of the ribbon swing down from the stiles, twist and untwist, and are drawn down and away.
+3. The flowers drift slowly down, swaying, and come to rest on the ground in front of the gate.
+4. The iron leaves swing inward onto open sky, the camera walks through past the flowers, and the gate dissolves into the opening screen.
 
-The bow is the photographed satin bow itself. `tools/build_gate.py` cuts its satin from the photo part by part (two straps, two loops, two tails, and the knot with its posy) into `bow-atlas.webp`. Each strap is continued under its loop with its own satin, so each half is one unbroken ribbon. `src/scenes/gate/ribbon.ts` draws each half with WebGL as a strip that carries that photographed satin. At rest it reproduces the photo exactly; when the ribbon bends, twists and falls, the real satin bends with it. While the bow is tied, its shape follows how far each loop has been pulled; once the knot gives, the ribbons move as soft ropes with gravity and air. The photographed layers are cut from `assets-src/botanical/ref-gate.webp`:
+The opening plays at its own unhurried pace (about eight seconds from the tap). Links to a section (`/#events`) skip it, and with reduced motion the gate simply fades out.
+
+The bow is one continuous satin ribbon modelled and lit in 3D (`src/scenes/gate/ribbon.ts`, WebGL). Each half runs from its stile across the leaf, into the knot, round its loop and down into its tail, so there are no joins. The satin's sheen, rounded cross-section, pleats where it is gathered into the knot, and darker back when it turns over all come from its real shape and the light. Once the knot gives, each half moves as a soft rope with gravity and air.
+
+The photographed layers (pillars and arch, the two iron leaves, the posy) are cut from `assets-src/botanical/ref-gate.webp`:
 
 ```bash
 python3 tools/build_gate.py                   # writes public/assets/gate/* + manifest.json
-GATE_DEBUG=/tmp/gate python3 tools/build_gate.py   # also writes inspection composites
+python3 tools/build_gate.py --bow             # only re-cut the posy of flowers
+GATE_DEBUG=/tmp/gate python3 tools/build_gate.py   # also writes inspection images
 ```
 
 The ironwork is keyed so the sky shows between the bars. Where the bow and vines hid it, the bars are continued and the scrolls are copied from the visible repeats and from the mirror-image leaf. Wide screens see both pillars completed (the urns are symmetric) and a cypress garden beyond them.

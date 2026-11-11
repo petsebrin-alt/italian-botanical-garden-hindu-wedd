@@ -6,7 +6,7 @@ import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useMotion } from "@/lib/motion";
 import { gatePhase, setGatePhase } from "@/lib/gate";
 import { heroAsset } from "@/lib/heroAsset";
-import { Bow, BowRenderer, type BowMeta, type BowState, type View } from "./ribbon";
+import { Bow, BowRenderer, TIED, posyRest, type BowState, type Posy, type View } from "./ribbon";
 import manifest from "../../../public/assets/gate/manifest.json";
 import "./gate.css";
 
@@ -14,16 +14,20 @@ import "./gate.css";
  * S00 · The garden gate: the invitation's splash screen.
  *
  * The photographed gate is cut into layers (tools/build_gate.py): the stone pillars and floral
- * arch, and the two wrought-iron leaves with open sky beyond them. The satin bow is drawn live
- * (ribbon.ts) so it moves like fabric: the right tail is pulled down and its loop slides through
- * the knot, the knot gives, and both halves of the ribbon swing away and fall, twisting. Then
- * the leaves swing inward, the camera walks through the gate into the sky, and the gate
- * dissolves into the opening screen, where the monogram is waiting.
+ * arch, and the two wrought-iron leaves with open sky beyond them. The satin bow is one
+ * continuous ribbon modelled and lit in 3D (ribbon.ts), with the photographed posy of flowers on
+ * its knot. The guest taps (or scrolls, or waits a few seconds): the loops slide back through
+ * the knot as it turns and loosens, the knot gives, and the two halves of the ribbon swing down
+ * from the stiles, twisting and untwisting, and are drawn away. The flowers drift slowly down to
+ * rest on the ground in front of the gate. The leaves swing inward, the camera walks through the
+ * gate into the sky, and the gate dissolves into the opening screen.
  */
 type Box = { x: number; y: number; w: number; h: number };
 const L = manifest.layers as Record<string, Box>;
 const C = manifest.canvas;
-const BOW_META = (manifest as unknown as { bow: BowMeta }).bow;
+const POSY = (manifest as unknown as { posy: Box }).posy;
+/** If nobody taps, the gate opens by itself after this long (s). */
+const AUTO_OPEN = 6;
 const BASE = "/assets/gate/";
 /** The centre of the gate's opening, where the camera walks through. */
 const THROUGH: [number, number] = [C.seam, 880];
@@ -88,7 +92,7 @@ export default function Gate() {
   preload(`${BASE}frame.webp`, { as: "image", fetchPriority: "high" });
   preload(`${BASE}door-l.webp`, { as: "image", fetchPriority: "high" });
   preload(`${BASE}door-r.webp`, { as: "image", fetchPriority: "high" });
-  preload(`${BASE}bow-atlas.webp`, { as: "image", fetchPriority: "high" });
+  preload(`${BASE}bow-posy.webp`, { as: "image", fetchPriority: "high" });
 
   useGSAP(
     () => {
@@ -106,57 +110,62 @@ export default function Gate() {
       const far = q(".gate-far")[0] as HTMLElement;
 
       // ---------------------------------------------------------------- the ribbon, drawn live
-      // the photographed satin bow, bent and dropped by ribbon.ts. One screen-sized canvas over
-      // the gate holds the ribbon and the posy of flowers on its knot, so both can travel off any
-      // screen without meeting the photograph's edge.
+      // One screen-sized canvas over the gate holds the ribbon and the posy of flowers, so both can
+      // travel off any screen. It follows the gate as the camera walks through it.
       const canvas = q(".gate-ribbon")[0] as HTMLCanvasElement;
-      const atlas = q(".gate-atlas")[0] as HTMLImageElement;
-      const posy = { y: 0, r: 0 };
-      const tied: BowState = { loopL: 1, loopR: 1, sway: 0 };
-      const bow = new Bow(BOW_META, tied);
+      const posyImg = q(".gate-posy-src")[0] as HTMLImageElement;
+      const posy: Posy = { x: 0, y: 0, r: 0, scale: 1 };
+      const tied: BowState = { ...TIED };
+      const bow = new Bow();
       let renderer: BowRenderer | null = null;
-      let k = 1, ox = 0, oy = 0;
+      const fade = { ribbon: 1 };
+      let k = 1, ox = 0, oy = 0, dpr = 1;
       let view: View = { x0: 0, y0: 0, x1: C.w, y1: C.h };
-      const fit = () => {
-        const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.6 : 2);
+      const size = () => {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
         const r = el.getBoundingClientRect();
-        const b = world.getBoundingClientRect();
         canvas.width = Math.round(r.width * dpr);
         canvas.height = Math.round(r.height * dpr);
+      };
+      // where the gate canvas sits on screen right now (it scales as the camera walks through)
+      const place = () => {
+        const r = el.getBoundingClientRect();
+        const b = world.getBoundingClientRect();
         k = (b.width / C.w) * dpr;
         ox = (b.left - r.left) * dpr;
         oy = (b.top - r.top) * dpr;
         view = { x0: -ox / k, y0: -oy / k, x1: (canvas.width - ox) / k, y1: (canvas.height - oy) / k };
       };
-      const paint = () => renderer?.draw(bow, posy, k, ox, oy, canvas.width, canvas.height);
-      fit();
-      const atlasReady = atlas.decode().catch(() => undefined).then(() => {
-        renderer = BowRenderer.create(canvas, atlas, BOW_META);
+      const paint = () => {
+        place();
+        renderer?.draw(bow, posy, k, ox, oy, canvas.width, canvas.height, fade.ribbon);
+      };
+      size();
+      const posyReady = posyImg.decode().catch(() => undefined).then(() => {
+        renderer = BowRenderer.create(canvas, posyImg, POSY);
         paint();
       });
-      let speed = 1;
-      let ribbonLive = true;
+      let live = true;
       const tick = (_t: number, dms: number) => {
-        if (!ribbonLive) return;
-        const dt = Math.min(0.05, dms / 1000) * speed;
-        if (!bow.free) bow.tie(tied);
+        if (!live) return;
+        const dt = Math.min(0.05, dms / 1000);
+        bow.tie(tied);
         bow.advance(dt, view);
         paint();
-        if (bow.done && posy.y > view.y1) { ribbonLive = false; gsap.ticker.remove(tick); }
       };
-      const ro = new ResizeObserver(() => { if (!bow.free) { fit(); paint(); } });
+      const ro = new ResizeObserver(() => { size(); paint(); });
       ro.observe(el);
 
       // ---------------------------------------------------------------- hold the page still
       window.scrollTo(0, 0);
       const keys = new Set([" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", "Enter", "Tab"]);
-      const block = (e: Event) => { e.preventDefault(); hurry(); };
+      const block = (e: Event) => { e.preventDefault(); start(); };
       const onKey = (e: KeyboardEvent) => { if (keys.has(e.key)) block(e); };
       const opts = { passive: false } as AddEventListenerOptions;
       window.addEventListener("wheel", block, opts);
       window.addEventListener("touchmove", block, opts);
       window.addEventListener("keydown", onKey);
-      el.addEventListener("pointerdown", () => hurry());
+      el.addEventListener("pointerdown", () => start());
       const release = () => {
         window.removeEventListener("wheel", block, opts);
         window.removeEventListener("touchmove", block, opts);
@@ -164,18 +173,19 @@ export default function Gate() {
       };
 
       const tl = gsap.timeline({ paused: true, onComplete: finish });
-      let started = false;
-      function hurry() {
-        if (!started) { start(); return; }
-        if (speed < 2) { speed = 2.2; tl.timeScale(2.2); }
-      }
+      let started = false, ready = false;
+      let autoOpen: gsap.core.Tween | null = null;
+      // a tap opens the gate at its own unhurried pace (a second tap changes nothing)
       function start() {
-        if (started) return;
+        if (started || !ready) return;
         started = true;
-        if (tier !== "C") gsap.ticker.add(tick);
+        autoOpen?.kill();
+        root.current?.setAttribute("data-opening", "");
         tl.play(0);
       }
       function finish() {
+        live = false;
+        gsap.ticker.remove(tick);
         release();
         setGatePhase("gone");
         setGone(true);
@@ -188,50 +198,81 @@ export default function Gate() {
 
       if (tier === "C") {
         // reduced motion: the gate simply fades into the sky
-        tl.to(el, { autoAlpha: 0, duration: 0.8, ease: "none", onStart: () => setGatePhase("revealing") }, 1.4);
+        tl.to(el, { autoAlpha: 0, duration: 0.8, ease: "none", onStart: () => setGatePhase("revealing") }, 0.3);
       } else {
         const wide = el.clientWidth / el.clientHeight > 0.85;
+        const R = 2.35; // the moment the knot gives
+        const sway = { p: 0 };
         tl
-          // a breath of air: the tails stir
-          .to(tied, { sway: 1, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0)
-          // PULL: the right tail is drawn down; its loop slides through the knot
-          .to(tied, { loopR: 0, duration: 1.3, ease: "power2.in" }, 0.85)
-          // the other loop follows, loosening
-          .to(tied, { loopL: 0.45, duration: 0.95, ease: "sine.inOut" }, 1.3)
-          .to(posy, { y: 12, r: 4, duration: 1.3, ease: "sine.inOut" }, 0.85)
-          // the knot gives: the ribbon is free, the posy of flowers drops away
-          .add(() => bow.release(), 2.15)
-          .to(posy, { y: () => view.y1 - BOW_META.parts.knot.y + 40, r: 34, duration: 1.2, ease: "power2.in" }, 2.15)
-          // DOORS: a nudge as the latch gives, then the leaves swing in
-          .to(g("door-l"), { rotationY: 1.2, duration: 0.25, ease: "power1.out" }, 2.9)
-          .to(g("door-r"), { rotationY: -1.2, duration: 0.25, ease: "power1.out" }, 2.9)
-          .to(g("door-l"), { rotationY: 100, duration: 2.4, ease: "power2.inOut" }, 3.15)
-          .to(g("door-r"), { rotationY: -100, duration: 2.4, ease: "power2.inOut" }, 3.2)
-          // (anything of the ribbon still in view by now drifts out with the gate)
-          .to(canvas, { autoAlpha: 0, duration: 0.5, ease: "power1.in" }, 4.0)
-          // THROUGH: the camera walks through the gate into the open sky
-          .to(world, { scale: wide ? 2.2 : 2.9, duration: 2.3, ease: "power2.in" }, 4.0)
-          .to(far, { scale: 1.18, duration: 2.3, ease: "power1.in" }, 4.0)
-          .to(el, { autoAlpha: 0, duration: 0.9, ease: "power1.in", onStart: () => setGatePhase("revealing") }, wide ? 5.2 : 5.5);
+          // a breath of air: the tails stir, the loops lift a touch
+          .to(tied, { sway: 1, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0)
+          // PULL: both loops slide back through the knot, the right one leading
+          .to(tied, { loopR: 0.05, duration: 1.55, ease: "power2.inOut" }, 0.6)
+          .to(tied, { loopL: 0.05, duration: 1.45, ease: "power2.inOut" }, 0.82)
+          // the knot slides down a little and turns as it loosens: twisted, untwisted, twisted back
+          .to(tied, { drop: 14, duration: 1.6, ease: "sine.inOut" }, 0.6)
+          .to(tied, {
+            keyframes: [
+              { wobble: 0.1, twist: 0.7, duration: 0.45 },
+              { wobble: -0.12, twist: -0.6, duration: 0.5 },
+              { wobble: 0.06, twist: 0.35, duration: 0.45 },
+              { wobble: 0, twist: 0, duration: 0.35 },
+            ],
+            ease: "sine.inOut",
+          }, 0.6)
+          .to(posy, {
+            keyframes: [{ r: 5, duration: 0.45 }, { r: -6, duration: 0.5 }, { r: 3, duration: 0.45 }, { r: 0, duration: 0.35 }],
+            ease: "sine.inOut",
+          }, 0.6)
+          .to(posy, { y: 14, duration: 1.6, ease: "sine.inOut" }, 0.6)
+          // the band round the knot unwraps
+          .to(tied, { open: 0, duration: 0.35, ease: "power1.in" }, R - 0.3)
+          // the knot gives: from here each half of the ribbon moves by itself
+          .add(() => bow.release(), R)
+          // the flowers drift slowly down, swaying, to rest on the ground in front of the gate
+          .to(posy, { y: () => posyRest(POSY, view, 1.12), scale: 1.12, duration: 2.8, ease: "sine.inOut" }, R + 0.05)
+          .to(sway, {
+            p: 1, duration: 2.8, ease: "none",
+            onUpdate: () => {
+              const p = sway.p, fade = 1 - p;
+              posy.x = 16 * Math.sin(p * Math.PI * 2.2) * fade;
+              posy.r = 9 * Math.sin(p * Math.PI * 2.2 + 0.6) * fade - 5 * p;
+            },
+          }, R + 0.05)
+          // DOORS: a nudge as the latch gives, then the leaves swing in behind the flowers
+          .to(g("door-l"), { rotationY: 1.2, duration: 0.3, ease: "power1.out" }, R + 1.9)
+          .to(g("door-r"), { rotationY: -1.2, duration: 0.3, ease: "power1.out" }, R + 1.9)
+          .to(g("door-l"), { rotationY: 100, duration: 2.5, ease: "power2.inOut" }, R + 2.2)
+          .to(g("door-r"), { rotationY: -100, duration: 2.5, ease: "power2.inOut" }, R + 2.25)
+          // (the ribbon is long gone by now; if not, it fades rather than hang in the sky)
+          .to(fade, { ribbon: 0, duration: 0.5, ease: "power1.in" }, R + 3.0)
+          // THROUGH: the camera walks past the flowers, through the gate into the open sky
+          .to(world, { scale: wide ? 2.2 : 2.9, duration: 2.3, ease: "power2.in" }, R + 3.1)
+          .to(far, { scale: 1.18, duration: 2.3, ease: "power1.in" }, R + 3.1)
+          .to(el, { autoAlpha: 0, duration: 0.9, ease: "power1.in", onStart: () => setGatePhase("revealing") }, R + (wide ? 4.3 : 4.6));
       }
 
-      // start once the gate's photographs are decoded (or soon regardless)
+      // ready once the gate's photographs are decoded (or soon regardless); then it waits for a tap
       const imgs = q(".gate-world img:not([loading=lazy])") as HTMLImageElement[];
-      const ready = Promise.race([
-        Promise.all([...imgs.map((i) => i.decode().catch(() => undefined)), atlasReady]),
+      const loaded = Promise.race([
+        Promise.all([...imgs.map((i) => i.decode().catch(() => undefined)), posyReady]),
         new Promise((r) => setTimeout(r, 3500)),
       ]);
       let alive = true;
-      ready.then(() => {
+      loaded.then(() => {
         if (!alive) return;
         el.dataset.ready = "";
-        gsap.delayedCall(tier === "C" ? 0 : 1.1, start);
+        ready = true;
+        if (tier !== "C") gsap.ticker.add(tick);
+        autoOpen = gsap.delayedCall(tier === "C" ? 0.6 : AUTO_OPEN, start);
       });
       return () => {
         alive = false;
+        live = false;
         release();
         ro.disconnect();
         gsap.ticker.remove(tick);
+        autoOpen?.kill();
         tl.kill();
       };
     },
@@ -258,10 +299,14 @@ export default function Gate() {
         <Layer name="door-l" className="gate-door" />
         <Layer name="door-r" className="gate-door" />
         <Layer name="frame" />
-        {/* the photographed bow, part by part: drawn by the ribbon canvas */}
-        <img className="gate-atlas" src={`${BASE}bow-atlas.webp`} alt="" width={BOW_META.atlas.w} height={BOW_META.atlas.h} decoding="async" draggable={false} />
+        {/* the posy of flowers on the knot (drawn by the ribbon canvas) */}
+        <img className="gate-posy-src" src={`${BASE}bow-posy.webp`} alt="" width={POSY.w} height={POSY.h} decoding="async" draggable={false} />
       </div>
       <canvas className="gate-ribbon" />
+      <p className="gate-hint">
+        <span className="gate-hint-touch">Tap to open</span>
+        <span className="gate-hint-click">Click to open</span>
+      </p>
     </div>
   );
 }
