@@ -44,7 +44,7 @@ export default function Nav() {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const y = window.scrollY;
-        const hero = document.getElementById("welcome")?.getBoundingClientRect().top ?? 0;
+        const hero = document.getElementById("save-the-date")?.getBoundingClientRect().top ?? 0;
         const past = hero < window.innerHeight * 0.2;
         setSolid(past);
         setHidden(past && y > last + 4);

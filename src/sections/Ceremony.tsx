@@ -1,120 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { wedding } from "@/content/wedding";
 import { clock, weekdayDate } from "@/lib/dates";
 import { gsap, scrub, tokens } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import { Sprite } from "@/components/Pic";
+import GardenWindow from "./GardenWindow";
 import { CrystalCurtain, type AtlasMeta } from "./crystal-curtain";
 import atlasMeta from "../../public/assets/img/crystal-atlas.json";
 import "./ceremony.css";
 
-
-/** Rustic Italian floral window with 3D opening shutters, flying butterfly, and couple reveal. */
-function FloralWindow() {
-  const [accepted, setAccepted] = useState(false);
-  const [animating, setAnimating] = useState(false);
-
-  const handleAccept = useCallback(() => {
-    if (accepted || animating) return;
-    setAnimating(true);
-    setAccepted(true);
-    setTimeout(() => setAnimating(false), 2600);
-  }, [accepted, animating]);
-
-  const handleReplay = useCallback(() => {
-    setAccepted(false);
-    setAnimating(false);
-  }, []);
-
-  return (
-    <div className={`cer-window ${accepted ? "cer-window--open" : "cer-window--closed"}`}>
-      {/* 1. Behind the window: The couple exchanging garlands in Tuscany */}
-      <div className="win-opening">
-        <img
-          src="/assets/img/ceremony-arch.webp"
-          alt="Janvi and Rohit exchanging wedding garlands under the Tuscan sun"
-          className="win-couple-img"
-        />
-        <div className="win-sunbeam" aria-hidden="true" />
-      </div>
-
-      {/* 2. 3D Shutters that swing open when invitation is accepted */}
-      <div className="win-shutters-stage" aria-hidden="true">
-        <div className="win-shutter win-shutter--l">
-          <img src="/assets/img/window-shutter-l.webp" alt="" className="win-shutter-tex" />
-        </div>
-        <div className="win-shutter win-shutter--r">
-          <img src="/assets/img/window-shutter-r.webp" alt="" className="win-shutter-tex" />
-        </div>
-      </div>
-
-      {/* 3. The Floral Stone Window Frame with Climbing Roses, Ivy, Daisies & Butterflies */}
-      <img
-        src="/assets/img/floral-window-frame.webp"
-        className="win-frame-overlay"
-        alt="Italian rustic floral arched window frame"
-        aria-hidden="true"
-      />
-
-      {/* 4. Flying butterfly that flutters across the window when accepted */}
-      <div
-        className={`win-flying-bf ${accepted ? "win-flying-bf--flying" : ""}`}
-        aria-hidden="true"
-      >
-        <img
-          src="/assets/img/window-butterfly-pink.webp"
-          alt=""
-          className="win-bf-wing"
-        />
-        <div className="win-bf-sparkle" />
-      </div>
-
-      {/* 5. "Invite the Guest" RSVP Section on the Window */}
-      <div className={`win-invite-card ${accepted ? "win-invite-card--hidden" : ""}`}>
-        <div className="win-card-inner">
-          <span className="win-badge">Tuscan Villa Wedding</span>
-          <h3 className="win-title">Invite the Guest · RSVP</h3>
-          <p className="win-couple">Janvi &amp; Rohit</p>
-          <p className="win-quote">
-            “Two souls, one heart, united forever under the Tuscan sun.”
-          </p>
-          <p className="win-note">
-            Together with their families, Janvi &amp; Rohit warmly invite you to celebrate their sacred union.
-          </p>
-          <button
-            type="button"
-            className="win-accept-btn"
-            onClick={handleAccept}
-            aria-label="Accept our invitation"
-          >
-            <span className="win-btn-shimmer" aria-hidden="true" />
-            <span className="win-btn-text">Accept Our Invitation 💌</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 6. Confirmation Banner after acceptance */}
-      {accepted && (
-        <div className="win-accepted-banner" role="status">
-          <span className="win-accepted-text">✨ Invitation Accepted · See you in Tuscany! ✨</span>
-          <button
-            type="button"
-            className="win-replay-btn"
-            onClick={handleReplay}
-            title="Replay window animation"
-            aria-label="Replay window animation"
-          >
-            ↺ Replay
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const DIYAS = [-2, -1, 0, 1, 2];
 
 /** S08 · The wedding ceremony. */
 export default function Ceremony() {
@@ -158,8 +53,8 @@ export default function Ceremony() {
       .to(pending, { wave: 0.2, duration: 0.25, ease: "sine.inOut" }, 0.42)
       .fromTo(q(".cer-window-wrap"), { scale: 1.08, y: 0.04 * vh }, { scale: 1, y: 0, ease: "power2.out", duration: 0.45 }, 0.08)
       .fromTo(q(".cer-garden"), { scale: 1.05 }, { scale: 1, duration: 0.55 }, 0)
-      .fromTo(q(".diya-glow"), { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 0.12, stagger: { each: 0.03, from: "center" } }, 0.35)
-      .fromTo(q(".cer-petal"), { y: -0.15 * vh }, { y: 1.1 * vh, rotation: (i: number) => 140 + i * 37, x: (i: number) => (i % 2 ? 1 : -1) * 0.05 * vw, duration: 0.4, stagger: 0.012 }, 0.35)
+      // once the curtain has drawn open, the butterfly comes to the window
+      .add(() => { q(".gw")[0]?.dispatchEvent(new Event("gw:start")); }, 0.42)
       .from(q(".cer-text > *"), { y: 30, autoAlpha: 0, duration: 0.1, stagger: 0.03, ease: tokens.ease.reveal }, 0.4)
       .to({}, { duration: 0.15 });
     return cleanup;
@@ -168,38 +63,23 @@ export default function Ceremony() {
   return (
     <section ref={ref} id="ceremony" className="cer" aria-labelledby="cer-title">
       <div className="cer-stage">
+        {/* open sky and a real lawn: nothing between the window and the garden */}
         <div className="cer-garden" aria-hidden="true">
-          <Sprite name="cypress-l" className="cer-cypress cer-cypress--l" />
-          <Sprite name="cypress-r" className="cer-cypress cer-cypress--r" />
-          <div className="cer-lawn" />
+          <Sprite name="cloud-1" className="cer-cloud cer-cloud--1" />
+          <Sprite name="cloud-2" className="cer-cloud cer-cloud--2" />
+          <Sprite name="cloud-3" className="cer-cloud cer-cloud--3" />
+          <img className="cer-lawn" src="/assets/window/lawn.webp" alt="" />
         </div>
         <div className="cer-window-wrap">
-          <FloralWindow />
-          <div className="cer-diyas" aria-hidden="true">
-            {DIYAS.map((d) => (
-              <span key={d} className="diya" style={{ "--i": d } as React.CSSProperties}>
-                <span className="diya-glow" />
-                <svg viewBox="0 0 40 30" width="40" height="30">
-                  <path className="diya-flame" d="M20 2 C 24 8, 24 12, 20 15 C 16 12, 16 8, 20 2 Z" fill="#f3b54a" />
-                  <path d="M4 16 C 8 27, 32 27, 36 16 Z" fill="#b8893b" stroke="#7a5e2a" strokeWidth="0.8" />
-                </svg>
-              </span>
-            ))}
-          </div>
+          <GardenWindow />
         </div>
         <div className="cer-text">
           <p className="eyebrow">The wedding ceremony</p>
           <h2 id="cer-title" className="script">{c.title}</h2>
           {event?.date && event.start && <p className="date-display cer-when">{weekdayDate(event.date)} · {clock(event.start)}</p>}
         </div>
-        <div className="cer-petals" aria-hidden="true">
-          {Array.from({ length: 10 }, (_, i) => (
-            <svg key={i} className="cer-petal" style={{ left: `${6 + i * 9.5}%` }} viewBox="0 0 20 24" width="18" height="22">
-              <path d="M10 1 C 18 6, 19 16, 10 23 C 1 16, 2 6, 10 1 Z" fill={i % 3 ? "#e8b9b4" : "#d9a5a0"} />
-            </svg>
-          ))}
-        </div>
         <canvas className="crys-canvas" aria-hidden="true" />
+        <div className="gw-fx" aria-hidden="true" />
       </div>
     </section>
   );

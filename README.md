@@ -19,7 +19,7 @@ Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SITE_URL`, `STUDIO_TOKE
 
 Everything a couple changes lives in **`src/content/wedding.ts`**:
 - names, date, time and time zone
-- parents, the welcome message and the story
+- parents, the blessing over Save the Date and the story
 - events, ceremony rituals and dress code
 - gallery, venue, RSVP settings and the thank-you lines
 
@@ -70,7 +70,7 @@ The ironwork is keyed so the sky shows between the bars. Where the bow and vines
 
 ## Page order
 
-Gate → Opening (sky, monogram, names) → Welcome → The Couple → Save the Date → Sweet Memories → Celebrations → Destination → Ceremony → Family → Dress Code → Gallery → Venue → RSVP → Wishes → Need Help → Thank You.
+Gate → Opening (sky, monogram, names) → Save the Date (in the garden) → The Couple → Sweet Memories → Celebrations → Ceremony (garden window invitation) → Family → Dress Code → Venue → Wishes → Need Help → Thank You.
 
 ## Sweet Memories
 
@@ -97,6 +97,27 @@ python3 tools/build_creeper.py         # writes public/assets/img/creeper-stem.w
 ```
 
 To go back to the earlier design (a fine gold vine with a hydrangea opening at each celebration), set `VINE = "line"` at the top of `src/sections/Events.tsx`.
+
+## The garden window invitation
+
+In the ceremony section, once the crystal curtain has drawn open, the garden window plays its invitation (`src/sections/GardenWindow.tsx`). It stands on a real lawn under an open sky with drifting clouds:
+1. A white wooden window, closed, with roses climbing round it and sunlight moving over it.
+2. A pink butterfly flies in, leaving a faint trail of light, hovers, and lands on the handle.
+3. The two shutters swing open on their hinges, and warm light fills the window.
+4. Inside, an ivory envelope comes forward, its flap lifts, and the card rises out of it.
+5. The card is the couple's invitation, with "Dear <guest>" when the link carries a name. A hand points to "Accept the Invitation".
+6. On Accept, Janvi and Rohit appear in the window, butterflies fly across the whole section, and rose petals fall. A thank-you note appears, with Replay.
+
+On laptops the window is larger, and the envelope and the card are a little smaller than it, so the window's frame and flowers stay in view around the card. Phones keep the smaller window, with the card in front of it.
+
+The window, shutters, roses, butterflies and petals are cut from the asset sheet `assets-src/botanical/ref-window-sheet.webp`.
+
+The lawn is real grass, never stretched. `tools/build_lawn.py` takes an evenly lit stretch of the sharp lawn in `ref-welcome.webp`, quilts it into a large seamless lawn, and lays that out in perspective to the horizon. Near grass is shown at its photographed size; further rows are shrunk, so they stay crisp. Soft sunlight and shade fall across it, and the far grass takes on the haze of the air, meeting the sky in a clean line with low hills beyond.
+
+```bash
+python3 tools/build_window.py          # writes public/assets/window/* (window, roses, butterflies, petals)
+python3 tools/build_lawn.py            # writes public/assets/window/lawn.webp
+```
 
 ## Crystal curtain
 
@@ -154,17 +175,25 @@ python3 tools/build_botanicals.py      # writes public/assets/botanical/* and th
 python3 tools/build_welcome.py         # splits the S02 garden photo into sky, land and near layers
 ```
 
-The real Tuscan fields under the Couple portraits and along the foot of Save the Date (`fields-hills`, `fields-meadow`) are cut from the same sharp garden photograph. Its sky is keyed out, and each band is continued sideways with mirrored copies of itself:
+The real Tuscan fields under the Couple portraits (`fields-hills`, `fields-meadow`) are cut from the same sharp garden photograph. Its sky is keyed out, and each band is continued sideways with mirrored copies of itself:
 
 ```bash
 python3 tools/build_fields.py          # writes public/assets/img/fields-*.webp/.avif
 ```
 
-Save the Date opens on a dial of the wedding month. The needle sweeps from the 1st to the 15th while the day number counts up through a soft blur. Then the month and year rise in, followed by the hour, and the countdown counts up to the real values before ticking live. A small bead runs along the dial with the seconds, and Add to Calendar comes last.
-
-The Welcome section is one photographed garden (`assets-src/botanical/ref-welcome.webp`). The build removes any lettering baked into it, keys out the sky, separates the villa terrace and the hydrangea corner, and continues the sky upward for phones. The layers then move at different depths.
-
 `tools/prepare_assets.py` produced the photo crops in `public/assets/img/` from the three references.
+
+## Save the Date
+
+Save the Date is set in the open sky of one photographed garden (`assets-src/botanical/ref-welcome.webp`), with no card: clouds drift behind it, and the garden's layers move at different depths. The build removes any lettering baked into the photograph, keys out the sky, separates the villa terrace and the hydrangea corner, and continues the sky upward for phones.
+
+It opens on a dial of the wedding month. The needle sweeps from the 1st to the 15th while the day number counts up through a soft blur. Then the month and year rise in, followed by the hour. A small bead runs along the dial with the seconds, and Add to Calendar comes last.
+
+The countdown is four tear-off calendar pads on gold rings: days, hours, minutes and seconds (`src/components/CalendarCountdown.tsx`). Each time a number changes, its page is crumpled into a paper ball and tossed away, and the page underneath already shows the next number. The crumpling is drawn live in WebGL (`src/lib/crumple.ts`): the page is folded in from its corners into a creased ball, lit so the folds read, then thrown up and away so it falls into the garden. With reduced motion, the pages simply change.
+
+## The Couple
+
+The two arched portraits hang on gold cords from a picture rail across the section (`src/sections/Couple.tsx`). The rail draws itself, then the bride's frame glides in from the left and the groom's from the right. Each swings on its cord (a small pendulum simulation): it lags as it speeds up, leans forward as it slows, then rocks to rest. The photograph then comes up in each frame. While scrolling, the layers move at their own depths: the vines come down, the hills lag, the frames float a little ahead and the hydrangeas rise.
 
 ## Motion engine
 

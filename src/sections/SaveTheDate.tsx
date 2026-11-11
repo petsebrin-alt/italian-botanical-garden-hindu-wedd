@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { publishedEvents, wedding } from "@/content/wedding";
 import { clock, localEquivalent, weddingInstant } from "@/lib/dates";
-import { gsap, ScrollTrigger, tokens } from "@/lib/gsap";
+import { gsap, ScrollTrigger, scrub, tokens } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import AddToCalendar from "@/components/AddToCalendar";
-import Countdown from "@/components/Countdown";
+import CalendarCountdown from "@/components/CalendarCountdown";
+import { InvocationIcon } from "@/components/Ornaments";
 import Pic, { Sprite } from "@/components/Pic";
+import "./welcome.css";
 import "./save-the-date.css";
 
 function LocalTime() {
@@ -71,7 +73,12 @@ function Dial({ day }: { day: number }) {
   );
 }
 
-/** S05 · Save the Date: the dial finds the day, then the date, the hour and the countdown. */
+/**
+ * S02 · Save the Date, in the open sky of the sunlit Tuscan garden (the photograph split into
+ * depth layers by tools/build_welcome.py: the sky drifts slowest, the villa terrace, hydrangeas
+ * and wisteria settle in from below as the section arrives). No card: the dial finds the day,
+ * then the month and year, the hour, and the countdown on its tear-off calendar pads.
+ */
 export default function SaveTheDate() {
   const ceremony = publishedEvents().find((e) => e.type === "ceremony") ?? publishedEvents()[0];
   const [y, , d] = wedding.date.split("-");
@@ -79,7 +86,15 @@ export default function SaveTheDate() {
   const month = new Intl.DateTimeFormat("en-GB", { month: "long", timeZone: "UTC" }).format(new Date(`${wedding.date}T12:00:00Z`));
   const [run, setRun] = useState(false);
 
+  const { invocation } = wedding.welcome;
+
   const ref = useScene<HTMLElement>((root, q, tier) => {
+    if (tier !== "C") {
+      // the near layers only ever settle downward-to-home, so nothing they cover is uncovered
+      const enter = { trigger: root, start: "top bottom", end: "top 18%", scrub: scrub() };
+      gsap.fromTo(q(".wel-near--l"), { yPercent: 3 }, { yPercent: 0, ease: "power2.out", scrollTrigger: enter });
+      gsap.fromTo(q(".wel-near--r"), { yPercent: 1.4 }, { yPercent: 0, ease: "power2.out", scrollTrigger: enter });
+    }
     const needle = q(".dial-needle")[0] as SVGGElement;
     const num = q(".std-day")[0] as HTMLElement;
     const ticks = q(".dial-tick") as SVGLineElement[];
@@ -138,7 +153,7 @@ export default function SaveTheDate() {
       // then the month and year, the hour, the countdown, and the calendar button last
       .to(q(".std-date-part"), { yPercent: 0, duration: 1, ease: tokens.ease.title, stagger: 0.14 }, 2.75)
       .to(q(".std-rules .rule"), { scaleX: 1, duration: 0.9, ease: tokens.ease.cinematic }, 2.8)
-      .to(parts, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.2, ease: tokens.ease.reveal }, 3.1)
+      .to(parts, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.2, ease: tokens.ease.reveal, clearProps: "transform" }, 3.1)
       .add(() => setRun(true), 3.5);
     gsap.set(q(".std-rules .rule"), { scaleX: 0 });
 
@@ -151,44 +166,57 @@ export default function SaveTheDate() {
   });
 
   return (
-    <section ref={ref} id="save-the-date" className="std" aria-labelledby="std-title" data-stage>
-      <div className="std-sky" aria-hidden="true" />
-      <Sprite name="cloud-1" className="std-cloud std-cloud--1" depth={-0.3} />
-      <Sprite name="cloud-2" className="std-cloud std-cloud--2" depth={-0.2} />
-      {/* open fields under the sky: the valley, the far mountains and a wide sunlit lawn */}
-      <div className="std-fields" aria-hidden="true"><Pic src="/assets/img/fields-meadow" alt="" /></div>
-      <Sprite name="bed-l" className="std-bloom std-bloom--l" depth={0.45} />
-      <Sprite name="bed-r" className="std-bloom std-bloom--r" depth={0.45} />
-
-      <div className="container std-wrap">
-        <div className="std-card card">
-          <h2 id="std-title" className="script" data-reveal="up">Save the Date</h2>
-
-          <div className="std-dial" aria-hidden="true">
-            <Dial day={day} />
-            <div className="std-dial-num"><span className="std-day std-num">{day}</span></div>
-          </div>
-          <p className="std-date names" aria-label={`${day} ${month} ${y}`}>
-            <span className="line-mask"><span className="std-date-part">{month}</span></span>
-            <span className="line-mask"><span className="std-date-part std-num">{y}</span></span>
-          </p>
-          <div className="ornament std-rules" aria-hidden="true"><span className="rule" /><span className="std-dot" /><span className="rule" /></div>
-
-          <p className="std-meta eyebrow std-seq">
-            {clock(wedding.time)} · {wedding.destination.label}
-          </p>
-          <p className="std-zone body-s std-seq">
-            Italy time (CEST)<LocalTime />
-          </p>
-          <div className="std-countdown std-seq">
-            <Countdown run={run} />
-          </div>
-          {ceremony && (
-            <div className="std-actions std-seq">
-              <AddToCalendar event={ceremony} />
-            </div>
-          )}
+    <section ref={ref} id="save-the-date" className="welcome std" aria-labelledby="std-title" data-stage>
+      <div className="wel-scene" aria-hidden="true">
+        <div className="wel-box">
+          <div className="wel-layer" data-depth="-0.3"><Pic src="/assets/img/welcome-sky" alt="" /></div>
+          <div className="wel-layer"><Pic src="/assets/img/welcome-far" alt="" /></div>
+          <div className="wel-layer wel-near wel-near--l"><Pic src="/assets/img/welcome-near-l" alt="" /></div>
+          <div className="wel-layer wel-near wel-near--r"><Pic src="/assets/img/welcome-near-r" alt="" /></div>
         </div>
+        {/* clouds drift across the open sky the dial and the calendar sit in */}
+        <Sprite name="cloud-1" className="std-cloud std-cloud--1" depth={-0.12} />
+        <Sprite name="cloud-2" className="std-cloud std-cloud--2" depth={-0.18} />
+        <Sprite name="cloud-3" className="std-cloud std-cloud--3" depth={-0.08} />
+        <Sprite name="cloud-2" className="std-cloud std-cloud--4" depth={-0.05} />
+        {/* phones see the villa side of the garden: wisteria and hydrangeas join it */}
+        <Sprite name="canopy-l" className="wel-canopy" depth={0.14} />
+        <Sprite name="bed-l" className="wel-m wel-m-bed" depth={0.22} />
+      </div>
+
+      <div className="container wel-text std-text">
+        {invocation.enabled && (
+          <>
+            <div data-reveal="draw" className="welcome-icon"><InvocationIcon /></div>
+            <p lang={invocation.lang} className="welcome-invocation" data-reveal="up">{invocation.text}</p>
+          </>
+        )}
+        <h2 id="std-title" className="script std-title" data-reveal="up">Save the Date</h2>
+
+        <div className="std-dial" aria-hidden="true">
+          <Dial day={day} />
+          <div className="std-dial-num"><span className="std-day std-num">{day}</span></div>
+        </div>
+        <p className="std-date names" aria-label={`${day} ${month} ${y}`}>
+          <span className="line-mask"><span className="std-date-part">{month}</span></span>
+          <span className="line-mask"><span className="std-date-part std-num">{y}</span></span>
+        </p>
+        <div className="ornament std-rules" aria-hidden="true"><span className="rule" /><span className="std-dot" /><span className="rule" /></div>
+
+        <p className="std-meta eyebrow std-seq">
+          {clock(wedding.time)} · {wedding.destination.label}
+        </p>
+        <p className="std-zone body-s std-seq">
+          Italy time (CEST)<LocalTime />
+        </p>
+        <div className="std-countdown std-seq">
+          <CalendarCountdown run={run} />
+        </div>
+        {ceremony && (
+          <div className="std-actions std-seq">
+            <AddToCalendar event={ceremony} />
+          </div>
+        )}
       </div>
     </section>
   );

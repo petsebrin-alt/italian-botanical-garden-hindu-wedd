@@ -55,9 +55,9 @@
 .wel-box {
   position: absolute;
   bottom: 0;
-  /* the photo (the lower half of the canvas) covers the section: its width, or its height
-   * when the text makes the section taller (the sides crop a little then) */
-  --bw: max(100cqw, calc(100cqh * 2.0688));
+  /* the canvas (the photo with its own sky above) covers the section: its width, or its height
+   * when the dial and the calendar make the section taller (the sides crop a little then) */
+  --bw: max(100cqw, calc(100cqh * 1.0344));
   width: var(--bw);
   left: calc((100cqw - var(--bw)) / 2);
   aspect-ratio: 1804 / 1744;
@@ -69,7 +69,7 @@
 .wel-canopy { left: -2vw; top: -1vw; width: clamp(220px, 22vw, 460px); height: auto; transform-origin: 0% 0%; }
 .wel-m { display: none; }
 
-/* the blessing, in the open sky */
+/* the save-the-date, in the open sky */
 .wel-text {
   position: relative;
   z-index: 2;
@@ -90,8 +90,6 @@
   /* the open sky sits left of the villa: the blessing centres on it */
   .wel-text { width: min(40rem, 56vw); margin-left: max(1rem, calc(37vw - min(20rem, 28vw))); margin-right: auto; }
 }
-.wel-title { color: var(--gold-ink); }
-.wel-eyebrow { color: var(--forest); }
 .welcome-icon svg { color: var(--gold-ink); }
 .welcome-invocation {
   font-family: var(--font-deva), serif;
@@ -99,19 +97,11 @@
   color: var(--rose-ink);
   letter-spacing: 0.04em;
 }
-.welcome-ornament { margin-block: 4px 8px; }
-.welcome-message {
-  max-width: 38ch;
-  font-family: var(--font-head), serif;
-  font-size: clamp(1.05rem, 0.86rem + 0.6vw, 1.4rem);
-  line-height: 1.58;
-  color: var(--forest);
-}
 
 /* phones: the blessing in the sky above, the villa side of the garden below */
 @media (max-width: 767px) {
   .welcome { min-height: 0; padding-block: 4.5rem calc(108vw + 6.5rem); }   /* (the treetops climb ~85px above the photo) */
-  .wel-box { --bw: 224cqw; left: -124.4cqw; }
+  .wel-box { --bw: 224.6cqw; left: -124.4cqw; }
   .wel-m { display: block; }
   .wel-canopy { left: -4vw; top: -6px; width: 52vw; height: auto; }
   .wel-m-bed { left: -6vw; bottom: -2%; width: 62vw; height: auto; }

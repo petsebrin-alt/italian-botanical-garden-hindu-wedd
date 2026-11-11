@@ -55,7 +55,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 /* Remove hanging pink flower strands across all sections */
-.hang, .dest-hang, .std-w, .fam-wisteria, .cpl-hang {
+.hang, .dest-hang, .fam-wisteria, .cpl-hang {
   display: none !important;
 }
 

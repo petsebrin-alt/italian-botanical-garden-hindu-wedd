@@ -425,7 +425,7 @@ export default function Hero() {
         <Layer name="frame-l" priority anchor="edge-l" />
         <Layer name="frame-r" priority anchor="edge-r" />
 
-        <a className="hero-cue" href="#welcome">
+        <a className="hero-cue" href="#save-the-date">
           <span className="caption">Scroll to explore</span>
           <svg className="hero-cue-arrow" width="16" height="44" viewBox="0 0 16 44" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.1">
             <path d="M8 2 V40 M2 34 L8 41 L14 34" />

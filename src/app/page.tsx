@@ -1,7 +1,6 @@
 import Gate from "@/scenes/gate/Gate";
 import Hero from "@/scenes/hero/Hero";
 import Nav from "@/components/Nav";
-import Welcome from "@/sections/Welcome";
 import Couple from "@/sections/Couple";
 import SaveTheDate from "@/sections/SaveTheDate";
 import Events from "@/sections/Events";
@@ -22,9 +21,8 @@ export default function Page() {
       <Nav />
       <main>
         <Hero />
-        <Welcome />
-        <Couple />
         <SaveTheDate />
+        <Couple />
         <Memories />
         <Events />
         <Ceremony />
