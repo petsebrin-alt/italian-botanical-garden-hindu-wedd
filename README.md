@@ -86,6 +86,18 @@ Each celebration's photograph shows its whole scene and its sign. `tools/build_e
 
 The flower on the timeline is a real pink hydrangea (`bloom-hydrangea.webp`). It opens as its celebration scrolls into view and closes again going back: its heart first, then each ring of florets unfurling outward (`src/components/Bloom.tsx`). To use another flower, replace `NODE_FLOWER` in `src/sections/Events.tsx` with any flower photo on a transparent background.
 
+## The flowering creeper (Celebrations timeline)
+
+A flowering creeper (kodi) grows down the Celebrations timeline as the guest scrolls (`src/sections/creeper.ts`). Its stem grows down to just past the middle of the screen. As the stem reaches each piece, the leaves unfurl from their base, the buds swell on their stalks, and the flowers open from a bud: heart first, then each ring of petals. A larger pink flower opens on the stem beside each celebration, and scrolling back folds everything up again. The timeline is taller than one creeper, so mirrored copies continue it, their stems meeting end to end.
+
+The pieces are cut from `assets-src/botanical/ref-creeper.webp`:
+
+```bash
+python3 tools/build_creeper.py         # writes public/assets/img/creeper-stem.webp, creeper-atlas.webp, creeper.json
+```
+
+To go back to the earlier design (a fine gold vine with a hydrangea opening at each celebration), set `VINE = "line"` at the top of `src/sections/Events.tsx`.
+
 ## Crystal curtain
 
 The bead curtain over the ceremony window is drawn live (`src/sections/crystal-curtain.ts`) from the real crystals of `assets-src/botanical/ref-crystal-curtain.webp`. Each crystal is cut at no more than its photographed size, so the curtain stays sharp on any screen. It hangs from the rose-gold rod at the top of the section to its foot. Each crystal glows softly and catches the light in small glints, more often while it moves. Scrolling into the section ripples the strands, then draws them open to both sides, the lower beads trailing behind the top.

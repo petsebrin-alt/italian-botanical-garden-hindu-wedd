@@ -7,9 +7,19 @@ import { useScene } from "@/lib/scene";
 import AddToCalendar from "@/components/AddToCalendar";
 import Pic from "@/components/Pic";
 import Bloom, { bloomTimeline } from "@/components/Bloom";
+import { Creeper, type CreeperMeta } from "./creeper";
+import creeperMeta from "../../public/assets/img/creeper.json";
 import "./events.css";
 
 /** Each celebration's photograph (tools/build_events.py), with a description for screen readers. */
+/**
+ * What grows down the timeline:
+ *   "creeper"  the flowering creeper (kodi) grows as you scroll; its leaves unfurl and its buds
+ *              open into flowers, with a larger flower opening at each celebration (creeper.ts)
+ *   "line"     the earlier design: a fine gold vine with a hydrangea opening at each celebration
+ */
+const VINE: "creeper" | "line" = "creeper";
+
 /** The flower that blooms on the timeline at each celebration (tools/build_events.py). */
 const NODE_FLOWER = "/assets/img/bloom-hydrangea.webp";
 const FRAME = "/assets/img/botanical-gold-frame-wide.webp";
@@ -49,8 +59,14 @@ export default function Events() {
 
   const ref = useScene<HTMLElement>((root, q, tier) => {
     const items = q(".ev-item") as HTMLElement[];
-    if (tier === "C" || items.length < 1) return;
-    gsap.from(q(".ev-vine-path"), {
+    const cleanups: (() => void)[] = [];
+    if (VINE === "creeper") {
+      const creeper = new Creeper(q(".ev-creeper")[0] as HTMLElement, q(".ev-list")[0] as HTMLElement,
+        creeperMeta as CreeperMeta, { stem: "/assets/img/creeper-stem.webp", atlas: "/assets/img/creeper-atlas.webp" }, tier === "C");
+      cleanups.push(() => creeper.destroy());
+    }
+    if (tier === "C" || items.length < 1) return () => cleanups.forEach((f) => f());
+    if (VINE === "line") gsap.from(q(".ev-vine-path"), {
       drawSVG: "0%", ease: "none",
       scrollTrigger: { trigger: q(".ev-list")[0], start: "top 62%", end: "bottom 62%", scrub: true },
     });
@@ -72,7 +88,7 @@ export default function Events() {
       });
     });
 
-    if (window.innerWidth < 1024) return;
+    if (window.innerWidth < 1024) return () => cleanups.forEach((f) => f());
     // wide screens: the arched stage always shows the celebration in the middle of the screen.
     // Which one that is comes from the items' live positions on every scroll (never from
     // trigger points measured earlier), so it stays right however fast or far the page moves.
@@ -130,6 +146,7 @@ export default function Events() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       cancelAnimationFrame(raf);
+      cleanups.forEach((f) => f());
     };
   });
 
@@ -171,8 +188,9 @@ export default function Events() {
           </div>
         </div>
 
-        <ol className="ev-list">
-          {events.length > 1 && (
+        <ol className={`ev-list ev-list--${VINE}`}>
+          {VINE === "creeper" && <li className="ev-creeper" aria-hidden="true" />}
+          {VINE === "line" && events.length > 1 && (
             <svg className="ev-vine" viewBox="0 0 40 1000" preserveAspectRatio="none" aria-hidden="true">
               <path className="ev-vine-path" d="M20 0 C 2 90, 38 170, 20 250 C 2 330, 38 420, 20 500 C 2 580, 38 670, 20 750 C 2 830, 38 920, 20 1000"
                 fill="none" stroke="currentColor" strokeWidth="1.5" />
@@ -182,9 +200,11 @@ export default function Events() {
             const photo = PHOTOS[e.id] ?? PHOTOS.ceremony;
             return (
               <li key={e.id} className="ev-item">
-                <div className="ev-timeline-node" aria-hidden="true">
-                  <Bloom src={NODE_FLOWER} className="ev-node-bloom" />
-                </div>
+                {VINE === "line" && (
+                  <div className="ev-timeline-node" aria-hidden="true">
+                    <Bloom src={NODE_FLOWER} className="ev-node-bloom" />
+                  </div>
+                )}
                 <figure className="ev-inline ev-botanical-frame" data-reveal="mask">
                   <div className="ev-inline-inner">
                     <Pic src={photo.src} alt={photo.alt} className="ev-inline-photo" />

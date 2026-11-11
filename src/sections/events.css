@@ -152,3 +152,42 @@
 .ev-body { color: var(--botanical); max-width: 46ch; }
 .ev-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
 .ev-map { display: inline-flex; align-items: center; gap: 8px; }
+
+/* ------------------------------------------------------------------ the flowering creeper
+ * (Events.tsx VINE = "creeper"): it grows down the left of the timeline (creeper.ts) */
+.ev-list--creeper { padding-left: 96px; }
+@media (min-width: 1024px) { .ev-list--creeper { padding-left: 178px; } }
+.ev-creeper {
+  position: absolute;
+  left: -14px;
+  top: 0;
+  bottom: 0;
+  overflow: clip;
+  overflow-clip-margin: 40px;
+  pointer-events: none;
+  list-style: none;
+  z-index: 2;
+}
+@media (min-width: 1024px) { .ev-creeper { left: 0; } }
+.ev-cr-stem {
+  position: absolute;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  /* the stem shows down to the growing tip, which fades in softly */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(var(--grow, 0px) - var(--top) - 34px), transparent calc(var(--grow, 0px) - var(--top)));
+  mask-image: linear-gradient(to bottom, #000 calc(var(--grow, 0px) - var(--top) - 34px), transparent calc(var(--grow, 0px) - var(--top)));
+}
+.ev-cr {
+  position: absolute;
+  background-repeat: no-repeat;
+  visibility: hidden;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.ev-cr-ring {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  will-change: transform, opacity;
+}
+.ev-cr-mark { z-index: 1; filter: drop-shadow(0 2px 3px rgb(120 60 70 / 0.18)); }
