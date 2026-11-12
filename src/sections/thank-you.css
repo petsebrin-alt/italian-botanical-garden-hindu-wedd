@@ -1,24 +1,24 @@
-/* S15 · Thank you: one screen, edge to edge (ThankYou.tsx lays the garden out across it and sets
- * it together). The words at the top on the sky, a button back to the top on the lawn. */
+/* S15 · Thank you: edge to edge (ThankYou.tsx sets the garden together in it). The scene is the
+ * photograph at the screen's full width, so on laptops the section is as tall as the picture; on
+ * phones it stands at the foot of a screen-tall section, with the sky above it for the words. */
 .ty-stage {
   position: relative;
-  height: 100vh;
-  height: 100lvh;
+  height: max(calc(100vw * 1333 / 1000), 100vh);
   overflow: clip;
-  /* the photograph's pixels, in the screen's: the scene stands at full height */
-  --f: calc(100vh / 1448);
-  /* behind everything: the golden-hour sky, and the deep green of the garden below the hills */
-  background: linear-gradient(180deg, #bcd4e8 0%, #d6e3ec 17%, #e6e9e2 24%, #8f9f73 30%, #5c6f42 42%, #4d5f37 58%, #6f8a3c 66%, #7c9644 100%);
+  /* the overcast sky of the photograph, behind and above the scene */
+  background: linear-gradient(180deg, #c9d3df 0%, #dfe5ec 45%, #e8ecef 100%);
 }
-@supports (height: 1lvh) { .ty-stage { --f: calc(100lvh / 1448); } }
-
+@supports (height: 1lvh) { .ty-stage { height: max(calc(100vw * 1333 / 1000), 100lvh); } }
+.ty-scene {
+  position: absolute; left: 0; right: 0; bottom: 0; width: 100%; aspect-ratio: 1000 / 1333;
+  /* (its sky melts into the sky above it, where the section is taller than the picture) */
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 9%);
+  mask-image: linear-gradient(180deg, transparent, #000 9%);
+}
+@media (min-aspect-ratio: 3/4) { .ty-scene { -webkit-mask-image: none; mask-image: none; } }
 .ty-p { position: absolute; display: block; max-width: none; user-select: none; will-change: transform; }
-/* the hills, across the whole width, behind everything */
-.ty-p--hills { left: 0; width: 100%; top: calc(150 * var(--f)); height: calc(210 * var(--f)); object-fit: cover; object-position: 50% 100%; z-index: 1; }
-/* the branch overhead stirs in the breeze */
-.ty-p--leaves { transform-origin: 0 0; animation: ty-breeze 7s ease-in-out infinite alternate; }
-@keyframes ty-breeze { from { rotate: -0.6deg; } to { rotate: 0.8deg; } }
-.motion-paused .ty-p--leaves { animation-play-state: paused; }
+/* the couple stand on the grass: a soft shadow at their feet */
+.ty-p--couple { filter: drop-shadow(0 calc(0.5vw) calc(0.6vw) rgb(20 30 15 / 0.35)); }
 
 /* the words, on the sky */
 .ty-words {
@@ -48,7 +48,7 @@
   z-index: 30;
   left: 0;
   right: 0;
-  bottom: 2.5vh;
+  bottom: max(10px, 1.6vh);
   width: max-content;
   margin-inline: auto;
   display: inline-flex;
@@ -74,4 +74,3 @@
 .ty-top-btn:hover { background: rgb(255 252 244 / 0.95); color: var(--rose-ink); transform: translateY(-2px); }
 .ty-top-btn:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 3px; }
 
-[data-tier="C"] .ty-p--leaves { animation: none; }

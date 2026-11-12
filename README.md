@@ -228,24 +228,24 @@ A guest's own wishes are kept in their browser (`localStorage`, key `wb-mine`), 
 
 ## The closing: thank you
 
-The last section (`src/sections/ThankYou.tsx`) is one screen, edge to edge, and nothing else. The couple's Tuscan garden is laid out across the whole screen and set together by itself, once, as soon as it comes into view. Each piece appears whole and solid and moves straight into its place:
-1. The hills, across the whole width.
-2. The cypress avenue, and its rows of cypresses reaching out to both edges, one after another.
-3. The lawn, and the couple on the path between the rows, greeting the guests with joined hands.
-4. The stone gateways at the screen's left and right edges, one and then the other.
-5. The urns of flowers either side of the path, and the branch overhead.
-6. "Thank You", the last line and the date at the top (the words are in `thankYou` in `src/content/wedding.ts`), and a Return to top button on the lawn.
+The last section (`src/sections/ThankYou.tsx`) is the garden of Villa Cetinale, edge to edge, and nothing else: a long avenue of cypresses on a grass path running up to the hermitage on the hill, between two brick gateways with statues and obelisks. It is set together by itself, once, as soon as it comes into view. Each piece appears whole and solid and moves straight into its place:
+1. The sky and the hills, with the hermitage at the avenue's end.
+2. The left row of cypresses, then the right.
+3. The grass path between them, and the lawn.
+4. The couple, standing on the path, greeting the guests with joined hands.
+5. The left gateway from the left, then the right one from the right.
+6. The trees in front.
+7. "Thank You", the last line and the date on the sky (the words are in `thankYou` in `src/content/wedding.ts`), and a Return to top button on the lawn.
 
-The scene is laid out in the photograph's own pixels at full height, measured from the screen's centre. On a screen wider than the photo, the gateways move to the screen's edges and the garden carries on between them:
-- the rows of cypresses repeat outward, each a little nearer and in front of the one inside it;
-- the lawn continues on both sides, from a clean stretch of the photo's own lawn, lit to match where they meet;
-- the hills behind come from `public/assets/img/fields-hills.webp`, toned to the photo's own hills.
+The scene is the photograph at the screen's full width, so on laptops the section is as tall as the picture. On phones it stands at the foot of a screen-tall section, with the sky above it for the words. With reduced motion the finished scene simply stands.
 
-The photo cuts the left urn in half, so the right urn stands opposite it, mirrored. On a phone the scene fills the screen at full height and its sides run off the edges. With reduced motion the finished scene simply stands.
+The pieces are cut from `assets-src/closing/ref-cetinale.webp` by `python3 tools/build_villa.py` (into `public/assets/villa/`, with `villa.json` saying where each sits):
+- The gateways and the front trees are fitted to their real edges (GrabCut). The rows are generous outlines that keep the whole of each treetop.
+- The photo's own small walking couple is taken out of the path.
+- Where a later piece will stand, the earlier ones carry the scene on: the photo's own sky, the hills mirrored in from either side, and below them a real garden's hedges and lawn, toned to this photograph. When all have arrived it is the photograph itself.
+- The couple are cut from `assets-src/closing/ref-couple-garden.webp` by `tools/build_closing.py`. They are trimmed to their own outline, eased a little towards the overcast light, and stand on the path with a soft shadow.
 
-The pieces are cut from one photograph, `assets-src/closing/ref-couple-garden.webp`, by `python3 tools/build_closing.py` (into `public/assets/closing/`, with `closing.json` saying where each sits). The couple are cut out of the garden by colour and shape (GrabCut). Every piece is the photograph's own pixels and reaches a little under the pieces above it, so when all have arrived the photograph is whole, without seams. Where a later piece will stand, the earlier ones carry the garden on: the sky and a haze of hills behind the gateways, the lawn behind the urns, the sky behind the branch, and the cypresses and the path continued crisply behind the couple. Each cut-out carries a few pixels of its own real surroundings, so its soft edge falls over identical pixels.
-
-For a different photo, replace the source and rebuild. The outlines of the gateways, the branch and the couple's hints are marked in the tool, in the photo's pixels.
+**Before sharing:** the Villa Cetinale photograph appears to be a professional photographer's work, so you need their permission to show it on the site, or a photo of your own.
 
 ## Motion engine
 
