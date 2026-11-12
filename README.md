@@ -21,7 +21,7 @@ Everything a couple changes lives in **`src/content/wedding.ts`**:
 - names, date, time and time zone
 - parents, the blessing over Save the Date and the story
 - events, ceremony rituals and dress code
-- gallery, venue, RSVP settings and the closing thank-you (its words, the note and the film's lines)
+- gallery, venue, RSVP settings and the closing thank-you lines
 
 On the next build, these update automatically:
 - the hero, monogram initials, page title and OG data
@@ -226,24 +226,22 @@ Until enough guests have written, the booth and the pop-up are kept full by the 
 
 A guest's own wishes are kept in their browser (`localStorage`, key `wb-mine`), so they see their cards on the booth until they are approved. If the booth can't be reached when they send (no connection, or no database yet), the wish still flies in and is sent again quietly: every minute while the page is open, and on their next visit. Only a wish the server refuses outright (too short, or too many from one place in an hour) shows a message.
 
-## The closing: thank you, and the closing film
+## The closing: thank you
 
-The last section (`src/sections/ThankYou.tsx`) begins with the thank-you itself:
-- "Thank You", a line of thanks, and the date.
-- An Add to calendar button, and a Share the invitation button (the phone's own share sheet, or WhatsApp where there is none).
-- "A note from our hearts" from the couple.
+The last section (`src/sections/ThankYou.tsx`) is one screen, edge to edge, and nothing else. The couple's Tuscan garden is laid out across the whole screen and set together by itself, once, as soon as it comes into view. Each piece appears whole and solid and moves straight into its place:
+1. The hills, across the whole width.
+2. The cypress avenue, and its rows of cypresses reaching out to both edges, one after another.
+3. The lawn, and the couple on the path between the rows, greeting the guests with joined hands.
+4. The stone gateways at the screen's left and right edges, one and then the other.
+5. The urns of flowers either side of the path, and the branch overhead.
+6. "Thank You", the last line and the date at the top (the words are in `thankYou` in `src/content/wedding.ts`), and a Return to top button on the lawn.
 
-The words are in `thankYou` in `src/content/wedding.ts`.
+The scene is laid out in the photograph's own pixels at full height, measured from the screen's centre. On a screen wider than the photo, the gateways move to the screen's edges and the garden carries on between them:
+- the rows of cypresses repeat outward, each a little nearer and in front of the one inside it;
+- the lawn continues on both sides, from a clean stretch of the photo's own lawn, lit to match where they meet;
+- the hills behind come from `public/assets/img/fields-hills.webp`, toned to the photo's own hills.
 
-Then comes the closing film, edge to edge. A Tuscan landscape fills the screen from the first moment: the sky, and the hills, cypresses and lawn of `public/assets/window/garden-ground.webp`, warmed to the photograph's golden light. The couple's garden is set into it by itself, once, as soon as it comes into view, like a film rather than tied to the scroll. Each piece appears whole and solid (never faded in), moves straight into its place, and stays:
-1. The cypress avenue, with the hills and the villa beyond.
-2. The stone gateways, from either side.
-3. The couple on their lawn, greeting the guests with joined hands.
-4. The urns of flowers and the branch overhead.
-5. The cypresses at the sides, near and far, out to the screen's edges, and the hydrangeas in front.
-6. "Thank You" and the last line, in the band of sky above.
-
-The photograph stands in the middle and melts into the landscape at its sides. The branch and the cypresses stir in the breeze. With reduced motion the finished picture simply stands.
+The photo cuts the left urn in half, so the right urn stands opposite it, mirrored. On a phone the scene fills the screen at full height and its sides run off the edges. With reduced motion the finished scene simply stands.
 
 The pieces are cut from one photograph, `assets-src/closing/ref-couple-garden.webp`, by `python3 tools/build_closing.py` (into `public/assets/closing/`, with `closing.json` saying where each sits). The couple are cut out of the garden by colour and shape (GrabCut). Every piece is the photograph's own pixels and reaches a little under the pieces above it, so when all have arrived the photograph is whole, without seams. Where a later piece will stand, the earlier ones carry the garden on: the sky and a haze of hills behind the gateways, the lawn behind the urns, the sky behind the branch, and the cypresses and the path continued crisply behind the couple. Each cut-out carries a few pixels of its own real surroundings, so its soft edge falls over identical pixels.
 
@@ -257,7 +255,7 @@ For a different photo, replace the source and rebuild. The outlines of the gatew
   - **A**: full motion.
   - **B**: lite, for low-end devices.
   - **C**: no scroll motion at all, for `prefers-reduced-motion`.
-- "Pause animations" (in the menu and footer) stops ambient motion such as sway, clouds and flicker.
+- "Pause animations" (in the menu) stops ambient motion such as sway, clouds and flicker.
 
 ## RSVP, wishes and studio
 

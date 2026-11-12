@@ -19,6 +19,8 @@ stacked above it, so when all of them are in place the photograph is whole again
 (Behind the urns and the branch, which arrive last, the lawn and the sky are carried on from
 beside them, so no gap shows before they come.) The pieces are stacked in the order they arrive.
 Each piece is cropped to what it holds; closing.json says where it sits (as fractions of the photo).
+For the edge-to-edge scene (see the end) the avenue, its rows of cypresses, the hills and a wide
+lawn are cut as well, and the pieces it does not use are removed.
 
     python3 tools/build_closing.py
     CLOSING_DEBUG=/tmp/c python3 tools/build_closing.py   # also writes a map of the pieces
@@ -48,7 +50,7 @@ def poly(pts):
     return m
 
 
-def grabcut(rect, sure_fg=(), sure_bg=(), green_bg=True, iters=6):
+def grabcut(rect, sure_fg=(), sure_bg=(), green_bg=True, iters=6, peel=True):
     """A figure cut from the garden: inside `rect` probably figure, `sure_fg` polygons surely,
     `sure_bg` polygons surely not, and anything leafy green (in this golden light the lawn is a
     warm yellow-green) inside the rect probably garden."""
@@ -72,7 +74,7 @@ def grabcut(rect, sure_fg=(), sure_bg=(), green_bg=True, iters=6):
         out = np.where(lab == 1 + np.argmax(st[1:, cv2.CC_STAT_AREA]), 255, 0).astype(np.uint8)
     # peel away leafy green still clinging to the outline (the gold embroidery inside the figure is
     # enclosed by it, so it stays)
-    if green_bg:
+    if green_bg and peel:
         leafy = ((hsv[..., 0] >= 22) & (hsv[..., 0] <= 95) & (hsv[..., 1] >= 60)).astype(np.uint8)
         for _ in range(3):
             cand = (out > 0) & (leafy > 0)
@@ -122,9 +124,14 @@ couple = grabcut(
         [(752, 862), (918, 862), (918, 1338), (912, 1338), (900, 1292), (866, 1172), (838, 1062), (792, 1018), (758, 930)],  # the lawn right of her veil
     ],
 )
+# (the white plume on his turban, which the cut can take for sky)
+plume = poly([(462, 472), (512, 462), (516, 528), (466, 528)])
+couple = np.maximum(couple, cv2.bitwise_and(plume, np.where((hsv[..., 1] < 70) & (img.min(-1) > 150), 255, 0).astype(np.uint8)))
+couple = np.maximum(couple, poly([(470, 515), (510, 515), (510, 530), (470, 530)]))
+# (the urns keep their own green leaves: they are not peeled)
 urn_l = grabcut((0, 860, 160, 1245), sure_fg=[[(5, 1060), (80, 1060), (80, 1200), (5, 1200)]],
-                sure_bg=[[(100, 1150), (160, 1150), (160, 1245), (100, 1245)]])
-urn_r = grabcut((926, 870, W, 1235), sure_fg=[[(1010, 1060), (1080, 1060), (1080, 1200), (1010, 1200)]], green_bg=True)
+                sure_bg=[[(100, 1150), (160, 1150), (160, 1245), (100, 1245)]], peel=False)
+urn_r = grabcut((926, 870, W, 1235), sure_fg=[[(1010, 1060), (1080, 1060), (1080, 1200), (1010, 1200)]], peel=False)
 
 leaves = poly([(0, 0), (322, 0), (302, 36), (226, 72), (128, 122), (76, 172), (42, 218), (0, 245)])
 wall_l = poly([(0, 280), (60, 292), (140, 318), (204, 352), (230, 344), (240, 312), (270, 298), (302, 310),
@@ -153,10 +160,11 @@ for i, name in enumerate(order):
 # to the urns' inner side, the open sky to the branch's right)
 plate = img.copy()
 behind = {}
-for name, dx in (("urn-l", 172), ("urn-r", -164), ("leaves", 336)):
+# (beside the right urn is the bride's veil, so its lawn comes, mirrored, from the left side's)
+for name, src in (("urn-l", lambda x: x + 172), ("urn-r", lambda x: (W - 1 - x) + 172), ("leaves", lambda x: x + 336)):
     region = cv2.dilate(claims[name], np.ones((2 * FEATHER + 5, 2 * FEATHER + 5), np.uint8)) > 0
     ys, xs = np.nonzero(region)
-    plate[ys, xs] = img[ys, np.clip(xs + dx, 0, W - 1)]
+    plate[ys, xs] = img[ys, np.clip(src(xs), 0, W - 1)]
     behind[name] = region
 low_owner = owner.copy()
 low_owner[behind["urn-l"] | behind["urn-r"]] = order.index("lawn")
@@ -255,6 +263,121 @@ for i, name in enumerate(order):
     Image.fromarray(rgba).save(p, "WEBP", quality=84, method=6)
     meta["layers"][name] = {"x": round(x0 / W, 5), "y": round(y0 / H, 5), "w": round((x1 - x0) / W, 5), "h": round((y1 - y0) / H, 5)}
     print(name, (x1 - x0, y1 - y0), os.path.getsize(p) // 1024, "KB")
+
+# ------------------------------------------------------------------ edge to edge
+# On a screen wider than the photograph, the scene is laid out across it (ThankYou.tsx): the
+# gateways go to the screen's edges, and between them and the avenue the garden carries on. For
+# that, a few more pieces:
+#   avenue   the cypress avenue alone: its two rows, the path between them and the hills seen down
+#            it (the sky open above, so the section's own sky shows)
+#   trees-l  its left row of cypresses, and trees-r its right row: repeated outward, they become
+#            the rows of cypresses reaching to the screen's edges
+#   hills    the hills across the whole width, behind everything: the real Tuscan hills of
+#            public/assets/img/fields-hills.webp, toned to this photograph's own hills
+#   lawn     the lawn, carried on to either side (mirrored), so it reaches both edges
+def save_piece(name, rgba, x0=0, y0=0, wide=False):
+    a = rgba[..., 3]
+    ys, xs = np.nonzero(a > 2)
+    cx0, cx1, cy0, cy1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+    crop = rgba[cy0:cy1, cx0:cx1]
+    Image.fromarray(crop).save(os.path.join(OUT, f"{name}.webp"), "WEBP", quality=84, method=6)
+    meta["layers"][name] = {"x": round((x0 + cx0) / W, 5), "y": round((y0 + cy0) / H, 5), "w": round((cx1 - cx0) / W, 5), "h": round((cy1 - cy0) / H, 5)}
+    print(name, crop.shape[1], crop.shape[0])
+
+
+row_l = poly([(286, 905), (286, 330), (298, 170), (318, 60), (344, 0), (374, 0), (398, 96), (424, 148),
+              (450, 172), (472, 204), (492, 254), (507, 334), (515, 430), (520, 498), (520, 905)])
+row_r = poly([(598, 905), (598, 498), (603, 330), (618, 250), (640, 194), (660, 128), (688, 54), (712, 0),
+              (734, 0), (748, 68), (762, 154), (778, 244), (795, 294), (808, 330), (808, 905)])
+notch = poly([(505, 190), (606, 190), (606, 905), (505, 905)])
+open_sky = sky.copy()
+open_sky[520:] = False
+# (the gateways are their own pieces: the rows stop at their outlines)
+walls_any = (wall_l > 0) | (wall_r > 0)
+row_l[walls_any] = 0
+row_r[walls_any] = 0
+avenue_mask = ((row_l > 0) | (row_r > 0) | (notch > 0)) & ~open_sky
+
+
+def cut(mask, rgb):
+    a = cv2.GaussianBlur(mask.astype(np.float32), (0, 0), 1.0)
+    return np.dstack([rgb, (np.clip(a, 0, 1) * 255).astype(np.uint8)])
+
+
+save_piece("avenue", cut(avenue_mask, plate))
+save_piece("trees-l", cut((row_l > 0) & ~open_sky, plate))
+save_piece("trees-r", cut((row_r > 0) & ~open_sky, plate))
+
+# the hills: the panorama's own hills (its sky cleared along the ridge, its hedges and lawn left
+# out), toned to the hills of this photograph
+pano = Image.open(os.path.join(ROOT, "public", "assets", "img", "fields-hills.webp")).convert("RGBA")
+pano = np.array(pano).astype(np.float32)
+ph, pw = pano.shape[:2]
+prgb = pano[..., :3]
+skyish = (pano[..., 3] < 128) | (prgb.min(-1) > 170) | ((prgb[..., 2] > prgb[..., 1] + 4) & (prgb[..., 2] > prgb[..., 0] + 14))
+solid = cv2.erode((~skyish).astype(np.uint8), np.ones((7, 1), np.uint8), anchor=(0, 0))
+ridge = np.where(solid.any(0), solid.argmax(0), ph).astype(np.float32)
+ridge = np.convolve(np.pad(ridge, 12, mode="edge"), np.ones(25) / 25, mode="valid")
+rows = np.arange(ph, dtype=np.float32)[:, None]
+alpha = np.clip(rows - ridge[None, :] + 1.5, 0, 1)
+alpha *= np.clip((150 - rows) / 30, 0, 1)  # (only the hills: it fades out above the hedges)
+ref = img[150:340][land[150:340]].astype(np.float32).reshape(-1, 3) if land[150:340].any() else img[150:340].reshape(-1, 3).astype(np.float32)
+cur = prgb[(alpha > 0.9)].reshape(-1, 3)
+toned = (prgb - cur.mean(0)) * np.clip(ref.std(0) / (cur.std(0) + 1e-6), 0.6, 1.4) + ref.mean(0)
+hills = np.dstack([np.clip(toned, 0, 255), alpha * 255]).astype(np.uint8)[:150]
+Image.fromarray(hills).save(os.path.join(OUT, "hills.webp"), "WEBP", quality=84, method=6)
+meta["hills"] = {"w": pw, "h": 150}
+print("hills", pw, 150)
+
+# the lawn, carried on to either side by its own outer strips (clear of the couple), mirrored
+# back and forth
+lm = meta["layers"]["lawn"]
+lawn_img = np.array(Image.open(os.path.join(OUT, "lawn.webp")))
+lw_ = lawn_img.shape[1]
+# (a clean stretch of lawn and flower bed between the left urn and the couple, mirrored back and
+# forth; the right side is its mirror image)
+b0, b1 = 168, 300
+strip = lawn_img[:, b0:b1]
+def side(n):
+    tiles = [strip if i % 2 == 0 else strip[:, ::-1] for i in range(n)]
+    return np.concatenate(tiles, axis=1)
+reps = -(-lw_ // (b1 - b0)) + 1
+left = side(reps)[:, -lw_:].astype(np.float32)
+right = left[:, ::-1].copy()
+
+
+def match_light(ext, edge_cols, near_end):
+    """Light the extension row by row like the lawn's own edge where they meet, easing back to
+    its own light further out; and blend the join over a few dozen pixels."""
+    n = 48
+    own = ext[:, -n:] if near_end else ext[:, :n]
+    gain = (edge_cols[..., :3].mean(1) + 1) / (own[..., :3].mean(1) + 1)  # per row, per channel
+    w = ext.shape[1]
+    fall = np.clip(1 - np.abs(np.arange(w) - (w - 1 if near_end else 0)) / 420, 0, 1)[None, :, None]
+    ext[..., :3] *= 1 + (gain[:, None, :] - 1) * fall
+    return ext
+
+
+lf = lawn_img.astype(np.float32)
+left = match_light(left, lf[:, :48], near_end=True)
+right = match_light(right, lf[:, -48:], near_end=False)
+wide = np.concatenate([left, lf, right], axis=1)
+# (a soft cross-fade over the two joins)
+for j in (lw_, 2 * lw_):
+    a, b = wide[:, j - 24:j, :3].copy(), wide[:, j:j + 24, :3].copy()
+    ramp = np.linspace(0, 1, 24, dtype=np.float32)[None, :, None]
+    wide[:, j - 24:j, :3] = a * (1 - ramp * 0.5) + b[:, ::-1] * (ramp * 0.5)
+    wide[:, j:j + 24, :3] = b * (0.5 + ramp * 0.5) + a[:, ::-1] * (0.5 - ramp * 0.5)
+wide = np.clip(wide, 0, 255).astype(np.uint8)
+Image.fromarray(wide).save(os.path.join(OUT, "lawn-wide.webp"), "WEBP", quality=84, method=6)
+meta["layers"]["lawn-wide"] = {"x": round(lm["x"] - lm["w"], 5), "y": lm["y"], "w": round(lm["w"] * 3, 5), "h": lm["h"]}
+print("lawn-wide", wide.shape[1], wide.shape[0])
+
+# (the pieces the edge-to-edge scene does not use: the whole garden, the narrow lawn, and the left
+# urn, which the photo cuts in half; the scene stands the right one opposite, mirrored)
+for name in ("garden", "lawn", "urn-l"):
+    os.remove(os.path.join(OUT, f"{name}.webp"))
+    meta["layers"].pop(name, None)
 
 with open(os.path.join(OUT, "closing.json"), "w") as f:
     json.dump(meta, f, indent=1)

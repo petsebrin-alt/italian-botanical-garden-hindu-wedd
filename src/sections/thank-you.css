@@ -1,172 +1,77 @@
-/* S15 · Thank you: the thank-you and the date, the note from the couple, the closing film, and
- * the footer (ThankYou.tsx). */
-.ty { position: relative; }
-
-/* ------------------------------------------------------------------ the thank-you */
-.ty-top { padding: clamp(4rem, 10vh, 7rem) 0 clamp(1.5rem, 4vh, 2.5rem); }
-.ty-top-inner { display: grid; justify-items: center; gap: clamp(6px, 1.2vh, 12px); text-align: center; }
-.ty-lotus { width: 64px; height: 24px; margin-block: clamp(0.6rem, 2vh, 1.4rem); }
-.ty-lotus circle { fill: var(--gold); }
-.ty-lotus-side { fill: var(--rose-ink); }
-.ty-lotus-mid { fill: var(--gold); }
-.ty-title {
-  font-family: var(--font-script), serif;
-  font-weight: 400;
-  font-size: clamp(4.2rem, 2rem + 8vw, 8.6rem);
-  line-height: 1;
-  color: var(--rose-ink);
-  padding-inline: 0.15em;
-}
-.ty-sub { font-family: var(--font-names), serif; font-size: clamp(1.15rem, 1rem + 0.6vw, 1.5rem); color: var(--forest); }
-.ty-save {
-  margin-top: clamp(0.8rem, 2.5vh, 1.6rem);
-  font-family: var(--font-names), serif;
-  font-weight: 600;
-  font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.25rem);
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--rose-ink);
-}
-.ty-date {
-  font-family: var(--font-names), serif;
-  font-weight: 600;
-  font-size: clamp(2.6rem, 1.6rem + 4.4vw, 4.8rem);
-  line-height: 1.05;
-  letter-spacing: 0.06em;
-  font-variant-numeric: lining-nums;
-  color: var(--rose-ink);
-}
-.ty-place {
-  font-family: var(--font-names), serif;
-  font-weight: 600;
-  font-size: clamp(0.9rem, 0.8rem + 0.4vw, 1.15rem);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--gold-ink);
-}
-.ty-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: clamp(0.6rem, 2vh, 1.2rem); }
-
-.ty-note { display: grid; justify-items: center; gap: 8px; max-width: 46rem; }
-.ty-note-eyebrow { font-family: var(--font-deva), serif; font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem); line-height: 1.2; color: var(--gold-ink); }
-.ty-note-title {
-  font-family: var(--font-names), serif;
-  font-weight: 600;
-  font-size: clamp(1.05rem, 0.85rem + 0.9vw, 1.6rem);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--rose-ink);
-}
-.ty-note-dear { font-family: var(--font-names), serif; font-style: italic; font-size: clamp(1.15rem, 1rem + 0.6vw, 1.45rem); color: var(--forest); }
-.ty-note-dear strong { font-style: normal; font-weight: 600; color: var(--rose-ink); }
-.ty-note-body { font-family: var(--font-names), serif; font-style: italic; font-size: clamp(1.1rem, 0.95rem + 0.6vw, 1.4rem); line-height: 1.6; color: var(--forest); max-width: 40ch; }
-.ty-note-closing { margin-top: 6px; font-family: var(--font-names), serif; font-size: 1.1rem; color: var(--botanical); }
-.ty-note-names { font-family: var(--font-script), serif; font-size: clamp(2.2rem, 1.6rem + 2vw, 3.2rem); line-height: 1.1; color: var(--rose-ink); }
-.ty-note-names span { color: var(--gold-ink); }
-
-/* ------------------------------------------------------------------ the closing film
- * Edge to edge and one screen tall (ThankYou.tsx sets the garden into it). Behind everything, a
- * Tuscan landscape fills the screen: the sky, and the hills, cypresses and lawn of
- * public/assets/window/garden-ground.webp, warmed to the photograph's golden light. The couple's
- * garden (3 x 4) stands in the middle at full height, melting into the landscape at its sides; the
- * cypresses and hydrangeas reach from it to the screen's edges; the last words are over the sky. */
-.ty-film {
-  /* the band of open sky at the top that holds the last words, and the picture's height under it
-   * (never wider than the screen) and width */
-  --sky: clamp(150px, 21vh, 210px);
-  --sh: min(calc(100lvh - var(--sky)), calc(100vw * 1448 / 1086));
-  --sw: calc(var(--sh) * 1086 / 1448);
-}
-.ty-film-stage {
+/* S15 · Thank you: one screen, edge to edge (ThankYou.tsx lays the garden out across it and sets
+ * it together). The words at the top on the sky, a button back to the top on the lawn. */
+.ty-stage {
   position: relative;
   height: 100vh;
   height: 100lvh;
   overflow: clip;
-  /* the golden-hour sky of the photograph, palest at the hills */
-  background: linear-gradient(180deg, #b9d3e8 0%, #d3e2ec 30%, #ebece4 55%, #f3e7cf 70%, #e9dcc0 100%);
+  /* the photograph's pixels, in the screen's: the scene stands at full height */
+  --f: calc(100vh / 1448);
+  /* behind everything: the golden-hour sky, and the deep green of the garden below the hills */
+  background: linear-gradient(180deg, #bcd4e8 0%, #d6e3ec 17%, #e6e9e2 24%, #8f9f73 30%, #5c6f42 42%, #4d5f37 58%, #6f8a3c 66%, #7c9644 100%);
 }
-.ty-backdrop {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: max(56%, calc(100vw * 936 / 2400));
-  object-fit: cover;
-  object-position: 50% 100%;
-  filter: sepia(0.2) saturate(1.12) hue-rotate(-6deg) brightness(1.03);
-}
-.ty-scene {
-  position: absolute;
-  z-index: 2;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin-inline: auto;
-  height: var(--sh);
-  aspect-ratio: 1086 / 1448;
-  /* the picture's sides and sky melt into the landscape */
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 11%, #000 89%, transparent), linear-gradient(180deg, transparent, #000 12%);
-  mask-image: linear-gradient(90deg, transparent, #000 11%, #000 89%, transparent), linear-gradient(180deg, transparent, #000 12%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
-.ty-l { position: absolute; display: block; max-width: none; user-select: none; will-change: transform; }
+@supports (height: 1lvh) { .ty-stage { --f: calc(100lvh / 1448); } }
+
+.ty-p { position: absolute; display: block; max-width: none; user-select: none; will-change: transform; }
+/* the hills, across the whole width, behind everything */
+.ty-p--hills { left: 0; width: 100%; top: calc(150 * var(--f)); height: calc(210 * var(--f)); object-fit: cover; object-position: 50% 100%; z-index: 1; }
 /* the branch overhead stirs in the breeze */
-.ty-l--leaves { transform-origin: 0 0; animation: ty-breeze 7s ease-in-out infinite alternate; }
+.ty-p--leaves { transform-origin: 0 0; animation: ty-breeze 7s ease-in-out infinite alternate; }
 @keyframes ty-breeze { from { rotate: -0.6deg; } to { rotate: 0.8deg; } }
+.motion-paused .ty-p--leaves { animation-play-state: paused; }
 
-/* the cypresses from the picture's sides to the screen's edges, and the hydrangeas in front */
-.ty-side { position: absolute; bottom: 0; width: auto; max-width: none; pointer-events: none; }
-.ty-side--tree { transform-origin: 50% 100%; animation: ty-sway 9s ease-in-out infinite alternate; }
-.ty-side--near { z-index: 1; height: calc(var(--sh) * 0.94); }
-.ty-side--near.ty-side--l { right: calc(50% + var(--sw) * 0.44); }
-.ty-side--near.ty-side--r { left: calc(50% + var(--sw) * 0.44); animation-delay: -4s; }
-.ty-side--far { z-index: 1; height: calc(var(--sh) * 0.84); }
-.ty-side--far.ty-side--l { right: calc(50% + var(--sw) * 0.44 + var(--sh) * 0.22); scale: -1 1; animation-delay: -2s; }
-.ty-side--far.ty-side--r { left: calc(50% + var(--sw) * 0.44 + var(--sh) * 0.22); scale: -1 1; animation-delay: -6s; }
-.ty-side--bed { z-index: 3; bottom: -3%; height: auto; width: clamp(260px, calc(50vw - var(--sw) * 0.3), 760px); }
-.ty-side--bed.ty-side--l { right: calc(50% + var(--sw) * 0.3); }
-.ty-side--bed.ty-side--r { left: calc(50% + var(--sw) * 0.3); }
-@keyframes ty-sway { from { rotate: -0.5deg; } to { rotate: 0.5deg; } }
-.motion-paused .ty-l--leaves, .motion-paused .ty-side--tree { animation-play-state: paused; }
-
-/* the last words, over the sky */
-.ty-film-thanks {
+/* the words, on the sky */
+.ty-words {
   position: absolute;
-  z-index: 4;
+  z-index: 30;
   left: 0;
   right: 0;
-  top: max(var(--nav-h), calc(100lvh - var(--sh) - var(--sky)));
-  height: var(--sky);
-  align-content: center;
-  width: min(92vw, 720px);
+  top: calc(var(--nav-h) + 1vh);
+  width: min(92vw, 760px);
   margin-inline: auto;
   display: grid;
   justify-items: center;
   gap: 4px;
-  padding: 0 24px;
+  padding: 10px 24px 16px;
   text-align: center;
+  background: radial-gradient(closest-side, rgb(248 245 236 / 0.62), rgb(248 245 236 / 0.38) 55%, rgb(248 245 236 / 0));
 }
-.ty-film-title { font-family: var(--font-script), serif; font-size: clamp(2.8rem, 1.8rem + 3.6vw, 4.8rem); line-height: 1; color: var(--rose-ink); }
-.ty-film-line { font-family: var(--font-names), serif; font-style: italic; font-size: clamp(1.05rem, 0.9rem + 0.6vw, 1.4rem); line-height: 1.4; color: var(--forest); max-width: 36ch; }
-.ty-film-names { margin-top: 2px; font-family: var(--font-body), sans-serif; font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold-ink); }
+.ty-title { font-family: var(--font-script), serif; font-weight: 400; font-size: clamp(2.8rem, 1.8rem + 3.6vw, 5rem); line-height: 1; color: #7f3a40; text-shadow: 0 0 2px rgb(255 252 244 / 0.9), 0 1px 14px rgb(255 252 244 / 0.95), 0 0 28px rgb(255 252 244 / 0.8); }
+.ty-line { font-family: var(--font-names), serif; font-style: italic; font-size: clamp(1.05rem, 0.9rem + 0.6vw, 1.4rem); line-height: 1.4; color: #1f3427; max-width: 38ch; text-shadow: 0 0 2px rgb(255 252 244 / 0.95), 0 0 12px rgb(255 252 244 / 0.95), 0 0 24px rgb(255 252 244 / 0.8); }
+.ty-date { display: grid; justify-items: center; gap: 2px; margin-top: 4px; }
+.ty-date-num { font-family: var(--font-names), serif; font-weight: 600; font-size: clamp(1.3rem, 1rem + 1vw, 1.8rem); letter-spacing: 0.08em; font-variant-numeric: lining-nums; color: #7f3a40; text-shadow: 0 0 2px rgb(255 252 244 / 0.95), 0 0 12px rgb(255 252 244 / 0.95), 0 0 24px rgb(255 252 244 / 0.8); }
+.ty-date-place { font-family: var(--font-body), sans-serif; font-size: 0.7rem; letter-spacing: 0.26em; text-transform: uppercase; color: #5e4719; text-shadow: 0 0 2px rgb(255 252 244 / 0.95), 0 0 10px rgb(255 252 244 / 0.95); }
 
-/* phones: the picture fills the width at the foot; the sky and the hills are above it */
-@media (max-width: 699px) {
-  .ty-side--tree { display: none; }
-  .ty-side--bed { width: 46vw; bottom: -2%; }
-  .ty-side--bed.ty-side--l { right: auto; left: -12vw; }
-  .ty-side--bed.ty-side--r { left: auto; right: -12vw; }
-  .ty-scene {
-    -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%);
-    mask-image: linear-gradient(180deg, transparent, #000 10%);
-  }
+/* back to the top: a small frosted pill on the lawn */
+.ty-top-btn {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  bottom: 2.5vh;
+  width: max-content;
+  margin-inline: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px 9px 14px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 250 238 / 0.7);
+  background: rgb(250 246 236 / 0.72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 24px -12px rgb(30 40 25 / 0.55);
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--forest);
+  transition: background 0.3s, color 0.3s, transform 0.3s;
 }
-/* with reduced motion: the finished picture */
-[data-tier="C"] .ty-l--leaves, [data-tier="C"] .ty-side--tree { animation: none; }
+.ty-top-btn svg { width: 14px; height: 14px; }
+.ty-top-btn:hover { background: rgb(255 252 244 / 0.95); color: var(--rose-ink); transform: translateY(-2px); }
+.ty-top-btn:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 3px; }
 
-/* ------------------------------------------------------------------ the footer */
-.ty-footer { padding-block: clamp(4rem, 10vh, 6rem); }
-.ty-footer-inner { display: grid; justify-items: center; gap: 14px; text-align: center; color: var(--gold-ink); }
-.ty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px; }
-.ty-small { color: var(--botanical); margin-top: 12px; }
+[data-tier="C"] .ty-p--leaves { animation: none; }

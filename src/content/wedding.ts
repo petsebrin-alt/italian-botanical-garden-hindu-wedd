@@ -212,23 +212,10 @@ export const wedding = {
     askEvents: true,
     askDiet: true,
   },
-  /**
-   * The closing: the thank-you, the date and the buttons first, a note from the couple, and then
-   * the closing film (the garden coming together piece by piece, the couple, and the last words).
-   */
+  /** The closing screen: the words on its picture (with the date, and a button back to the top). */
   thankYou: {
     title: "Thank You",
-    sub: "For your love and blessings, thank you.",
-    note: {
-      eyebrow: { text: "प्रेम पत्र", lang: "hi" },
-      title: "A note from our hearts",
-      greeting: "Family & Friends",
-      body: "Our story feels complete only with you in it. Thank you for every blessing, every prayer and every mile you travel to be beside us.",
-      closing: "With all our love,",
-    },
-    film: {
-      line: "Your love, blessings and presence made our celebration even more special.",
-    },
+    line: "Your love, blessings and presence made our celebration even more special.",
   },
 };
 

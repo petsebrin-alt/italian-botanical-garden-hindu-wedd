@@ -1,182 +1,146 @@
 "use client";
 
-import { publishedEvents, wedding } from "@/content/wedding";
-import { gsap, ScrollTrigger, tokens } from "@/lib/gsap";
-import { useMotion } from "@/lib/motion";
+import { wedding } from "@/content/wedding";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
-import AddToCalendar from "@/components/AddToCalendar";
-import { Monogram } from "@/components/Ornaments";
-import { Sprite } from "@/components/Pic";
 import closing from "../../public/assets/closing/closing.json";
 import "./thank-you.css";
 
 const C = "/assets/closing/";
-/** The closing film's pieces, back to front (tools/build_closing.py). */
-const PIECES = ["garden", "wall-l", "wall-r", "lawn", "couple", "urn-l", "urn-r", "leaves"] as const;
-type Piece = (typeof PIECES)[number];
-const layers = closing.layers as Record<Piece, { x: number; y: number; w: number; h: number }>;
+type Box = { x: number; y: number; w: number; h: number };
+const L = closing.layers as unknown as Record<string, Box>;
+/** The photograph's size, in its own pixels: the scene is laid out in them, at full height. */
+const PW = closing.w, PH = closing.h, MID = PW / 2;
+/** How many repeats of each row of cypresses reach out to the edge on the widest screens. */
+const REPEATS = 7;
 
-/** A small lotus of three petals, between the parts of the thank-you. */
-function Lotus() {
-  return (
-    <svg className="ty-lotus" viewBox="0 0 64 24" aria-hidden="true">
-      <circle cx="6" cy="16" r="1.8" />
-      <circle cx="58" cy="16" r="1.8" />
-      <path className="ty-lotus-side" d="M32 21C24 21 18 15 15 9c6 0 13 4 17 12Z" />
-      <path className="ty-lotus-side" d="M32 21c8 0 14-6 17-12-6 0-13 4-17 12Z" />
-      <path className="ty-lotus-mid" d="M32 21c-4-5-4-12 0-18 4 6 4 13 0 18Z" />
-    </svg>
-  );
+/** Where a piece sits: measured from the screen's centre, in the photo's pixels (`--f` turns
+ *  them into the screen's). `edge` pins a piece at the photo's side to the screen's edge instead,
+ *  whenever the screen is wider than the photo. */
+function place(b: Box, edge?: "l" | "r", scale = 1, dx = 0, dy = 0): React.CSSProperties {
+  const x = b.x * PW + dx, y = b.y * PH + dy, w = b.w * PW * scale, h = b.h * PH * scale;
+  const s: React.CSSProperties = { top: `calc(${y.toFixed(1)} * var(--f))`, width: `calc(${w.toFixed(1)} * var(--f))`, height: `calc(${h.toFixed(1)} * var(--f))` };
+  if (edge === "l") s.left = `min(0px, calc(50% - ${MID} * var(--f)))`;
+  else if (edge === "r") s.right = `min(0px, calc(50% - ${MID} * var(--f)))`;
+  else s.left = `calc(50% + ${(x - MID).toFixed(1)} * var(--f))`;
+  return s;
+}
+
+/** The rows of cypresses, repeated outward from the avenue: each a little nearer (larger, and
+ *  standing a little lower) than the one inside it, and in front of it. */
+function rows() {
+  const out: { key: string; src: string; side: "l" | "r"; k: number; style: React.CSSProperties }[] = [];
+  const tl = L["trees-l"], tr = L["trees-r"];
+  // each row's inner edge reaches well back over the row inside it, so no gap ever shows
+  const OVERLAP = 0.45;
+  let lEdge = tl.x * PW, rEdge = (tr.x + tr.w) * PW;
+  for (let k = 1; k <= REPEATS; k++) {
+    const sc = 1 + 0.09 * k;
+    const lift = 16 * k;
+    const lw = tl.w * PW * sc, lh = tl.h * PH * sc;
+    const lRight = lEdge + lw * OVERLAP;
+    lEdge = lRight - lw;
+    out.push({ key: `l${k}`, src: "trees-l", side: "l", k, style: {
+      left: `calc(50% + ${(lRight - lw - MID).toFixed(1)} * var(--f))`, top: `calc(${(tl.y * PH + tl.h * PH + lift - lh).toFixed(1)} * var(--f))`,
+      width: `calc(${lw.toFixed(1)} * var(--f))`, height: `calc(${lh.toFixed(1)} * var(--f))`, zIndex: 2 + k,
+    } });
+    const rw = tr.w * PW * sc, rh = tr.h * PH * sc;
+    const rLeft = rEdge - rw * OVERLAP;
+    rEdge = rLeft + rw;
+    out.push({ key: `r${k}`, src: "trees-r", side: "r", k, style: {
+      left: `calc(50% + ${(rLeft - MID).toFixed(1)} * var(--f))`, top: `calc(${(tr.y * PH + tr.h * PH + lift - rh).toFixed(1)} * var(--f))`,
+      width: `calc(${rw.toFixed(1)} * var(--f))`, height: `calc(${rh.toFixed(1)} * var(--f))`, zIndex: 2 + k,
+    } });
+  }
+  return out;
 }
 
 /**
- * S15 · Thank you. First the thank-you itself: the date, a button to add it to the calendar and
- * one to share the invitation, and a note from the couple. Then the closing film, edge to edge:
- * a Tuscan landscape (sky, hills, cypresses, lawn) fills the screen from the first moment, and the
- * couple's garden is set into it by itself, once, as soon as it comes into view (like a film, not
- * tied to the scroll). Each piece appears whole and solid, never faded in, moves straight into
- * its place and stays: the cypress avenue with the hills and the villa beyond; the stone gateways,
- * from either side; the couple on their lawn, greeting the guests with joined hands; the urns of
- * flowers and the branch overhead; the cypresses at the sides and the hydrangeas in front; and the
- * last words. Every piece is the photograph's own, so when all have arrived it is the photograph,
- * whole. With reduced motion the finished picture simply stands.
+ * S15 · Thank you: the last screen of the invitation, edge to edge, and nothing else. The couple's
+ * Tuscan garden is set together across the whole screen by itself, once, as soon as it comes into
+ * view (like a film, not tied to the scroll): each piece appears whole and solid, never faded in,
+ * moves straight into its place and stays. The hills; the cypress avenue and its rows of cypresses
+ * reaching out to both edges; the lawn; the couple on the path, greeting the guests with joined
+ * hands; the stone gateways at the screen's edges, one and then the other; the urns of flowers and
+ * the branch overhead. Then "Thank You", the last line, the date, and a button back to the top.
+ * Every piece is cut from the one photograph (tools/build_closing.py). With reduced motion the
+ * finished scene simply stands.
  */
 export default function ThankYou() {
   const { bride, groom } = wedding.couple;
   const t = wedding.thankYou;
-  const { paused, togglePaused } = useMotion();
-  const ceremony = publishedEvents().find((e) => e.type === "ceremony") ?? publishedEvents()[0];
   const date = new Date(`${wedding.date}T12:00:00Z`);
   const [y, m, d] = wedding.date.split("-");
   const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(date);
+  const month = new Intl.DateTimeFormat("en-GB", { month: "long", timeZone: "UTC" }).format(date);
+  const repeats = rows();
 
   const ref = useScene<HTMLElement>((root, q, tier) => {
     if (tier === "C") return;
-    const L = (p: Piece) => q(`.ty-l--${p}`)[0];
-    gsap.set(q(".ty-l, .ty-side, .ty-film-thanks > *"), { autoAlpha: 0 });
+    const P = (c: string) => q(`.ty-p--${c}`);
+    gsap.set(q(".ty-p, .ty-words > *, .ty-top-btn"), { autoAlpha: 0 });
 
-    // the film plays by itself, once, the moment it comes into view: each piece appears whole and
-    // solid (never faded in) and moves straight into its place, one after another, and stays
     const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
     /** A piece appears at `at`, `from` (percent of its own size) away, and moves into its place. */
     const appear = (el: Element | Element[], at: number, from: { x?: number; y?: number }, dur = 0.85) =>
       tl.set(el, { autoAlpha: 1 }, at)
         .fromTo(el, { xPercent: from.x ?? 0, yPercent: from.y ?? 0 }, { xPercent: 0, yPercent: 0, duration: dur, immediateRender: false }, at);
 
-    // the cypress avenue with the hills and the villa beyond
-    appear(L("garden"), 0, { y: 22 }, 0.95);
-    // the stone gateways, from either side
-    appear(L("wall-l"), 0.8, { x: -105 });
-    appear(L("wall-r"), 1.25, { x: 105 });
-    // the couple, on their lawn
-    appear(L("lawn"), 1.9, { y: 40 }, 0.8);
-    appear(L("couple"), 2.05, { y: 24 }, 0.9);
+    // the hills
+    appear(P("hills"), 0, { y: 30 }, 0.8);
+    // the cypress avenue, and its rows reaching out to both edges, one after another
+    appear(P("avenue"), 0.45, { y: 26 }, 0.9);
+    for (let k = 1; k <= REPEATS; k++) appear(q(`.ty-p--row[data-k="${k}"]`), 0.6 + k * 0.12, { y: 30 }, 0.85);
+    // the lawn, and the couple on the path
+    appear(P("lawn"), 1.4, { y: 40 }, 0.8);
+    appear(P("couple"), 1.6, { y: 24 }, 0.9);
+    // the stone gateways at the edges, one and then the other
+    appear(P("wall-l"), 2.35, { x: -105 });
+    appear(P("wall-r"), 2.8, { x: 105 });
     // the urns of flowers and the branch overhead
-    appear(L("urn-l"), 2.85, { y: 60 }, 0.7);
-    appear(L("urn-r"), 3.0, { y: 60 }, 0.7);
-    appear(L("leaves"), 3.15, { x: -40, y: -40 }, 0.8);
-    // the cypresses at the sides, near and far, and the hydrangeas in front
-    appear(q(".ty-side--near"), 3.4, { y: 60 }, 0.85);
-    appear(q(".ty-side--far"), 3.65, { y: 60 }, 0.85);
-    appear(q(".ty-side--bed"), 3.95, { y: 70 }, 0.8);
-    // and the last words
-    tl.fromTo(q(".ty-film-thanks > *"), { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.18, ease: "power2.out" }, 4.5);
+    appear(P("urn-l"), 3.35, { y: 60 }, 0.7);
+    appear(P("urn-r"), 3.5, { y: 60 }, 0.7);
+    appear(P("leaves"), 3.65, { x: -40, y: -40 }, 0.8);
+    // the words, and the way back to the top
+    tl.fromTo(q(".ty-words > *"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.16, ease: "power2.out" }, 4.1)
+      .fromTo(q(".ty-top-btn"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 4.7);
 
-    const st = ScrollTrigger.create({ trigger: q(".ty-film-stage")[0], start: "top 70%", once: true, onEnter: () => tl.play() });
-
-    gsap.from(q(".ty-mono .mono-draw"), { drawSVG: "0%", duration: 1.4, ease: tokens.ease.cinematic, scrollTrigger: { trigger: q(".ty-footer")[0], start: "top 90%", once: true } });
+    const st = ScrollTrigger.create({ trigger: q(".ty-stage")[0], start: "top 70%", once: true, onEnter: () => tl.play() });
     return () => { tl.kill(); st.kill(); };
   });
 
-  const invite = `You're invited: ${bride.name} & ${groom.name}`;
-  const whatsapp = `https://wa.me/?text=${encodeURIComponent(invite)}`;
-  const share = async () => {
-    const url = window.location.href.split("#")[0];
-    if (navigator.share) {
-      try { await navigator.share({ title: invite, text: invite, url }); return; } catch { /* closed */ return; }
-    }
-    window.open(`https://wa.me/?text=${encodeURIComponent(`${invite} ${url}`)}`, "_blank", "noopener,noreferrer");
-  };
+  const img = (cls: string, src: string, style: React.CSSProperties, k?: number, key?: string) => (
+    <img key={key} className={`ty-p ${cls}`} src={`${C}${src}.webp`} alt="" loading="lazy" decoding="async" draggable={false} style={style} data-k={k} />
+  );
 
   return (
     <section ref={ref} id="thank-you" className="ty" aria-labelledby="ty-title">
-      {/* the thank-you, the date, and the note from the couple */}
-      <div className="ty-top paper">
-        <div className="container ty-top-inner">
-          <Lotus />
-          <h2 id="ty-title" className="ty-title" data-reveal="up">{t.title}</h2>
-          <p className="ty-sub" data-reveal="fade">{t.sub}</p>
-          <p className="ty-save" data-reveal="fade">Save the date</p>
-          <p className="ty-date" data-reveal="up" aria-label={`${weekday}, ${Number(d)} August ${y}`}>{d} · {m} · {y}</p>
-          <p className="ty-place" data-reveal="fade">{weekday} · {wedding.destination.label}</p>
-          <div className="ty-buttons" data-reveal="fade">
-            {ceremony && <AddToCalendar event={ceremony} label="Add to calendar" variant="primary" />}
-            <button type="button" className="btn btn--ghost ty-share" onClick={share}>Share the invitation</button>
-          </div>
+      <div className="ty-stage" role="img" aria-label={`${bride.name} and ${groom.name} greeting their guests with joined hands, on the path of a cypress avenue in a Tuscan garden, between two stone gateways, with the hills beyond`}>
+        {img("ty-p--hills", "hills", {})}
+        {img("ty-p--avenue", "avenue", { ...place(L.avenue), zIndex: 2 })}
+        {repeats.map((r) => img(`ty-p--row ty-p--row-${r.side}`, r.src, r.style, r.k, r.key))}
+        {img("ty-p--lawn", "lawn-wide", { ...place(L["lawn-wide"]), zIndex: 10 })}
+        {img("ty-p--couple", "couple", { ...place(L.couple), zIndex: 12 })}
+        {img("ty-p--wall-l", "wall-l", { ...place(L["wall-l"], "l"), zIndex: 20 })}
+        {img("ty-p--wall-r", "wall-r", { ...place(L["wall-r"], "r"), zIndex: 20 })}
+        {/* (the photo cuts the left urn in half: it is the right one, mirrored, standing opposite) */}
+        {img("ty-p--urn-l", "urn-r", { ...place({ ...L["urn-r"], x: 1 - L["urn-r"].x - L["urn-r"].w }), zIndex: 22, scale: "-1 1" })}
+        {img("ty-p--urn-r", "urn-r", { ...place(L["urn-r"]), zIndex: 22 })}
+        {img("ty-p--leaves", "leaves", { ...place(L.leaves, "l"), zIndex: 23 })}
 
-          <Lotus />
-          <div className="ty-note" data-reveal="up">
-            <p className="ty-note-eyebrow" lang={t.note.eyebrow.lang}>{t.note.eyebrow.text}</p>
-            <h3 className="ty-note-title">{t.note.title}</h3>
-            <p className="ty-note-dear">Dear <strong>{t.note.greeting}</strong>,</p>
-            <p className="ty-note-body">{t.note.body}</p>
-            <p className="ty-note-closing">{t.note.closing}</p>
-            <p className="ty-note-names">{bride.name} <span>&amp;</span> {groom.name}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* the closing film: edge to edge, the Tuscan landscape behind from the first moment */}
-      <div className="ty-film">
-        <div className="ty-film-stage">
-          <img className="ty-backdrop" src="/assets/window/garden-ground.webp" alt="" aria-hidden="true" loading="lazy" decoding="async" />
-          <Sprite name="cypress-r" className="ty-side ty-side--tree ty-side--far ty-side--l" />
-          <Sprite name="cypress-l" className="ty-side ty-side--tree ty-side--far ty-side--r" />
-          <Sprite name="cypress-l" className="ty-side ty-side--tree ty-side--near ty-side--l" />
-          <Sprite name="cypress-r" className="ty-side ty-side--tree ty-side--near ty-side--r" />
-          <div className="ty-scene" role="img" aria-label={`${bride.name} and ${groom.name} greeting their guests with joined hands, between two stone gateways in a Tuscan garden of cypresses, with the hills beyond`}>
-            {PIECES.map((p) => {
-              const b = layers[p];
-              return (
-                <img
-                  key={p}
-                  className={`ty-l ty-l--${p}`}
-                  src={`${C}${p}.webp`}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  draggable={false}
-                  style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%`, width: `${b.w * 100}%`, height: `${b.h * 100}%` }}
-                />
-              );
-            })}
-          </div>
-          <Sprite name="bed-l" className="ty-side ty-side--bed ty-side--l" />
-          <Sprite name="bed-r" className="ty-side ty-side--bed ty-side--r" />
-          <div className="ty-film-thanks">
-            <p className="ty-film-title" aria-hidden="true">{t.title}</p>
-            <p className="ty-film-line">{t.film.line}</p>
-            <p className="ty-film-names">{bride.name} &amp; {groom.name}</p>
-          </div>
-        </div>
-      </div>
-
-      <footer className="ty-footer paper">
-        <div className="container ty-footer-inner">
-          <Monogram className="ty-mono" size={96} />
-          <p className="script script--m">With love, {bride.name} &amp; {groom.name}</p>
-          <p className="eyebrow">{wedding.hashtag}</p>
-          <div className="ty-actions">
-            <a className="btn btn--gold" href={whatsapp} target="_blank" rel="noopener noreferrer">Share on WhatsApp</a>
-            <button className="btn btn--ghost" type="button" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Copy link</button>
-            <a className="btn btn--ghost" href="#top">Back to top</a>
-          </div>
-          <p className="ty-small body-s">
-            <button type="button" className="rsvp-link" onClick={togglePaused} aria-pressed={paused}>{paused ? "Resume animations" : "Pause animations"}</button>
-            {" · "}<a href="/privacy">Privacy</a>
+        <div className="ty-words">
+          <h2 id="ty-title" className="ty-title">{t.title}</h2>
+          <p className="ty-line">{t.line}</p>
+          <p className="ty-date" aria-label={`${weekday}, ${Number(d)} ${month} ${y}, ${wedding.destination.label}`}>
+            <span className="ty-date-num">{d} · {m} · {y}</span>
+            <span className="ty-date-place">{weekday} · {wedding.destination.label}</span>
           </p>
         </div>
-      </footer>
+        <a className="ty-top-btn" href="#top">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 12.5V3.5M3.8 7.6 8 3.4l4.2 4.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          Return to top
+        </a>
+      </div>
     </section>
   );
 }
