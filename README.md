@@ -21,7 +21,7 @@ Everything a couple changes lives in **`src/content/wedding.ts`**:
 - names, date, time and time zone
 - parents, the blessing over Save the Date and the story
 - events, ceremony rituals and dress code
-- gallery, venue, RSVP settings and the thank-you lines
+- gallery, venue, RSVP settings and the closing thank-you (its words, the note and the film's lines)
 
 On the next build, these update automatically:
 - the hero, monogram initials, page title and OG data
@@ -225,6 +225,29 @@ The booth holds the latest 25 wishes. Every guest wish waits for the couple's ap
 Until enough guests have written, the booth and the pop-up are kept full by the couple's welcome card and 20 sample wishes from family and friends (`wishBooth` in `src/content/wedding.ts`). Guests see the samples as wishes and they count towards the total, so change them to your own words before sharing the site, add or remove any, or set `samples: []` to show only real wishes. They step aside on their own once `samplesUntil` (12) guest wishes have been approved.
 
 A guest's own wishes are kept in their browser (`localStorage`, key `wb-mine`), so they see their cards on the booth until they are approved. If the booth can't be reached when they send (no connection, or no database yet), the wish still flies in and is sent again quietly: every minute while the page is open, and on their next visit. Only a wish the server refuses outright (too short, or too many from one place in an hour) shows a message.
+
+## The closing: thank you, and the closing film
+
+The last section (`src/sections/ThankYou.tsx`) begins with the thank-you itself:
+- "Thank You", a line of thanks, and the date.
+- An Add to calendar button, and a Share the invitation button (the phone's own share sheet, or WhatsApp where there is none).
+- "A note from our hearts" from the couple.
+
+The words are in `thankYou` in `src/content/wedding.ts`.
+
+Then comes the closing film, edge to edge. A Tuscan landscape fills the screen from the first moment: the sky, and the hills, cypresses and lawn of `public/assets/window/garden-ground.webp`, warmed to the photograph's golden light. The couple's garden is set into it by itself, once, as soon as it comes into view, like a film rather than tied to the scroll. Each piece appears whole and solid (never faded in), moves straight into its place, and stays:
+1. The cypress avenue, with the hills and the villa beyond.
+2. The stone gateways, from either side.
+3. The couple on their lawn, greeting the guests with joined hands.
+4. The urns of flowers and the branch overhead.
+5. The cypresses at the sides, near and far, out to the screen's edges, and the hydrangeas in front.
+6. "Thank You" and the last line, in the band of sky above.
+
+The photograph stands in the middle and melts into the landscape at its sides. The branch and the cypresses stir in the breeze. With reduced motion the finished picture simply stands.
+
+The pieces are cut from one photograph, `assets-src/closing/ref-couple-garden.webp`, by `python3 tools/build_closing.py` (into `public/assets/closing/`, with `closing.json` saying where each sits). The couple are cut out of the garden by colour and shape (GrabCut). Every piece is the photograph's own pixels and reaches a little under the pieces above it, so when all have arrived the photograph is whole, without seams. Where a later piece will stand, the earlier ones carry the garden on: the sky and a haze of hills behind the gateways, the lawn behind the urns, the sky behind the branch, and the cypresses and the path continued crisply behind the couple. Each cut-out carries a few pixels of its own real surroundings, so its soft edge falls over identical pixels.
+
+For a different photo, replace the source and rebuild. The outlines of the gateways, the branch and the couple's hints are marked in the tool, in the photo's pixels.
 
 ## Motion engine
 
