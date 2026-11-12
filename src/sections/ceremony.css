@@ -16,17 +16,17 @@
 .cer-cloud--3 { top: 40%; left: 26%; width: clamp(140px, 18vw, 300px); animation-duration: 62s; opacity: 0.6; }
 @keyframes cer-drift { to { translate: -6vw 0; } }
 .motion-paused .cer-cloud { animation-play-state: paused; }
-/* the open lawn, crisp to a clean, far horizon with low hills in the haze (tools/build_lawn.py);
- * the image's sky is transparent, its top edge is the hills */
+/* the garden (tools/build_ceremony_ground.py): the real hills, cypresses and hedges along the
+ * horizon, the lawn in front; its sky is transparent. It is never cropped at the top (its box is at
+ * least as tall as the picture at the screen's width), so the trees are never cut off. */
 .cer-lawn {
   position: absolute;
   left: 0; right: 0; bottom: 0;
   width: 100%;
-  height: 40%;
+  height: max(56%, calc(100vw * 936 / 2400));
   object-fit: cover;
-  object-position: 50% 0%;
+  object-position: 50% 100%;
 }
-@media (max-aspect-ratio: 3/4) { .cer-lawn { height: 37%; } }
 
 /* Top to bottom: the heading, the garden window, and (once the invitation is accepted) the thank-you
  * line with its replay, under the window.

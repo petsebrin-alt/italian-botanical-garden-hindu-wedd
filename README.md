@@ -106,11 +106,18 @@ In the ceremony section, once the crystal curtain has drawn open, the garden win
 3. The two shutters swing open on their hinges, and warm light fills the window.
 4. Inside, an ivory envelope comes forward, its flap lifts, and the card rises out of it.
 5. The card is the couple's invitation, with "Dear <guest>" when the link carries a name. A hand points to "Accept the Invitation".
-6. On Accept, Janvi and Rohit appear in the window, butterflies fly across the whole section, and rose petals fall. A thank-you note appears under the window, with Replay.
+6. On Accept, the couple's photo appears in the window, butterflies fly across the whole section, and rose petals fall. The heading steps aside, the window steps back a little (still standing on the lawn), and a thank-you letter in a lace frame comes up on the grass in front of it, with Replay under the writing.
 
 On every screen the section reads top to bottom: the heading ("The wedding ceremony", the ceremony's name and its date and time), then the window, then the thank-you line. The window is sized to fit between the heading and the foot of the screen (`--gw` in `src/sections/ceremony.css`); on phones and tablets it is as wide as the screen allows and stands a little higher. The card rises from the centre of the window and stays centred on it, a little narrower than the window, so the warm light inside shows round it. The card, the envelope and the window are centred with layout rather than a CSS `translate`, because GSAP owns their transforms.
 
-The window, shutters, roses, butterflies and petals are cut from the asset sheet `assets-src/botanical/ref-window-sheet.webp`.
+**Your own photo and words:** the photo in the window and the thank-you lines are in `wedding.ceremony` in `src/content/wedding.ts` (`windowPhoto`: its path, alt text and where the faces are; `thanks`: the two lines). Any portrait photo works; it is cropped to the window.
+
+**How it is drawn, so it looks real:**
+- The window is white-painted wood, drawn at four times the old sprites' size by `python3 tools/build_window_wood.py`: wood grain under slightly worn paint, four boards to each shutter, a moulded casing whose grain follows the arch, black iron strap hinges and handles.
+- The climbing rose round it, the blossom on the envelope, the thank-you letter frame and the couple's photo come from `assets-src/window/` (`python3 tools/build_window_flora.py`).
+- The garden behind it is one scene, from `python3 tools/build_ceremony_ground.py`: the real Tuscan garden photo (hills, cypresses, hedges) along the horizon and the lawn in front, toned to that photo's grass, with soft cloud and tree shadows, a little out of focus into the distance.
+
+The butterflies and petals are cut from the asset sheet `assets-src/botanical/ref-window-sheet.webp`.
 
 The lawn is real grass, never stretched. `tools/build_lawn.py` takes an evenly lit stretch of the sharp lawn in `ref-welcome.webp`, quilts it into a large seamless lawn, and lays that out in perspective to the horizon. Near grass is shown at its photographed size; further rows are shrunk, so they stay crisp. Soft sunlight and shade fall across it, and the far grass takes on the haze of the air, meeting the sky in a clean line with low hills beyond.
 
@@ -129,9 +136,9 @@ python3 tools/build_crystals.py        # writes public/assets/img/crystal-atlas.
 
 ## Venue, RSVP and Need Help
 
-- **Venue:** the villa in a wide arch with a Location button, and the travel notes as tiles. Set `venue.name` and `venue.address` and the Location buttons (here and in Celebrations) point at the villa.
+- **Venue:** the villa garden in a wide arch (`public/assets/img/venue-garden`, the Save the Date garden at full sharpness, from `python3 tools/build_venue.py`) with a Location button, and the travel notes as tiles. Set `venue.name` and `venue.address` and the Location buttons (here and in Celebrations) point at the villa.
 - **RSVP:** posts to `/api/rsvp`; replies appear in `/studio`. Guests can come back and edit theirs from the same device.
-- **Need Help:** the questions in `help.faqs`. A family contact appears, with Call and WhatsApp buttons, once its `phone` is filled in under `help.contacts`.
+- **Need Help:** three contact cards (the groom's family, the bride's family and the event coordinator, under `help.contacts`), each with a name, a role, a number and Call and WhatsApp buttons. They glide past in a slow ticker, pinned at small tilts like notes on a board; the card under the pointer (or a tap, or the keyboard) straightens, lifts and turns forest green, and the ticker waits. Fill in each `phone` with its country code; until then the card says the number is coming soon. With reduced motion the three stand still in a row.
 
 ## Celebrations
 

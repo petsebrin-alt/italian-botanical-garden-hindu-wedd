@@ -18,6 +18,8 @@
 @media (max-width: 699px) { .venue-figure { aspect-ratio: 4 / 5; border-radius: 999px 999px 16px 16px / 34% 34% 16px 16px; } }
 .venue-figure picture { position: absolute; inset: -8% 0; }
 .venue-figure img { width: 100%; height: 100%; object-fit: cover; }
+/* (phones: the villa's loggia side of the garden) */
+@media (max-width: 699px) { .venue-figure img { object-position: 84% 50%; } }
 .venue-card {
   position: relative;
   margin-top: clamp(-5.5rem, -9vw, -3rem);

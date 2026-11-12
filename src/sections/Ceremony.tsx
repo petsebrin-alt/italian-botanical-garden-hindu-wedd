@@ -63,12 +63,12 @@ export default function Ceremony() {
   return (
     <section ref={ref} id="ceremony" className="cer" aria-labelledby="cer-title">
       <div className="cer-stage">
-        {/* open sky and a real lawn: nothing between the window and the garden */}
+        {/* open sky over a Tuscan garden: hills, cypresses and hedges, and the lawn in front */}
         <div className="cer-garden" aria-hidden="true">
           <Sprite name="cloud-1" className="cer-cloud cer-cloud--1" />
           <Sprite name="cloud-2" className="cer-cloud cer-cloud--2" />
           <Sprite name="cloud-3" className="cer-cloud cer-cloud--3" />
-          <img className="cer-lawn" src="/assets/window/lawn.webp" alt="" />
+          <img className="cer-lawn" src="/assets/window/garden-ground.webp" alt="" />
         </div>
         <div className="cer-window-wrap">
           <GardenWindow />

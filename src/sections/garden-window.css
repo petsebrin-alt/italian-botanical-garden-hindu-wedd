@@ -9,11 +9,13 @@
 /* ------------------------------------------------------------------ the window */
 .gw-window {
   position: absolute;
-  left: 50%;
+  /* centred with margins: GSAP owns its transform (it rises to make room for the thank-you) */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
   bottom: 14%;
   width: 58%;
   aspect-ratio: 324 / 348;
-  translate: -50% 0;
   perspective: 1100px;
   transform-style: preserve-3d;
 }
@@ -93,13 +95,12 @@
 }
 .gw--accepted .gw-sun { display: none; }
 
-/* the roses climbing round it */
-.gw-vine { position: absolute; display: block; height: auto; pointer-events: none; filter: drop-shadow(0 4px 6px rgb(41 52 35 / 0.22)); }
-.gw-vine--top { width: 118%; left: -9%; top: -13%; }
-.gw-vine--bottom { width: 124%; left: -12%; bottom: -11%; }
-.gw-vine--side { width: 30%; right: -13%; top: 33%; }
-.gw-vine--rose { width: 17%; left: -10%; bottom: -3%; }
-.gw-vine--daisy { width: 12%; right: -5%; bottom: -5%; }
+/* the climbing rose round it (a real one: public/assets/window/vine-real*.webp): over the arch and
+ * down the left side, up the right side, and hanging under the sill */
+.gw-vine { position: absolute; display: block; height: auto; pointer-events: none; filter: drop-shadow(0 5px 6px rgb(41 52 35 / 0.24)); }
+.gw-vine--top { width: 112%; left: -12%; top: -21%; }
+.gw-vine--side { width: 25%; right: -10%; top: 40%; scale: -1 1; }
+.gw-vine--bottom { width: 104%; left: -2%; top: 84%; scale: 1 -1; }
 
 /* ------------------------------------------------------------------ the envelope inside */
 .gw-env {
@@ -148,7 +149,7 @@
   background: var(--paper-grain), linear-gradient(180deg, #f9f2e2, #eadcc1);
   backface-visibility: visible;
 }
-.gw-env-rose { position: absolute; width: 24%; left: -7%; bottom: -14%; z-index: 4; filter: drop-shadow(0 3px 4px rgb(80 50 40 / 0.25)); }
+.gw-env-rose { position: absolute; width: 26%; left: -8%; bottom: -12%; z-index: 4; filter: drop-shadow(0 3px 4px rgb(80 50 40 / 0.25)); }
 
 /* ------------------------------------------------------------------ the invitation card */
 /* the window's height band (it stands 14% above the stage's foot and is 62.3% of it tall): the
@@ -186,7 +187,7 @@
     inset 0 0 0 7px rgb(196 166 106 / 0.35);
   visibility: hidden;
 }
-.gw-card-vine { position: absolute; top: -18%; left: 50%; width: 92%; translate: -50% 0; pointer-events: none; filter: drop-shadow(0 3px 4px rgb(41 52 35 / 0.18)); }
+.gw-card-vine { position: absolute; top: -13%; left: 0; right: 0; margin-inline: auto; width: 96%; pointer-events: none; filter: drop-shadow(0 3px 4px rgb(41 52 35 / 0.18)); }
 .gw-card-eyebrow { font-family: var(--font-body), sans-serif; font-size: clamp(0.55rem, 2.4cqw, 0.66rem); letter-spacing: 0.22em; text-transform: uppercase; color: var(--botanical); }
 .gw-card-dear { font-family: var(--font-script), serif; font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.2rem); line-height: 1; color: var(--gold-ink); }
 .gw-card-names { font-family: var(--font-names), serif; font-size: clamp(1.6rem, 11.5cqw, 2.6rem); line-height: 1.05; letter-spacing: 0.04em; white-space: nowrap; color: var(--forest); }
@@ -239,37 +240,54 @@
 }
 .gw-hand-svg { display: block; width: 100%; height: auto; }
 
+/* the thank-you, written in the lace letter frame (public/assets/window/letter-frame.webp), at the
+ * foot of the screen; the window rises to make room for it (GardenWindow.tsx) */
 .gw-thanks {
   position: absolute;
   left: 0;
   right: 0;
   margin-inline: auto;
-  /* under the window, near the foot of the screen (the stage stands --lift above it) */
   bottom: calc(14px - var(--lift, 5vh));
   z-index: 9;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: max-content;
-  max-width: 94vw;
-  padding: 10px 16px 10px 20px;
+  /* (GardenWindow.tsx makes room for this size) */
+  width: min(92vw, 360px);
+  aspect-ratio: 3 / 2;
+  border-radius: 6px;
+  background: url("/assets/window/letter-frame.webp") center / cover no-repeat, #f3f1ec;
+  box-shadow: 0 22px 40px -22px rgb(30 40 25 / 0.6), 0 2px 6px rgb(30 40 25 / 0.18);
+  container-type: inline-size;
+  animation: gw-in 1s 1.3s both cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* the writing sits in the frame's white panel, clear of the rose at its corner */
+.gw-thanks-text {
+  position: absolute;
+  inset: 21% 11% 26% 23%;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1.6cqw;
+  text-align: center;
+}
+.gw-thanks-title { font-family: var(--font-script), serif; font-size: 9.5cqw; line-height: 1; color: var(--gold-ink); }
+.gw-thanks-line { font-family: var(--font-head), serif; font-style: italic; font-size: 4.3cqw; line-height: 1.35; color: var(--forest); max-width: 24ch; }
+.gw-replay {
+  margin-top: 1.2cqw;
+  padding: 1.1cqw 3.6cqw;
+  border: 1px solid rgb(154 116 56 / 0.55);
   border-radius: 999px;
-  background: rgb(255 252 244 / 0.94);
-  box-shadow: 0 12px 26px -16px rgb(41 52 35 / 0.45), inset 0 0 0 1px rgb(196 166 106 / 0.5);
-  font-family: var(--font-head), serif;
-  font-style: italic;
-  font-size: clamp(0.85rem, 0.78rem + 0.4vw, 1rem);
-  color: var(--forest);
-  animation: gw-in 0.9s 1.4s both cubic-bezier(0.2, 0.7, 0.2, 1);
+  background: rgb(255 253 247 / 0.8);
+  font-family: var(--font-body), sans-serif;
+  font-size: max(10px, 2.7cqw);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
 }
-.gw-replay { border: 0; background: none; color: var(--gold-ink); font: inherit; font-style: normal; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
-@keyframes gw-in { from { opacity: 0; transform: translateY(8px); } }
-/* small phones: two lines of thanks, and the replay as its ↺ beside them */
-@media (max-width: 520px) {
-  .gw-thanks { max-width: 90vw; gap: 10px; border-radius: 18px; padding: 8px 10px 8px 16px; font-size: 0.84rem; line-height: 1.35; }
-  .gw-replay { flex: none; width: 34px; height: 34px; border-radius: 50%; font-size: 1.15rem; background: rgb(196 166 106 / 0.16); }
-  .gw-replay-word { display: none; }
-}
+.gw-replay:hover { background: #fffdf7; color: var(--forest); }
+.gw-replay:focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; }
+@keyframes gw-in { from { opacity: 0; transform: translateY(24px); } }
 
 /* ------------------------------------------------------------------ butterflies and petals, over the whole stage */
 .gw-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 12; }

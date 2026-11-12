@@ -1,59 +1,133 @@
-/* Need help? */
+/* Need help? Three contact cards in a slow ticker (Help.tsx). */
 .help { overflow: clip; }
-.help-head { position: relative; z-index: 2; display: grid; gap: 6px; margin-bottom: clamp(2rem, 5vw, 3.5rem); max-width: 680px; }
+.help-head { position: relative; z-index: 2; display: grid; gap: 6px; margin-bottom: clamp(1.5rem, 4vw, 2.5rem); max-width: 680px; }
 .help-sub { color: var(--botanical); }
 
-.help-grid { position: relative; z-index: 1; display: grid; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; max-width: 1120px; }
-@media (min-width: 1000px) { .help-grid { grid-template-columns: 7fr 4fr; } }
-
-.help-faqs { display: grid; gap: 10px; }
-.help-faq {
-  border-radius: 16px;
-  background: rgb(250 247 239 / 0.92);
-  border: 1px solid rgb(196 166 106 / 0.4);
-  transition: border-color 0.3s, box-shadow 0.3s;
+/* ------------------------------------------------------------------ the ticker */
+.help-ticker {
+  position: relative;
+  /* room for the cards' tilt, their staggered heights and the lift of the one in focus */
+  padding-block: 34px 44px;
+  /* the cards fade in and out at the screen's edges */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
 }
-.help-faq[open] { border-color: rgb(196 166 106 / 0.8); box-shadow: 0 18px 36px -28px rgb(41 52 35 / 0.4); }
-.help-faq summary {
+.help-track {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 20px;
-  cursor: pointer;
+  width: max-content;
+  animation: help-tick var(--dur, 72s) linear infinite;
+}
+/* the ticker waits while a card is pointed at, tapped or focused */
+.help-ticker:hover .help-track,
+.help-ticker:focus-within .help-track,
+.motion-paused .help-track { animation-play-state: paused; }
+@keyframes help-tick { to { transform: translateX(-50%); } }
+.help-row {
+  display: flex;
+  gap: var(--gap);
+  margin: 0;
+  /* (the gap after the last card, so the two halves join seamlessly) */
+  padding: 0 var(--gap) 0 0;
+  list-style: none;
+  --gap: clamp(18px, 2.4vw, 30px);
+}
+
+/* with reduced motion: the three cards simply stand in a row */
+.help-still {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin: 0 auto;
+  padding: 16px;
   list-style: none;
 }
-.help-faq summary::-webkit-details-marker { display: none; }
-.help-faq summary:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; border-radius: 16px; }
-.help-q { font-family: var(--font-head), serif; font-size: clamp(1.02rem, 0.95rem + 0.3vw, 1.18rem); color: var(--forest); }
-.help-toggle { position: relative; flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--gold); }
-.help-toggle::before, .help-toggle::after {
-  content: ""; position: absolute; left: 50%; top: 50%; width: 11px; height: 1.5px; background: var(--gold-ink);
-  translate: -50% -50%; transition: rotate 0.3s ease;
-}
-.help-toggle::after { rotate: 90deg; }
-.help-faq[open] .help-toggle::after { rotate: 0deg; }
-.help-a { display: grid; gap: 8px; padding: 0 20px 20px; animation: help-open 0.35s ease; }
-.help-a .body-s { color: var(--botanical); max-width: 62ch; }
-.help-link { color: var(--gold-ink); font-size: 0.9rem; }
-@keyframes help-open { from { opacity: 0; transform: translateY(-6px); } }
 
-.help-contact {
+/* ------------------------------------------------------------------ a card */
+.help-card {
+  flex: none;
+  width: clamp(250px, 21vw, 300px);
   display: grid;
   gap: 14px;
-  padding: clamp(1.5rem, 4vw, 2.25rem);
-  border-radius: 22px;
-  background: var(--forest);
-  color: var(--ivory);
-  box-shadow: 0 26px 50px -30px rgb(41 52 35 / 0.6);
+  padding: 22px 22px 20px;
+  border-radius: 6px;
+  background: var(--paper-grain, none), linear-gradient(180deg, #fffdf8, #f6efe0);
+  box-shadow:
+    0 18px 30px -18px rgb(41 52 35 / 0.45),
+    0 2px 5px rgb(41 52 35 / 0.12),
+    inset 0 0 0 1px rgb(196 166 106 / 0.45);
+  color: var(--forest);
+  rotate: var(--tilt, 0deg);
+  translate: 0 var(--rise, 0px);
+  transition: rotate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+    scale 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), background 0.45s ease, color 0.45s ease, box-shadow 0.45s ease;
 }
-@media (min-width: 1000px) { .help-contact { position: sticky; top: 110px; } }
-.help-contact-title { font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem); letter-spacing: 0.04em; color: var(--ivory); }
-.help-soon { color: rgb(248 244 233 / 0.82); }
-.help-people { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
-.help-person { display: grid; gap: 4px; padding-bottom: 14px; border-bottom: 1px solid rgb(248 244 233 / 0.18); }
-.help-person-name { font-family: var(--font-head), serif; font-size: 1.1rem; }
-.help-person-role { color: rgb(248 244 233 / 0.75); }
-.help-person-actions { display: flex; gap: 8px; margin-top: 6px; }
-.help-contact .btn--ghost { color: var(--ivory); border-color: rgb(248 244 233 / 0.6); }
-.help-rsvp { justify-self: start; }
+/* the one in focus: straight, lifted, forest green */
+.help-card:hover,
+.help-card:focus-within {
+  rotate: 0deg;
+  translate: 0 calc(var(--rise, 0px) - 10px);
+  scale: 1.04;
+  background: linear-gradient(180deg, #33553f, #243b2d);
+  color: var(--ivory);
+  box-shadow: 0 30px 46px -22px rgb(20 36 25 / 0.7), inset 0 0 0 1px rgb(196 166 106 / 0.5);
+}
+
+.help-card-who { display: flex; align-items: center; gap: 12px; }
+.help-mono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  font-family: var(--font-script), serif;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--gold-ink);
+  background: radial-gradient(circle at 35% 30%, #fffaf0, #f1e4c4);
+  box-shadow: inset 0 0 0 1px rgb(196 166 106 / 0.8), 0 3px 6px -2px rgb(60 44 20 / 0.3);
+}
+.help-card-names { display: grid; gap: 1px; min-width: 0; }
+.help-card-side { font-family: var(--font-body), sans-serif; font-size: 0.64rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-ink); transition: color 0.45s; }
+.help-card-name { font-family: var(--font-head), serif; font-size: 1.12rem; line-height: 1.2; }
+.help-card-role { font-family: var(--font-body), sans-serif; font-size: 0.78rem; color: var(--botanical); transition: color 0.45s; }
+.help-card-rule { height: 1px; background: linear-gradient(90deg, rgb(196 166 106 / 0.7), rgb(196 166 106 / 0)); }
+.help-card-phone { font-family: var(--font-names), serif; font-size: 1.32rem; letter-spacing: 0.04em; font-variant-numeric: lining-nums; }
+.help-card-phone.is-soon { font-family: var(--font-head), serif; font-style: italic; font-size: 1rem; letter-spacing: 0; color: var(--botanical); transition: color 0.45s; }
+
+.help-card-actions { display: flex; gap: 8px; }
+.help-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.3s, color 0.3s, border-color 0.3s, opacity 0.3s;
+}
+.help-btn svg { width: 16px; height: 16px; flex: none; }
+.help-btn--call { color: #fffaf0; background: var(--forest); }
+.help-btn--wa { color: var(--forest); border: 1px solid rgb(64 90 67 / 0.45); }
+.help-btn.is-off { opacity: 0.45; cursor: default; }
+.help-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* on the green card */
+.help-card:hover .help-card-side, .help-card:focus-within .help-card-side { color: #e2c78e; }
+.help-card:hover .help-card-role, .help-card:focus-within .help-card-role,
+.help-card:hover .help-card-phone.is-soon, .help-card:focus-within .help-card-phone.is-soon { color: rgb(248 244 233 / 0.78); }
+.help-card:hover .help-btn--call, .help-card:focus-within .help-btn--call { color: var(--forest); background: linear-gradient(180deg, #e2c78e, #c9a764); }
+.help-card:hover .help-btn--wa, .help-card:focus-within .help-btn--wa { color: var(--ivory); border-color: rgb(248 244 233 / 0.55); }
+
+@media (max-width: 520px) {
+  .help-card { width: 250px; padding: 18px 18px 16px; gap: 12px; }
+  .help-card-phone { font-size: 1.2rem; }
+}

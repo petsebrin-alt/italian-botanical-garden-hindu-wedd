@@ -36,7 +36,7 @@ export default function Venue() {
       <div className="container">
         <div className="venue-hero">
           <figure className="venue-figure" data-reveal="mask">
-            <Pic src="/assets/img/venue-villa" alt="A Tuscan villa courtyard with garden tables under the trees" inner />
+            <Pic src="/assets/img/venue-garden" alt="A Tuscan villa garden: pink hydrangeas, a lawn running to the hills, cypresses and the villa's arched loggia" inner />
           </figure>
           <article className="venue-card" data-reveal="up">
             <p className="eyebrow">{wedding.destination.label}</p>

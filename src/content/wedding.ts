@@ -106,6 +106,14 @@ export const wedding = {
   ] as WeddingEvent[],
   ceremony: {
     title: "Vivah Sanskar",
+    /**
+     * The garden window invitation: the couple's photo that appears in the window once a guest
+     * accepts, and the thank-you letter under it. For your own photo, put it at `src` (or change
+     * the path): any portrait photo works, it is cropped to the window; `focus` is where the faces
+     * are ("50% 22%": centred, a little below the top).
+     */
+    windowPhoto: { src: "/assets/img/ceremony-couple.webp", alt: "Janvi and Rohit in their wedding clothes", focus: "50% 22%" },
+    thanks: { title: "Thank you!", line: "We can’t wait to celebrate with you in Tuscany." },
     rituals: [
       { name: "Baraat & Milni", text: "The groom's procession arrives with music; the families greet and embrace." },
       { name: "Jaimala", text: "Janvi and Rohit exchange garlands of roses and jasmine." },
@@ -187,22 +195,15 @@ export const wedding = {
     ] as { name: string; relation?: string; message: string }[],
   },
   /**
-   * "Need help?": the questions guests ask most, and who to call. A contact appears once it has a
-   * phone number (WhatsApp is offered for it too).
+   * "Need help?": three cards guests can call or message on WhatsApp, gliding past in a ticker.
+   * Fill in each `phone` with its country code (e.g. "+91 98765 43210"): until a card has a number
+   * it says the number is on its way, and its Call and WhatsApp buttons wait.
    */
   help: {
-    faqs: [
-      { q: "What should I wear?", a: "Each celebration has its own colours, from sunny yellow at the Haldi to champagne and midnight at the Reception. The lawns are grass and gravel, so comfortable heels or flats are wise." },
-      { q: "Which airport should I fly into?", a: "Florence (FLR) and Pisa (PSA) are the closest. Long-haul flights often connect through Rome (FCO) or Milan (MXP)." },
-      { q: "How do I get to the villa?", a: "Transfer details between the hotels and the villa will be shared closer to the date. A hire car is useful for exploring the hills." },
-      { q: "Do I need a visa?", a: "If you need a Schengen visa, please apply well in advance. Italy uses the euro and type C, F and L plugs." },
-      { q: "What will the weather be like?", a: "Mid-August in Tuscany is hot and sunny by day and pleasantly warm in the evening. Bring sunglasses, sun cream and a light layer for after dark." },
-      { q: "When should I reply?", a: "As soon as you can, so we can plan for everyone. Please include everyone in your party in one reply.", link: { href: "#rsvp", label: "Reply now" } },
-      { q: "Where do I find the times and places?", a: "Every celebration, with its time, place, map and an Add to calendar button, is in the Celebrations section.", link: { href: "#events", label: "See the celebrations" } },
-    ],
     contacts: [
-      { name: "[Bride's family]", role: "Kapoor & Lalitha", phone: "" },
-      { name: "[Groom's family]", role: "Vasu & Jansi", phone: "" },
+      { side: "The Groom's Family", name: "Mr. Vasu", role: "Father of the groom", phone: "" },
+      { side: "The Bride's Family", name: "Mr. Kapoor", role: "Father of the bride", phone: "" },
+      { side: "Event Coordinator", name: "[Coordinator's name]", role: "Wedding & event coordinator", phone: "" },
     ],
   },
   rsvp: {

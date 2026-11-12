@@ -53,6 +53,7 @@ export default function GardenWindow() {
   const api = useRef<{ start: () => void; accept: () => void; replay: () => void } | null>(null);
   const ceremony = wedding.events.find((e) => e.type === "ceremony");
   const { bride, groom } = wedding.couple;
+  const { windowPhoto: photo, thanks } = wedding.ceremony;
 
   useEffect(() => {
     const el = root.current!;
@@ -214,6 +215,42 @@ export default function GardenWindow() {
       tls.push(handTl);
     };
 
+    // ------------------------------------------------ room for the thank-you letter under the window
+    const win = q(".gw-window");
+    const stage = el.closest(".cer-stage") as HTMLElement | null;
+    const head = stage?.querySelector(".cer-text") as HTMLElement | null;
+    /** The letter takes the foot of the screen: the heading steps aside and the window steps back
+     * (it rises a little, still standing on the lawn, and on a short screen grows a little
+     * smaller round its foot), so the letter lies on the grass in front of it. */
+    const makeRoom = (on: boolean, dur: number) => {
+      if (!on || !stage) {
+        gsap.to(win, { y: 0, scale: 1, duration: dur, ease: "power2.inOut" });
+        if (head) gsap.to(head, { autoAlpha: 1, y: 0, duration: dur, ease: "power2.out" });
+        return;
+      }
+      const now = { y: gsap.getProperty(win, "y") as number, s: gsap.getProperty(win, "scale") as number };
+      gsap.set(win, { y: 0, scale: 1 });
+      const st = stage.getBoundingClientRect();
+      const w = win.getBoundingClientRect();
+      const base = (q(".gw-frame") as HTMLElement).getBoundingClientRect().bottom;
+      // the top of the window's roses
+      const top = Math.min(w.top, (q(".gw-vine--top") as HTMLElement).getBoundingClientRect().top);
+      gsap.set(win, { y: now.y, scale: now.s });
+      // (the letter's size: .gw-thanks in garden-window.css)
+      const noteH = Math.min(window.innerWidth * 0.92, 360) / 1.5;
+      const nav = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) || 64;
+      const limit = st.top + (window.innerWidth < 900 ? nav + 6 : 14);
+      const foot = st.bottom - 14 - noteH - 6;
+      const sc = Math.min(1, (foot - limit) / (base - top));
+      gsap.to(win, {
+        y: Math.min(0, foot - base), scale: sc, transformOrigin: `50% ${base - w.top}px`,
+        duration: dur, ease: "power2.inOut",
+      });
+      if (head) gsap.to(head, { autoAlpha: 0, y: -16, duration: dur * 0.6, ease: "power1.in" });
+    };
+    const onResize = () => { if (acceptedRef.current) makeRoom(true, 0); };
+    window.addEventListener("resize", onResize);
+
     // ------------------------------------------------ accepted: the couple, butterflies, petals
     const accept = () => {
       handTl?.kill();
@@ -226,7 +263,8 @@ export default function GardenWindow() {
       tls.push(tl);
       tl.to(btn, { scale: 0.95, duration: 0.12, ease: "power1.in", yoyo: true, repeat: 1 }, 0)
         .to(card, { y: "+=" + card.offsetHeight * 0.12, autoAlpha: 0, scale: 0.94, duration: still ? 0.2 : 0.9, ease: "power2.in" }, 0.35)
-        .to(couple, { autoAlpha: 1, scale: 1, duration: still ? 0.2 : 1.6, ease: "power2.out" }, still ? 0.4 : 0.9);
+        .to(couple, { autoAlpha: 1, scale: 1, duration: still ? 0.2 : 1.6, ease: "power2.out" }, still ? 0.4 : 0.9)
+        .add(() => makeRoom(true, still ? 0 : 1.3), still ? 0.4 : 0.7);
       if (still) return;
       celebrate();
     };
@@ -272,6 +310,7 @@ export default function GardenWindow() {
     };
 
     const replay = () => {
+      makeRoom(false, still ? 0 : 0.9);
       tls.forEach((t) => t.kill());
       tls.length = 0;
       kill.splice(0).forEach((k) => k());
@@ -292,6 +331,7 @@ export default function GardenWindow() {
       tls.forEach((t) => t.kill());
       handTl?.kill();
       kill.forEach((k) => k());
+      window.removeEventListener("resize", onResize);
       api.current = null;
     };
   }, [tier]);
@@ -314,34 +354,34 @@ export default function GardenWindow() {
       <div className="gw-window">
         {/* inside the window: warm light, the envelope, and (once accepted) the couple */}
         <div className="gw-recess">
-          <img className="gw-couple" src="/assets/img/ceremony-arch.webp" alt={`${bride.name} and ${groom.name} exchanging wedding garlands`} />
+          <img className="gw-couple" src={photo.src} alt={photo.alt} style={{ objectPosition: photo.focus }} />
           <div className="gw-glow" aria-hidden="true" />
           <div className="gw-env" aria-hidden="true">
             <div className="gw-env-back" />
             <div className="gw-env-peek"><span className="gw-peek-mono">{bride.name[0]} · {groom.name[0]}</span></div>
             <div className="gw-env-front" />
             <div className="gw-env-flap" />
-            <img className="gw-env-rose" src={`${A}rose.webp`} alt="" />
+            <img className="gw-env-rose" src={`${A}flower-real.webp`} alt="" />
           </div>
         </div>
         <div className="gw-doors" aria-hidden="true">
-          <div className="gw-door gw-door--l"><img src={`${A}door-l.webp`} alt="" draggable={false} /></div>
-          <div className="gw-door gw-door--r"><img src={`${A}door-r.webp`} alt="" draggable={false} /></div>
+          <div className="gw-door gw-door--l"><img src={`${A}door-l-painted.webp`} alt="" draggable={false} /></div>
+          <div className="gw-door gw-door--r"><img src={`${A}door-r-painted.webp`} alt="" draggable={false} /></div>
         </div>
-        <img className="gw-frame" src={`${A}frame.webp`} alt="" aria-hidden="true" draggable={false} />
+        <img className="gw-frame" src={`${A}frame-painted.webp`} alt="" aria-hidden="true" draggable={false} />
         <div className="gw-sun" aria-hidden="true"><span className="gw-sun-band" /></div>
-        <img className="gw-vine gw-vine--top" src={`${A}vine-top.webp`} alt="" aria-hidden="true" />
-        <img className="gw-vine gw-vine--side" src={`${A}vine-side.webp`} alt="" aria-hidden="true" />
-        <img className="gw-vine gw-vine--bottom" src={`${A}vine-bottom.webp`} alt="" aria-hidden="true" />
-        <img className="gw-vine gw-vine--rose" src={`${A}rose.webp`} alt="" aria-hidden="true" />
-        <img className="gw-vine gw-vine--daisy" src={`${A}daisy.webp`} alt="" aria-hidden="true" />
+        {/* a real climbing rose: over the top and down the left side, up the right side, and
+            hanging under the sill */}
+        <img className="gw-vine gw-vine--top" src={`${A}vine-real.webp`} alt="" aria-hidden="true" />
+        <img className="gw-vine gw-vine--side" src={`${A}vine-real-stem.webp`} alt="" aria-hidden="true" />
+        <img className="gw-vine gw-vine--bottom" src={`${A}vine-real-arch.webp`} alt="" aria-hidden="true" />
       </div>
 
       {/* the invitation card, risen out of the envelope: centred on the window (its slot centres
           it, so GSAP can own its transform) */}
       <div className="gw-card-slot">
       <div className="gw-card" role="group" aria-label="Invitation">
-        <img className="gw-card-vine" src={`${A}vine-top.webp`} alt="" aria-hidden="true" />
+        <img className="gw-card-vine" src={`${A}vine-real-arch.webp`} alt="" aria-hidden="true" />
         <p className="gw-reveal gw-card-eyebrow">Together with their families</p>
         {guest && <p className="gw-reveal gw-card-dear">Dear {guest},</p>}
         <p className="gw-reveal gw-card-names">{bride.name} <span>&amp;</span> {groom.name}</p>
@@ -358,10 +398,14 @@ export default function GardenWindow() {
       </div>
       </div>
 
+      {/* the thank-you, written in a lace letter frame under the window */}
       {accepted && (
         <div className="gw-thanks" role="status">
-          <span>Thank you! We can&rsquo;t wait to celebrate with you in Tuscany.</span>
-          <button type="button" className="gw-replay" onClick={onReplay} aria-label="Replay the invitation">↺<span className="gw-replay-word"> Replay</span></button>
+          <div className="gw-thanks-text">
+            <p className="gw-thanks-title">{thanks.title}</p>
+            <p className="gw-thanks-line">{thanks.line}</p>
+            <button type="button" className="gw-replay" onClick={onReplay} aria-label="Replay the invitation">↺ Replay</button>
+          </div>
         </div>
       )}
     </div>
