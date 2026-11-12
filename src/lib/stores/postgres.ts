@@ -125,7 +125,11 @@ export function createPostgresStore(db: Db): Store {
         [approvedOnly, offset, limit === undefined ? null : limit + 1],
       );
       const more = limit !== undefined && found.length > limit;
-      return { wishes: (more ? found.slice(0, limit) : found).map(toWish), more };
+      const [c] = await rows(
+        `select count(*)::int as n from wishes where ($1::boolean = false or status = 'approved')`,
+        [approvedOnly],
+      );
+      return { wishes: (more ? found.slice(0, limit) : found).map(toWish), more, total: Number(c?.n ?? 0) };
     },
 
     async updateWish(id, patch) {

@@ -213,7 +213,9 @@ Each card is the scalloped green frame with painted flowers (`public/assets/img/
 
 Sending draws a little paper plane, line by line, just above the button ("Folding…"). It loops once, then flies up beside the deck and over its top, drawing a pencil line behind it, and dips into the top of the deck. The new card is slipped in on top, and the button turns green: "Delivered". On a phone, the booth first glides back into full view. "View all wishes" opens every wish in a pop-up at the centre of the screen.
 
-The booth holds the latest 25 wishes. Every guest wish waits for the couple's approval in `/studio` before anyone else sees it. Until five guests have written, the couple's own cards keep the booth company (`wishBooth.prompts` in `src/content/wedding.ts`).
+The booth holds the latest 25 wishes. Every guest wish waits for the couple's approval in `/studio` before anyone else sees it. "View all wishes" shows the count ("View all 120 wishes", and "120 wishes from family & friends" in the pop-up; `GET /api/wishes` returns `total`) and every wish, four to a row on laptops, a page of 24 at a time.
+
+Until enough guests have written, the booth and the pop-up are kept full by the couple's welcome card and 20 sample wishes from family and friends (`wishBooth` in `src/content/wedding.ts`). Guests see the samples as wishes and they count towards the total, so change them to your own words before sharing the site, add or remove any, or set `samples: []` to show only real wishes. They step aside on their own once `samplesUntil` (12) guest wishes have been approved.
 
 A guest's own wishes are kept in their browser (`localStorage`, key `wb-mine`), so they see their cards on the booth until they are approved. If the booth can't be reached when they send (no connection, or no database yet), the wish still flies in and is sent again quietly: every minute while the page is open, and on their next visit. Only a wish the server refuses outright (too short, or too many from one place in an hour) shows a message.
 

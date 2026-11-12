@@ -279,8 +279,9 @@
 .wb-all-head { padding: clamp(1.4rem, 3.5vh, 2.2rem) 56px 0.6rem; }
 .wb-all-head .eyebrow { color: var(--botanical); }
 .wb-all-head h3 { font-family: var(--font-head), serif; font-style: italic; font-weight: 400; font-size: clamp(2rem, 1.4rem + 2.4vw, 3.2rem); color: var(--botanical); }
+.wb-all-count { margin-top: 4px; font-family: var(--font-body), sans-serif; font-size: 0.74rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rose-ink); font-variant-numeric: lining-nums; }
 .wb-all-body { overflow-y: auto; overscroll-behavior: contain; padding: 0.6rem clamp(1rem, 3vw, 2.2rem) 2rem; }
-.wb-all-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 18px; }
+.wb-all-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px; }
 .wb-all-grid .wb-card { position: relative; width: 100%; }
 /* in the pop-up the whole wish is there to read (it scrolls inside the frame if it is long) */
 .wb-all-grid .wb-card-text { justify-content: safe center; overflow-y: auto; scrollbar-width: thin; }

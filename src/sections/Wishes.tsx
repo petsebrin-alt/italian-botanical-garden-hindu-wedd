@@ -14,8 +14,9 @@ type Card = Wish & { prompt?: boolean; couple?: boolean; mine?: boolean };
 /** The booth holds the latest 25 wishes; the top six rise into it with the scroll. */
 const DECK = 25;
 const RISE = 6;
-/** Until this many guests have written, the couple's own cards keep the booth company. */
-const MIN_WISHES = 5;
+/** "1,024": counts as people write them. */
+const fmt = (n: number) => new Intl.NumberFormat("en-GB").format(n);
+const wishesWord = (n: number) => `${fmt(n)} ${n === 1 ? "wish" : "wishes"}`;
 const PAGE = 24;
 
 /** A steady, gentle tilt and offset for each card, from its id (so it never jumps on re-render). */
@@ -118,6 +119,7 @@ export default function Wishes() {
   const { tier } = useMotion();
   const still = tier === "C";
   const [wishes, setWishes] = useState<Wish[]>([]);
+  const [realTotal, setRealTotal] = useState(0);
   const [saved, setSaved] = useState<Card[]>([]);
   const [mine, setMine] = useState<Card[]>([]);
   const [form, setForm] = useState({ name: "", message: "", website: "" });
@@ -143,6 +145,7 @@ export default function Wishes() {
         if (!alive) return;
         const list: Wish[] = d?.wishes ?? [];
         setWishes(list);
+        setRealTotal(typeof d?.total === "number" ? d.total : list.length);
         const seen = new Set(list.map((w) => `${w.name}\n${w.message}`));
         setSaved(readKept().filter((k) => !seen.has(`${k.name}\n${k.message}`)).slice(-3)
           .map((k) => ({ id: k.id, name: k.name, message: k.message, mine: true })));
@@ -174,12 +177,15 @@ export default function Wishes() {
     return () => { alive = false; window.clearTimeout(timer); window.removeEventListener("online", flush); };
   }, []);
 
-  // bottom to top: the couple's cards (while the booth is young), the wishes, newest on top, and
-  // the guest's own
-  const prompts: Card[] = wishes.length < MIN_WISHES
-    ? wedding.wishBooth.prompts.map((p, i) => ({ id: `prompt-${i}`, name: p.name, message: p.message, prompt: true, couple: i === 0 })).reverse()
-    : [];
-  const deck: Card[] = [...prompts, ...wishes.slice(0, DECK).reverse(), ...saved];
+  // until enough guests have written, the couple's welcome card and the sample wishes (both in
+  // src/content/wedding.ts) keep the booth full
+  const booth = wedding.wishBooth;
+  const young = realTotal < booth.samplesUntil;
+  const samples: Card[] = young ? booth.samples.map((w, i) => ({ id: `sample-${i}`, ...w })) : [];
+  const welcome: Card[] = young ? [{ id: "welcome", ...booth.welcome, prompt: true, couple: true }] : [];
+  // bottom to top: the welcome card, the samples, the wishes (newest on top), and the guest's own
+  const room = Math.max(0, DECK - wishes.length);
+  const deck: Card[] = [...welcome, ...samples.slice(0, room).reverse(), ...wishes.slice(0, DECK).reverse(), ...saved];
 
   const ref = useScene<HTMLElement>((root, q, t) => {
     if (t === "C") return;
@@ -371,7 +377,7 @@ export default function Wishes() {
 
   const label = { idle: "Send your wish", folding: "Folding…", delivered: "Delivered" }[phase];
   const own = [...saved, ...mine];
-  const total = wishes.length + own.length;
+  const total = realTotal + own.length + samples.length;
 
   return (
     <section ref={ref} id="wishes" className="wishes" aria-labelledby="wishes-title">
@@ -420,7 +426,7 @@ export default function Wishes() {
           </div>
           {/* (its place is kept while there is nothing to view, so the booth never shifts) */}
           <button ref={viewRef} type="button" className="wb-view" onClick={() => setOpen(true)} style={total ? undefined : { visibility: "hidden" }}>
-            View all wishes <span aria-hidden="true">→</span>
+            View all {total > 1 ? `${fmt(total)} ` : ""}wishes <span aria-hidden="true">→</span>
           </button>
         </div>
 
@@ -438,14 +444,17 @@ export default function Wishes() {
         </svg>
       </div>
 
-      {open && <AllWishes mine={own} onClose={() => { setOpen(false); viewRef.current?.focus(); }} still={still} />}
+      {open && <AllWishes mine={own} samples={samples} realTotal={realTotal} onClose={() => { setOpen(false); viewRef.current?.focus(); }} still={still} />}
     </section>
   );
 }
 
-/** Every wish, in a pop-up at the centre of the screen. */
-function AllWishes({ mine, onClose, still }: { mine: Card[]; onClose: () => void; still: boolean }) {
+/** Every wish, in a pop-up at the centre of the screen, with how many there are: the guest's own
+ * first, then everyone's (newest first, a page at a time), then the samples while the booth is
+ * young. */
+function AllWishes({ mine, samples, realTotal, onClose, still }: { mine: Card[]; samples: Card[]; realTotal: number; onClose: () => void; still: boolean }) {
   const [list, setList] = useState<Wish[]>([]);
+  const [apiTotal, setApiTotal] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [more, setMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -458,7 +467,12 @@ function AllWishes({ mine, onClose, still }: { mine: Card[]; onClose: () => void
     try {
       const r = await fetch(`/api/wishes?limit=${PAGE}&page=${p}`);
       const d = r.ok ? await r.json() : null;
-      if (d?.wishes) { setList((l) => (p === 0 ? d.wishes : [...l, ...d.wishes])); setMore(!!d.more); setPage(p); }
+      if (d?.wishes) {
+        setList((l) => (p === 0 ? d.wishes : [...l, ...d.wishes]));
+        setMore(!!d.more);
+        setPage(p);
+        if (typeof d.total === "number") setApiTotal(d.total);
+      }
     } finally {
       setLoading(false);
     }
@@ -506,7 +520,8 @@ function AllWishes({ mine, onClose, still }: { mine: Card[]; onClose: () => void
     gsap.fromTo(fresh, { y: 22, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, stagger: 0.04, ease: "power2.out", delay: 0.1 });
   }, [list.length, still]);
 
-  const cards: Card[] = [...[...mine].reverse(), ...list];
+  const cards: Card[] = [...[...mine].reverse(), ...list, ...(more ? [] : samples)];
+  const count = (apiTotal ?? realTotal) + mine.length + samples.length;
   return createPortal(
     <div ref={shade} className="wb-modal" onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
       <div ref={panel} className="wb-modal-panel" role="dialog" aria-modal="true" aria-labelledby="wb-all-title">
@@ -514,6 +529,7 @@ function AllWishes({ mine, onClose, still }: { mine: Card[]; onClose: () => void
         <header className="center wb-all-head">
           <p className="eyebrow">The wishing booth</p>
           <h3 id="wb-all-title">Every Wish</h3>
+          {count > 0 && <p className="wb-all-count">{wishesWord(count)} from family &amp; friends</p>}
         </header>
         <div className="wb-all-body">
           {cards.length ? (

@@ -152,18 +152,39 @@ export const wedding = {
     hotels: [] as { name: string; distance: string; price: string; url?: string; code?: string }[],
   },
   /**
-   * S · The wishing booth. Guests' wishes stack up as cards; until there are a few, these cards
-   * from the couple keep the booth company (they sit under the real wishes and leave once five
-   * guests have written). Every guest wish waits for the couple's approval in /studio.
+   * S · The wishing booth. Guests' wishes stack up as cards, and "View all wishes" shows every one
+   * with the count. Every guest wish waits for the couple's approval in /studio.
+   *
+   * Until enough guests have written, the booth is kept full by the couple's welcome card and the
+   * sample wishes below: guests see them as wishes on the booth and in "View all wishes". Change
+   * them to your own words (family, friends), add or remove any, or set `samples: []` to show only
+   * real wishes. They step aside on their own once `samplesUntil` guest wishes have been approved.
    */
   wishBooth: {
-    prompts: [
-      { message: "Every wish you leave here, we will keep, and read again on each anniversary.", name: "Janvi & Rohit" },
-      { message: "A blessing for the journey we begin together…", name: "Waiting for your words" },
-      { message: "A wish for our first home…", name: "Waiting for your words" },
-      { message: "Your favourite memory of us…", name: "Waiting for your words" },
-      { message: "Your advice for a long and happy marriage…", name: "Waiting for your words" },
-    ],
+    welcome: { message: "Every wish you leave here, we will keep, and read again on each anniversary.", name: "Janvi & Rohit" },
+    samplesUntil: 12,
+    samples: [
+      { name: "Meera Kapoor", relation: "Janvi's cousin", message: "From building forts in Nani's garden to this day. May your life together be as full of laughter as our childhood summers." },
+      { name: "Arjun Malhotra", relation: "Rohit's best friend", message: "Brother, you found the one who laughs at your terrible jokes. Hold on to her forever!" },
+      { name: "Priya & Karan", relation: "Family friends", message: "Wishing you a marriage full of patience, kindness and long Sunday breakfasts." },
+      { name: "Dadi", relation: "Janvi's grandmother", message: "Sada suhagan raho, beta. My blessings are with you both, today and always." },
+      { name: "Sneha Iyer", relation: "College roommate", message: "To the girl who planned every trip: here is to the greatest adventure of all. So happy for you!" },
+      { name: "Vikram Singh", relation: "Rohit's uncle", message: "May Lord Ganesha bless your new journey with wisdom, health and prosperity." },
+      { name: "Ananya Rao", relation: "Childhood friend", message: "Watching you two together is the sweetest thing. Wishing you a lifetime of love in every language." },
+      { name: "The Sharma Family", relation: "Neighbours", message: "Our street will miss your music on Sunday evenings! Love and blessings to the beautiful couple." },
+      { name: "Kabir Mehta", relation: "Rohit's colleague", message: "Congratulations! May your home always be full of good food, good friends and great stories." },
+      { name: "Nisha Verma", relation: "Janvi's aunt", message: "You were the most beautiful bride I have ever seen. May every day feel like this one." },
+      { name: "Rahul & Divya", relation: "Cousins", message: "Two wonderful families, one big celebration. Cannot wait to dance at the sangeet with you!" },
+      { name: "Tanvi Joshi", relation: "School friend", message: "Love, trust and a lot of chai. That is the recipe. Congratulations to you both!" },
+      { name: "Aditya Bose", relation: "Rohit's cousin", message: "Bhaiya, you finally did it! Welcome to the family, Bhabhi. We are so lucky to have you." },
+      { name: "Kavya Nair", relation: "Janvi's colleague", message: "May your marriage be as beautiful as Tuscany in August. Sending you so much love." },
+      { name: "Nana & Nani", relation: "Janvi's grandparents", message: "Fifty-two years together taught us one thing: always hold hands. Our blessings, bachchon." },
+      { name: "Ishaan Gupta", relation: "University friend", message: "From late-night study sessions to this. So proud of you both. Here is to forever!" },
+      { name: "Pooja & Sameer", relation: "Family friends", message: "Wishing you endless adventures, quiet mornings and a love that grows deeper every year." },
+      { name: "Riya Desai", relation: "Janvi's best friend", message: "My partner in crime is getting married! I love you both. Thank you for letting me be part of this." },
+      { name: "Manish Kumar", relation: "Rohit's mentor", message: "Marriage is the finest partnership there is. May yours be blessed with joy and understanding." },
+      { name: "Simran Kaur", relation: "Cousin", message: "May your love story be the one we all tell at family weddings for years to come." },
+    ] as { name: string; relation?: string; message: string }[],
   },
   /**
    * "Need help?": the questions guests ask most, and who to call. A contact appears once it has a

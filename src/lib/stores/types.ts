@@ -37,8 +37,8 @@ export interface Store {
   /** oldest first */
   listRsvps(): Promise<Rsvp[]>;
   insertWish(row: Wish): Promise<void>;
-  /** pinned first, then newest first; `limit` omitted means all */
-  listWishes(opts: { approvedOnly: boolean; offset?: number; limit?: number }): Promise<{ wishes: Wish[]; more: boolean }>;
+  /** pinned first, then newest first; `limit` omitted means all. `total` counts every match. */
+  listWishes(opts: { approvedOnly: boolean; offset?: number; limit?: number }): Promise<{ wishes: Wish[]; more: boolean; total: number }>;
   updateWish(id: string, patch: { status?: Wish["status"]; pinned?: boolean }): Promise<void>;
   deleteWish(id: string): Promise<void>;
   /** Counts one request against `key`; false once `limit` is reached inside the window. */

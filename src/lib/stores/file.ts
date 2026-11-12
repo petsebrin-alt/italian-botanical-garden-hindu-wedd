@@ -51,7 +51,7 @@ export function createFileStore(dir: string): Store {
     async listWishes({ approvedOnly, offset = 0, limit }) {
       const all = (await readAll("wishes")).filter((w) => !approvedOnly || w.status === "approved").sort(order);
       const end = limit === undefined ? all.length : offset + limit;
-      return { wishes: all.slice(offset, end), more: all.length > end };
+      return { wishes: all.slice(offset, end), more: all.length > end, total: all.length };
     },
     updateWish: (id, patch) => mutate("wishes", (rows) => {
       const w = rows.find((x) => x.id === id);
