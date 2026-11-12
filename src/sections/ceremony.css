@@ -28,53 +28,65 @@
 }
 @media (max-aspect-ratio: 3/4) { .cer-lawn { height: 37%; } }
 
-/* Floral Window Stage replacing mandap */
+/* Top to bottom: the heading, the garden window, and (once the invitation is accepted) the thank-you
+ * line with its replay, under the window.
+ *
+ * --gw is the window's stage (a square; the window itself is 58% of its width, standing 14% above
+ * its foot, and its roses reach ~8% of --gw above the window; the stage stands --lift above the
+ * foot of the screen). It is sized so the window and its
+ * roses fit between the heading and the lawn's foot on every screen. It is centred with a margin,
+ * not a transform, because GSAP owns its transform (the window comes forward as the curtain opens). */
+.cer {
+  /* phones and tablets: the window as wide as the screen allows, lifted a little higher so the
+   * thank-you line has room under it */
+  --gw: min(148vw, calc(108vh - 224px), 900px);
+  --lift: 9vh;
+}
+@media (min-width: 900px) {
+  .cer { --gw: min(72vw, calc(107vh - 158px), 900px); --lift: 5vh; }
+}
+@supports (height: 1lvh) {
+  .cer { --lift: 9lvh; }
+  @media (min-width: 900px) { .cer { --lift: 5lvh; } }
+}
 .cer-window-wrap {
   position: absolute;
   left: 50%;
-  bottom: 5%;
-  width: min(88vw, 68vh, 620px);
+  bottom: var(--lift);
+  width: var(--gw);
+  margin-left: calc(var(--gw) / -2);
   aspect-ratio: 1 / 1;
-  translate: -50% 0;
   transform-origin: 50% 100%;
   will-change: transform;
   z-index: 3;
 }
-/* laptops and up: a bigger window (phones keep the size above) */
-@media (min-width: 900px) {
-  .cer-window-wrap { width: min(66vw, 84vh, 820px); }
-}
-@media (min-width: 1280px) {
-  .cer { --gw: min(72vw, 96vh, 900px); }
-  .cer-window-wrap { width: var(--gw); }
-}
 
 
-/* Ceremony Text Header */
+/* Ceremony Text Header: across the top, above the window */
 .cer-text {
   position: absolute;
-  left: 50%;
-  top: clamp(18px, 5vh, 56px);
-  translate: -50% 0;
-  width: min(92vw, 640px);
+  left: 0;
+  right: 0;
+  top: clamp(16px, 4vh, 44px);
+  width: min(92vw, 760px);
+  margin-inline: auto;
   display: grid;
   justify-items: center;
+  gap: 2px;
   text-align: center;
-  padding: 14px 24px;
+  padding: 8px 24px 10px;
+  z-index: 4;
   background: radial-gradient(closest-side, rgb(248 244 233 / 0.85), rgb(248 244 233 / 0.4) 70%, rgb(248 244 233 / 0));
 }
 .cer-text .eyebrow { color: var(--forest); }
-.cer-when { font-size: clamp(1rem, 0.8rem + 1vw, 1.5rem); color: var(--forest); }
-@media (min-width: 1280px) {
-  /* beside the window, clear of its open left shutter (which reaches ~0.42 of the stage's width
-   * out from the centre) */
-  .cer-text {
-    left: 4vw; right: auto; top: auto; bottom: 24vh; translate: none;
-    width: clamp(250px, calc(50vw - 0.42 * var(--gw) - 4vw), 340px);
-    padding-inline: 8px;
-  }
-  .cer-when { font-size: clamp(1.05rem, 0.6rem + 0.6vw, 1.3rem); }
+.cer-text .script { font-size: clamp(2.6rem, 1.4rem + 3.2vw, 3.9rem); line-height: 1.05; white-space: nowrap; }
+.cer-when { font-size: clamp(1rem, 0.8rem + 0.6vw, 1.3rem); color: var(--forest); }
+@media (max-width: 899px) {
+  /* (clear of the menu bar) */
+  .cer-text { top: calc(var(--nav-h) + 4px); padding-inline: 6px; }
+  .cer-when { font-size: 0.92rem; letter-spacing: 0.04em; }
 }
+.cer-when-time { white-space: nowrap; }
 
 
 /* Full-Height Crystal Curtain: spans 100% of the section height from top to lawn */

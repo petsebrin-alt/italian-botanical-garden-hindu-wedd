@@ -76,7 +76,7 @@ export default function Ceremony() {
         <div className="cer-text">
           <p className="eyebrow">The wedding ceremony</p>
           <h2 id="cer-title" className="script">{c.title}</h2>
-          {event?.date && event.start && <p className="date-display cer-when">{weekdayDate(event.date)} · {clock(event.start)}</p>}
+          {event?.date && event.start && <p className="date-display cer-when">{weekdayDate(event.date)} <span className="cer-when-time">· {clock(event.start)}</span></p>}
         </div>
         <canvas className="crys-canvas" aria-hidden="true" />
         <div className="gw-fx" aria-hidden="true" />

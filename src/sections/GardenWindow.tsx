@@ -337,7 +337,9 @@ export default function GardenWindow() {
         <img className="gw-vine gw-vine--daisy" src={`${A}daisy.webp`} alt="" aria-hidden="true" />
       </div>
 
-      {/* the invitation card, risen out of the envelope */}
+      {/* the invitation card, risen out of the envelope: centred on the window (its slot centres
+          it, so GSAP can own its transform) */}
+      <div className="gw-card-slot">
       <div className="gw-card" role="group" aria-label="Invitation">
         <img className="gw-card-vine" src={`${A}vine-top.webp`} alt="" aria-hidden="true" />
         <p className="gw-reveal gw-card-eyebrow">Together with their families</p>
@@ -354,11 +356,12 @@ export default function GardenWindow() {
           <span className="gw-hand" aria-hidden="true"><Hand /></span>
         </div>
       </div>
+      </div>
 
       {accepted && (
         <div className="gw-thanks" role="status">
           <span>Thank you! We can&rsquo;t wait to celebrate with you in Tuscany.</span>
-          <button type="button" className="gw-replay" onClick={onReplay}>↺ Replay</button>
+          <button type="button" className="gw-replay" onClick={onReplay} aria-label="Replay the invitation">↺<span className="gw-replay-word"> Replay</span></button>
         </div>
       )}
     </div>

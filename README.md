@@ -106,9 +106,9 @@ In the ceremony section, once the crystal curtain has drawn open, the garden win
 3. The two shutters swing open on their hinges, and warm light fills the window.
 4. Inside, an ivory envelope comes forward, its flap lifts, and the card rises out of it.
 5. The card is the couple's invitation, with "Dear <guest>" when the link carries a name. A hand points to "Accept the Invitation".
-6. On Accept, Janvi and Rohit appear in the window, butterflies fly across the whole section, and rose petals fall. A thank-you note appears, with Replay.
+6. On Accept, Janvi and Rohit appear in the window, butterflies fly across the whole section, and rose petals fall. A thank-you note appears under the window, with Replay.
 
-On laptops the window is larger, and the envelope and the card are a little smaller than it, so the window's frame and flowers stay in view around the card. Phones keep the smaller window, with the card in front of it.
+On every screen the section reads top to bottom: the heading ("The wedding ceremony", the ceremony's name and its date and time), then the window, then the thank-you line. The window is sized to fit between the heading and the foot of the screen (`--gw` in `src/sections/ceremony.css`); on phones and tablets it is as wide as the screen allows and stands a little higher. The card rises from the centre of the window and stays centred on it, a little narrower than the window, so the warm light inside shows round it. The card, the envelope and the window are centred with layout rather than a CSS `translate`, because GSAP owns their transforms.
 
 The window, shutters, roses, butterflies and petals are cut from the asset sheet `assets-src/botanical/ref-window-sheet.webp`.
 

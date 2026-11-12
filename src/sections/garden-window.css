@@ -104,11 +104,12 @@
 /* ------------------------------------------------------------------ the envelope inside */
 .gw-env {
   position: absolute;
-  left: 50%;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
   bottom: 11%;
   width: 72%;
   aspect-ratio: 1.42;
-  translate: -50% 0;
   perspective: 700px;
   transform-style: preserve-3d;
   z-index: 3;
@@ -150,14 +151,26 @@
 .gw-env-rose { position: absolute; width: 24%; left: -7%; bottom: -14%; z-index: 4; filter: drop-shadow(0 3px 4px rgb(80 50 40 / 0.25)); }
 
 /* ------------------------------------------------------------------ the invitation card */
-.gw-card {
+/* the window's height band (it stands 14% above the stage's foot and is 62.3% of it tall): the
+ * card is centred in it, and a card taller than the band overflows it evenly, above and below */
+.gw-card-slot {
   position: absolute;
-  left: 50%;
-  /* anchored at the foot: a taller card grows up into the sky, never off the screen */
-  bottom: 7%;
-  width: clamp(270px, 74%, 430px);
-  translate: -50% 0;
+  left: 0;
+  right: 0;
+  top: 23.7%;
+  bottom: 14%;
   z-index: 8;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.gw-card {
+  position: relative;
+  pointer-events: auto;
+  /* narrower than the window, so its frame and the warm light inside show round the card */
+  width: clamp(250px, 40%, 400px);
+  /* (its writing is sized to the card) */
+  container-type: inline-size;
   display: grid;
   justify-items: center;
   gap: clamp(4px, 0.9vh, 9px);
@@ -174,9 +187,9 @@
   visibility: hidden;
 }
 .gw-card-vine { position: absolute; top: -18%; left: 50%; width: 92%; translate: -50% 0; pointer-events: none; filter: drop-shadow(0 3px 4px rgb(41 52 35 / 0.18)); }
-.gw-card-eyebrow { font-family: var(--font-body), sans-serif; font-size: 0.66rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--botanical); }
+.gw-card-eyebrow { font-family: var(--font-body), sans-serif; font-size: clamp(0.55rem, 2.4cqw, 0.66rem); letter-spacing: 0.22em; text-transform: uppercase; color: var(--botanical); }
 .gw-card-dear { font-family: var(--font-script), serif; font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.2rem); line-height: 1; color: var(--gold-ink); }
-.gw-card-names { font-family: var(--font-names), serif; font-size: clamp(1.7rem, 1.2rem + 2vw, 2.6rem); line-height: 1.05; letter-spacing: 0.04em; color: var(--forest); }
+.gw-card-names { font-family: var(--font-names), serif; font-size: clamp(1.6rem, 11.5cqw, 2.6rem); line-height: 1.05; letter-spacing: 0.04em; white-space: nowrap; color: var(--forest); }
 .gw-card-names span { font-family: var(--font-script), serif; color: var(--gold-ink); padding-inline: 0.15em; }
 .gw-card-line { font-family: var(--font-head), serif; font-style: italic; font-size: clamp(0.92rem, 0.82rem + 0.4vw, 1.08rem); color: var(--forest); max-width: 26ch; }
 .gw-card-date { font-family: var(--font-body), sans-serif; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-ink); font-variant-numeric: lining-nums; }
@@ -228,9 +241,11 @@
 
 .gw-thanks {
   position: absolute;
-  left: 50%;
-  top: 2%;
-  translate: -50% 0;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  /* under the window, near the foot of the screen (the stage stands --lift above it) */
+  bottom: calc(14px - var(--lift, 5vh));
   z-index: 9;
   display: flex;
   align-items: center;
@@ -248,8 +263,13 @@
   animation: gw-in 0.9s 1.4s both cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 .gw-replay { border: 0; background: none; color: var(--gold-ink); font: inherit; font-style: normal; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
-@keyframes gw-in { from { opacity: 0; transform: translateY(-8px); } }
-@media (max-width: 520px) { .gw-thanks { top: -20%; max-width: 74vw; flex-direction: column; gap: 4px; border-radius: 18px; text-align: center; } }
+@keyframes gw-in { from { opacity: 0; transform: translateY(8px); } }
+/* small phones: two lines of thanks, and the replay as its ↺ beside them */
+@media (max-width: 520px) {
+  .gw-thanks { max-width: 90vw; gap: 10px; border-radius: 18px; padding: 8px 10px 8px 16px; font-size: 0.84rem; line-height: 1.35; }
+  .gw-replay { flex: none; width: 34px; height: 34px; border-radius: 50%; font-size: 1.15rem; background: rgb(196 166 106 / 0.16); }
+  .gw-replay-word { display: none; }
+}
 
 /* ------------------------------------------------------------------ butterflies and petals, over the whole stage */
 .gw-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 12; }
@@ -278,20 +298,8 @@
 }
 
 /* ------------------------------------------------------------------ laptops and up
- * The window is bigger here, and the envelope and the card are a little smaller than it, so the
- * window's frame and its flowers stay in view all round them. (The window spans 14%–76.3% of the
- * stage's height from its foot: the card is centred on it.) */
+ * The envelope is a little smaller than the window here, so its frame and flowers stay in view. */
 @media (min-width: 900px) {
   .gw-env { width: 48%; bottom: 17%; }
-  /* centred in the window's height band by its auto margins (GSAP owns the card's transform) */
-  .gw-card {
-    top: 23.7%;
-    bottom: 14%;
-    height: fit-content;
-    margin-block: auto;
-    width: 44%;
-    padding-top: clamp(2.2rem, 5vh, 3.2rem);
-  }
-  /* (below the curtain's rod, above the window's flowers) */
-  .gw-thanks { top: 9%; }
+  .gw-card { padding-top: clamp(2.2rem, 5vh, 3.2rem); }
 }
