@@ -283,13 +283,13 @@ export default function Hero() {
           .to([layer("frame-l"), layer("frame-r")], { y: -0.05 * lvh, scale: 1.04, duration: DESCENT }, d);
         // the flower arch comes up with the lawn: it opens out of the garden as it rises into view
         // (a little smaller and lighter, settling to its size at its feet), then the couple appear
-        // in it; their photograph glides down inside the opening all the way through, while the
+        // in it; their photograph glides down into its seat in the opening all the way through, while the
         // jasmine strands and bells hanging in the arch lag a breath behind it
-        const pan = portrait ? 4 : 7;
+        const pan = portrait ? 5 : 9;
         tl.fromTo(q(".hero-arch-ring, .hero-arch-hang, .hero-arch-shadow"), { autoAlpha: 0, scale: 0.9 },
           { autoAlpha: 1, scale: 1, transformOrigin: "50% 95%", duration: DESCENT * 0.5, ease: "power2.out" }, d + DESCENT * 0.3)
           .fromTo(q(".hero-arch-photo"), { autoAlpha: 0 }, { autoAlpha: 1, duration: DESCENT * 0.4, ease: "power1.out" }, d + DESCENT * 0.5)
-          .fromTo(q(".hero-arch-pan"), { yPercent: -pan }, { yPercent: pan, duration: DESCENT + STEP }, d);
+          .fromTo(q(".hero-arch-pan"), { yPercent: -pan }, { yPercent: 0, duration: DESCENT + STEP * 0.6 }, d);
         if (!portrait) tl.fromTo(q(".hero-arch-hang"), { yPercent: -1.2 }, { yPercent: 0.8, duration: DESCENT + STEP }, d);
         if (portrait) {
           // phones and upright tablets keep the poster: names above the couple, between the trees

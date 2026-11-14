@@ -18,7 +18,7 @@ export const file = (n: string) => `${D}${n}?v=${arch.version}`;
 const FEET = 1540;
 const MID = 1110.5;
 /** Its width: wide screens, and upright ones (phones, upright tablets). */
-const WIDTH = { wide: 1150, upright: 900 };
+const WIDTH = { wide: 1240, upright: 940 };
 
 export type ArchBox = { x: number; y: number; w: number; h: number };
 /** The arch's box in canvas px. */

@@ -82,7 +82,7 @@ export default function ArchPhotoTool() {
       </div>
       <p className="hint">
         Any ordinary photo works: there is no need to remove its background. It is cropped to the arch&rsquo;s opening by
-        itself and shown behind the flowers. Drag the picture to choose what stays in view, and zoom in if you are small in it.
+        itself and shown behind the flowers. The couple sit low in the arch, below its bells, and the top of the photo melts into the garden. Drag the picture to choose what stays in view, and zoom in if you are small in it.
       </p>
 
       <div className="studio-arch-stage" style={{ aspectRatio: ARCH_RATIO }}>
@@ -98,7 +98,7 @@ export default function ArchPhotoTool() {
             role="img"
             aria-label="The couple's photo in the arch; drag to move it, or use the arrow buttons"
           >
-            {/* (as on the opening screen: a little taller than the opening, for its glide) */}
+            {/* (the couple's seat in the arch, as on the opening screen) */}
             <div className="studio-arch-pan">
               <img src={src} alt="" draggable={false} style={{ objectPosition: f, scale: String(zoom), transformOrigin: f }} />
             </div>

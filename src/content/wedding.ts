@@ -63,7 +63,7 @@ export const wedding = {
    *   zoom   1 shows as much of the photo as fits; 1.2 comes 20% closer (round `focus`)
    */
   archPhoto: {
-    src: "/assets/img/gallery-garland.webp",
+    src: "/assets/img/arch-couple.webp",
     alt: "Janvi and Rohit seated in the garden, exchanging garlands of roses and jasmine",
     focus: "50% 45%",
     zoom: 1,

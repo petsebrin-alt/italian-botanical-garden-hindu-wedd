@@ -38,7 +38,7 @@ Rules:
 Values in `[square brackets]` are placeholders still to confirm (PRD §24).
 
 ### The couple's photo in the flower arch
-The opening screen ends on a Hindu wedding arch of roses, jasmine strands, hydrangeas and brass bells, standing on the lawn of the cypress avenue. The couple's photograph shows through its opening. Any ordinary photo works; there is no need to remove its background. It is cropped to the opening by itself and sits behind the flowers and the hanging bells, so it never covers or stretches them. To use your own:
+The opening screen ends on a Hindu wedding arch of roses, jasmine strands, hydrangeas and brass bells, standing on the lawn of the cypress avenue. The couple's photograph shows through its opening. Any ordinary photo works; there is no need to remove its background. The couple sit low in the arch, on its floor and below its bells, so the flowers and bells never cover their faces. The photo is cropped to its place by itself, and its top and sides melt into the garden seen through the arch. It sits behind the flowers, so it never covers or stretches them. To use your own:
 
 1. Put the photo in `public/assets/img/` (a landscape or square photo, 1600px wide or more, fills the opening best).
 2. Change `archPhoto` in `src/content/wedding.ts`: `src` is its path, `focus` the point that always stays in view (`"50% 45%"` is the middle, a little above centre), and `zoom` brings it closer (`1.2` is 20% closer).
@@ -172,12 +172,12 @@ The layers are sky (CSS), clouds, distant hills, far avenue, cypress left/right,
 The flower arch (`src/scenes/hero/Arch.tsx`) stands in the couple's place, with the couple's photograph in it. Its photograph (`assets-src/arch/ref-arch.webp`) is cut into the arch, the jasmine strands and bells hanging in it, the shape of its opening, and the garden seen through it, with no arch. That garden closes the far end of the avenue, behind the arch:
 
 ```bash
-python3 tools/build_arch.py            # writes public/assets/arch/*, and cleans the far layers
+python3 tools/build_arch.py            # writes public/assets/arch/*, cleans the far layers, and the sample photo
 ```
 
 The arch is smaller than the cut-out couple it replaced. So the script also takes the couple's outline out of the far layers, which were never meant to be seen there. The cypress rows carry on with smaller trees, and the hills give way to the garden beyond. It keeps the original layers in `assets-src/arch/hero-orig/` and always starts from them. The arch has its own flowers at its feet, so the hydrangea beds in the corners have been taken out.
 
-As the garden rises, the arch opens out of it: it grows a little and comes into full colour, settling at its feet. Then the couple appear in it. Their photograph glides down inside the opening all the way through, and the strands and bells lag a breath behind the arch. On phones the arch is a little narrower, so it fits, and the glide is shorter. With reduced motion, the finished scene simply stands. The script also cuts reusable sprites (wisteria, trees) that the other sections use, so the visual language stays consistent.
+As the garden rises, the arch opens out of it: it grows a little and comes into full colour, settling at its feet. Then the couple appear in it. Their photograph glides down into its seat in the arch, and the strands and bells lag a breath behind the arch. On phones the arch is a little narrower, so it fits, and the glide is shorter. With reduced motion, the finished scene simply stands. The script also cuts reusable sprites (wisteria, trees) that the other sections use, so the visual language stays consistent.
 
 Wide screens are filled edge to edge at full sharpness. Nothing is blurred: the avenue, wall, lawn and flower beds continue past the photo's edges from the garden's own real pixels, and the arbour is pinned to the screen's corners.
 

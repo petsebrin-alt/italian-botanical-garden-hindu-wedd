@@ -298,3 +298,17 @@ man["version"] = lib.content_version(HERO)
 with open(os.path.join(HERO, "manifest.json"), "w") as f:
     f.write(json.dumps(man, indent=2))
 print("opening scene layers cleaned; version", man["version"])
+
+
+# ------------------------------------------------------------------ the sample couple photo
+# The template's own photo in the arch (wedding.ts, archPhoto): the seated couple exchanging
+# garlands from the opening picture, an ordinary photo with its background. It is enlarged with
+# care and sharpened, so it stays crisp in the arch on wide screens.
+from PIL import ImageFilter  # noqa: E402
+
+ref = Image.open(os.path.join(ROOT, "assets-src", "ref-opening.webp")).convert("RGB").crop((0, 760, 941, 1560))
+big = ref.resize((round(ref.width * 1.6), round(ref.height * 1.6)), Image.LANCZOS)
+big = big.filter(ImageFilter.UnsharpMask(radius=2.2, percent=70, threshold=2))
+big = big.filter(ImageFilter.UnsharpMask(radius=0.8, percent=45, threshold=1))
+big.save(os.path.join(ROOT, "public", "assets", "img", "arch-couple.webp"), "WEBP", quality=85, method=6)
+print("sample couple photo", big.size)
