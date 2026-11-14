@@ -4,6 +4,7 @@ import { wedding } from "@/content/wedding";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
 import villa from "../../public/assets/villa/villa.json";
+import roses from "../../public/assets/villa/roses/roses.json";
 import "./thank-you.css";
 
 const V = "/assets/villa/";
@@ -11,6 +12,54 @@ type Box = { x: number; y: number; w: number; h: number };
 const L = villa.layers as unknown as Record<string, Box>;
 /** The scene's pieces, back to front (tools/build_villa.py). */
 const PIECES = ["back", "row-l", "row-r", "lawn", "gate-l", "gate-r", "couple", "front-l", "front-r"] as const;
+
+/* ------------------------------------------------------------------ the roses (tools/build_roses.py)
+ * Each plant is its base (the plant with its roses still closed, in green bud) and its roses,
+ * every one a sprite of its own atlas that opens over its bud. Places are in the photograph's own
+ * pixels (1000 x 1333). */
+type Plant = (typeof roses)["bush"];
+type Sprite = Plant["roses"][number];
+const PW = villa.w, PH = villa.h;
+const pct = (v: number, of: number) => `${(v / of) * 100}%`;
+/** The plants: a bush at the foot of each gateway, and the garland along the foot of the section,
+ *  edge to edge (two lengths of it, the second turned round). */
+const PLANTS: { key: string; kind: "bush" | "garland"; x: number; y: number; w: number; flip?: boolean }[] = [
+  { key: "bush-l", kind: "bush", x: 18, y: 0, w: 300 },
+  { key: "bush-r", kind: "bush", x: 640, y: 0, w: 300, flip: true },
+  { key: "garland-1", kind: "garland", x: -45, y: 0, w: 570 },
+  { key: "garland-2", kind: "garland", x: 470, y: 0, w: 590, flip: true },
+];
+/** Where each plant stands: its foot (photo px) — the bushes on the gateways' feet, the garland
+ *  hanging a little below the section's edge. */
+const FOOT: Record<string, number> = { "bush-l": 1088, "bush-r": 1046, "garland-1": 1352, "garland-2": 1356 };
+/** The loose roses at the couple's feet, pink and white: [x, y (centre), size] in photo px. */
+const LOOSE: [number, number, number, "p" | "w"][] = [
+  [292, 1200, 50, "w"], [334, 1214, 58, "p"], [378, 1204, 48, "w"], [420, 1222, 54, "p"], [460, 1210, 44, "w"],
+  [540, 1214, 50, "w"], [582, 1200, 46, "p"], [624, 1216, 56, "w"], [668, 1202, 50, "p"], [708, 1214, 46, "w"],
+];
+/** Single, round roses from the bush, for the loose ones. */
+const SINGLES = roses.bush.roses
+  .filter((r) => r.a[2] / r.a[3] > 0.78 && r.a[2] / r.a[3] < 1.28)
+  .sort((a, b) => b.a[2] * b.a[3] - a.a[2] * a.a[3])
+  .slice(2, 2 + LOOSE.length);
+
+/** A rose: its sprite from the atlas, filling its box. */
+function rose(kind: "bush" | "garland", r: Sprite, white: boolean, style: React.CSSProperties, key: string) {
+  const at = roses[kind].atlas;
+  const [ax, ay, aw, ah] = r.a;
+  return (
+    <span
+      key={key}
+      className="ty-rose"
+      style={{
+        ...style,
+        backgroundImage: `url(${V}roses/${kind}-roses${white ? "-white" : ""}.webp)`,
+        backgroundSize: `${(at.w / aw) * 100}% ${(at.h / ah) * 100}%`,
+        backgroundPosition: `${at.w === aw ? 0 : (ax / (at.w - aw)) * 100}% ${at.h === ah ? 0 : (ay / (at.h - ah)) * 100}%`,
+      }}
+    />
+  );
+}
 
 /**
  * S15 · Thank you: the last screen of the invitation, edge to edge, and nothing else. The Tuscan
@@ -34,7 +83,7 @@ export default function ThankYou() {
   const ref = useScene<HTMLElement>((root, q, tier) => {
     if (tier === "C") return;
     const P = (c: string) => q(`.ty-p--${c}`)[0];
-    gsap.set(q(".ty-p, .ty-words > *, .ty-top-btn"), { autoAlpha: 0 });
+    gsap.set(q(".ty-p, .ty-plant:not(.ty-plant--loose), .ty-words > *, .ty-top-btn"), { autoAlpha: 0 });
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
     /** A piece appears at `at`, `from` (percent of its own size) away, and moves into its place. */
@@ -57,9 +106,24 @@ export default function ThankYou() {
     // the trees in front
     appear(P("front-l"), 3.85, { y: 60 }, 0.8);
     appear(P("front-r"), 3.95, { y: 40 }, 0.9);
-    // the words, and the way back to the top
-    tl.fromTo(q(".ty-words > *"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.16, ease: "power2.out" }, 4.4)
-      .fromTo(q(".ty-top-btn"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 5);
+    // the rose bushes at the gateways' feet and the garland along the foot, still in bud
+    appear(q(".ty-plant--bush-l")[0], 4.35, { y: 35 }, 0.9);
+    appear(q(".ty-plant--bush-r")[0], 4.5, { y: 35 }, 0.9);
+    appear(q(".ty-plant--garland-1")[0], 4.65, { y: 70 }, 0.9);
+    appear(q(".ty-plant--garland-2")[0], 4.75, { y: 70 }, 0.9);
+    // the words
+    tl.fromTo(q(".ty-words > *"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.16, ease: "power2.out" }, 5.0);
+    // and then, slowly, every rose opens: from a deep-pink bud, turning as its petals unfold
+    const buds = q(".ty-rose") as HTMLElement[];
+    gsap.set(buds, { autoAlpha: 0 });
+    buds.forEach((b, i) => {
+      const at = 5.5 + ((i * 0.6180339) % 1) * 3.2;
+      const turn = (i % 2 ? 1 : -1) * (28 + ((i * 37) % 30));
+      tl.set(b, { autoAlpha: 1 }, at)
+        .fromTo(b, { scale: 0.22, rotation: turn, filter: "brightness(0.72) saturate(1.5)" },
+          { scale: 1, rotation: 0, filter: "brightness(1) saturate(1)", duration: 2.6, ease: "power2.out", immediateRender: false }, at);
+    });
+    tl.fromTo(q(".ty-top-btn"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 6.2);
 
     const st = ScrollTrigger.create({ trigger: q(".ty-stage")[0], start: "top 75%", once: true, onEnter: () => tl.play() });
     return () => { tl.kill(); st.kill(); };
@@ -84,6 +148,31 @@ export default function ThankYou() {
               />
             );
           })}
+
+          {/* the roses: the bushes, the garland, and the loose roses at the couple's feet */}
+          {PLANTS.map((pl) => {
+            const pdata = roses[pl.kind];
+            const h = (pl.w * pdata.h) / pdata.w;
+            const foot = FOOT[pl.key];
+            return (
+              <div
+                key={pl.key}
+                className={`ty-plant ty-plant--${pl.key} ty-plant--${pl.kind}${pl.flip ? " is-flipped" : ""}`}
+                style={{ left: pct(pl.x, PW), top: pct(foot - h, PH), width: pct(pl.w, PW), height: pct(h, PH) }}
+              >
+                <img className="ty-plant-base" src={`${V}roses/${pl.kind}-base.webp`} alt="" loading="lazy" decoding="async" draggable={false} />
+                {pdata.roses.map((r, i) =>
+                  rose(pl.kind, r, pl.kind === "garland" && i % 4 === 2, { left: `${r.p[0] * 100}%`, top: `${r.p[1] * 100}%`, width: `${r.p[2] * 100}%`, height: `${r.p[3] * 100}%` }, `${pl.key}-${i}`))}
+              </div>
+            );
+          })}
+          <div className="ty-plant ty-plant--loose" aria-hidden="true">
+            {LOOSE.map(([x, y, s, c], i) => {
+              const r = SINGLES[i % SINGLES.length];
+              const w = s, h = (s * r.a[3]) / r.a[2];
+              return rose("bush", r, c === "w", { left: pct(x - w / 2, PW), top: pct(y - h / 2, PH), width: pct(w, PW), height: pct(h, PH) }, `loose-${i}`);
+            })}
+          </div>
         </div>
 
         <div className="ty-words">

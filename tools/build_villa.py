@@ -214,6 +214,62 @@ FEATHER = 4
 meta = {"w": W, "h": H, "layers": {}}
 
 
+# ------------------------------------------------------------------ a sunny day
+# The photograph was taken on an overcast day. Every piece is given the same sunny grade, pixel by
+# pixel, so they still meet without a seam: the pale sky becomes a soft blue with white clouds,
+# and the garden is lit by warm afternoon sun (warmer white balance, livelier greens, rosier
+# brick, a little brighter), most strongly from the upper left where the sun is.
+SKY_TOP = np.array([92, 156, 222], np.float32)
+SKY_LOW = np.array([176, 210, 238], np.float32)
+yy = np.arange(H, dtype=np.float32)[:, None, None]
+xx = np.arange(W, dtype=np.float32)[None, :, None]
+sky_grad = SKY_TOP + (SKY_LOW - SKY_TOP) * np.clip(yy / (ridge.mean() + 40), 0, 1)
+sun = np.clip(1.25 - np.sqrt(((xx - 0.15 * W) / W) ** 2 + ((yy - 0.1 * H) / H) ** 2) * 1.1, 0.55, 1.0)
+
+
+# one sky for the whole scene, from the overcast with everything that will arrive taken out (the
+# filled scene): a soft blue, its clouds the overcast's own broad folds (smooth, never grainy),
+# fading to a paler blue at the horizon
+_v = cv2.cvtColor(np.clip(plate, 0, 255).astype(np.uint8), cv2.COLOR_RGB2HSV)[..., 2].astype(np.float32) / 255
+# (only the real sky counts: where pieces will stand, the clouds are carried on from around them)
+_ok = (~gap).astype(np.float32)
+
+
+def _nblur(a, sig):
+    return cv2.GaussianBlur(a * _ok, (0, 0), sig) / np.maximum(cv2.GaussianBlur(_ok, (0, 0), sig), 1e-3)
+
+
+_broad = _nblur(_v, 55)
+_fine = np.where(gap, _nblur(_v, 30), _nblur(_v, 10))
+_cloud = np.clip(0.42 + (_fine - _broad) * 7 + (_fine - 0.92) * 2.5, 0, 1) ** 1.5
+_cloud *= np.clip((ridge[None, :] - np.arange(H)[:, None] - 10) / 90, 0, 1) * 0.85 + 0.15
+_cloud = cv2.GaussianBlur(_cloud, (0, 0), 3)[..., None]
+SKY = sky_grad * (1 - _cloud) + np.array([250, 250, 247], np.float32) * _cloud
+
+
+def sunny(rgb):
+    rgb = rgb.astype(np.float32)
+    hsv_ = cv2.cvtColor(np.clip(rgb, 0, 255).astype(np.uint8), cv2.COLOR_RGB2HSV).astype(np.float32)
+    sat, val, hue = hsv_[..., 1:2] / 255, hsv_[..., 2:3] / 255, hsv_[..., 0:1]
+    # how much each pixel is sky: pale, unsaturated, faintly blue, above the hills' line (the pale
+    # stone of the obelisks is warm, so it is never taken for sky)
+    skyness = np.clip((0.22 - sat) / 0.12, 0, 1) * np.clip((val - 0.55) / 0.15, 0, 1) \
+        * np.clip((ridge[None, :, None] + 25 - yy) / 25, 0, 1) * np.clip((hue - 70) / 20, 0, 1)
+    # the land: warm sun
+    land = rgb * np.array([1.10, 1.04, 0.88], np.float32)
+    gray = land.mean(-1, keepdims=True)
+    land = gray + (land - gray) * 1.38                     # livelier colours
+    land = 255 * (np.clip(land, 0, 255) / 255) ** 0.86     # a little brighter
+    land = (land - 128) * 1.06 + 128                       # a touch more contrast
+    land = land * (0.9 + 0.22 * sun) + np.array([22, 12, -6], np.float32) * sun  # the sun's warmth
+    return np.clip(SKY * skyness + land * (1 - skyness), 0, 255)
+
+
+img_s = sunny(img)
+plate_s = sunny(plate)
+plate_pre_s = sunny(plate_pre)
+
+
 def save(name, rgb, alpha):
     a8 = (np.clip(alpha, 0, 1) * 255).astype(np.uint8)
     ys, xs = np.nonzero(a8 > 2)
@@ -236,29 +292,29 @@ for i, name in enumerate(ORDER):
         # under the lawn's edge so no seam shows
         region = ((owner == back_i) | gap).astype(np.uint8) * 255
         region[Y[:, 0] >= 880] = 0
-        save(name, plate, soft(region))
+        save(name, plate_s, soft(region))
         continue
     region = np.where(owner == i, 255, 0).astype(np.uint8)
     if name == "lawn":
         region = np.maximum(region, (lawn_gap * 255).astype(np.uint8))
-        save(name, np.where(path_far[..., None], plate_pre, plate), soft(region, 2))
+        save(name, np.where(path_far[..., None], plate_pre_s, plate_s), soft(region, 2))
         continue
     # each later piece carries a few pixels of its real surroundings, so it is fully solid at its
     # true outline and its soft edge falls over the very same pixels beneath it
     top = name.startswith(("gate", "front", "row"))
-    save(name, img.astype(np.float32) if top else plate, soft(region, 4 if top else 2))
+    save(name, img_s if top else plate_s, soft(region, 4 if top else 2))
 
 # the couple (cut out by tools/build_closing.py from assets-src/closing/ref-couple-garden.webp),
 # standing on the path in front of the gateways: feet at y 1235, 470 px tall, centred on the path
 # (its edge is trimmed to the couple themselves, so none of their own golden garden comes with
-# them, and their light is eased towards this photograph's soft overcast day)
+# them; they stand in the same warm sun as the garden)
 couple = np.array(Image.open(os.path.join(ROOT, "public", "assets", "closing", "couple.webp")).convert("RGBA")).astype(np.float32)
 a = couple[..., 3]
 a = cv2.erode(a, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))
 a = cv2.GaussianBlur(a, (0, 0), 0.9)
 rgb = couple[..., :3]
 gray = rgb.mean(-1, keepdims=True)
-rgb = (rgb * 0.88 + gray * 0.12) * np.array([0.95, 0.97, 1.03], np.float32)  # a little less gold, a touch cooler
+rgb = rgb * np.array([1.02, 1.0, 0.97], np.float32)  # (in the same warm sun as the garden)
 couple = Image.fromarray(np.dstack([np.clip(rgb, 0, 255), a]).astype(np.uint8))
 couple.save(os.path.join(OUT, "couple.webp"), "WEBP", quality=86, method=6)
 ch = 470

@@ -235,7 +235,8 @@ The last section (`src/sections/ThankYou.tsx`) is the garden of Villa Cetinale, 
 4. The couple, standing on the path, greeting the guests with joined hands.
 5. The left gateway from the left, then the right one from the right.
 6. The trees in front.
-7. "Thank You", the last line and the date on the sky (the words are in `thankYou` in `src/content/wedding.ts`), and a Return to top button on the lawn.
+7. A rose bush at the foot of each gateway and a rose garland along the foot of the section, edge to edge, still in green bud; "Thank You", the last line and the date on the sky (the words are in `thankYou` in `src/content/wedding.ts`).
+8. Then, slowly, every rose opens: on the bushes, along the garland (a few of its roses white), and the loose pink and white roses at the couple's feet. Each starts as a small deep-pink bud and turns as it unfolds to full bloom. Last, a Return to top button resting on the garland.
 
 The scene is the photograph at the screen's full width, so on laptops the section is as tall as the picture. On phones it stands at the foot of a screen-tall section, with the sky above it for the words. With reduced motion the finished scene simply stands.
 
@@ -243,7 +244,10 @@ The pieces are cut from `assets-src/closing/ref-cetinale.webp` by `python3 tools
 - The gateways and the front trees are fitted to their real edges (GrabCut). The rows are generous outlines that keep the whole of each treetop.
 - The photo's own small walking couple is taken out of the path.
 - Where a later piece will stand, the earlier ones carry the scene on: the photo's own sky, the hills mirrored in from either side, and below them a real garden's hedges and lawn, toned to this photograph. When all have arrived it is the photograph itself.
-- The couple are cut from `assets-src/closing/ref-couple-garden.webp` by `tools/build_closing.py`. They are trimmed to their own outline, eased a little towards the overcast light, and stand on the path with a soft shadow.
+- The photograph was taken on an overcast day, so every piece gets the same sunny grade, pixel by pixel, and they still meet without a seam. The pale sky becomes a soft blue with white clouds (one sky for the whole scene, from the overcast's own folds). The garden is lit by warm afternoon sun from the upper left: warmer, livelier greens, rosier brick, a little brighter.
+- The couple are cut from `assets-src/closing/ref-couple-garden.webp` by `tools/build_closing.py`. They are trimmed to their own outline and stand on the path in the same warm sun, with a soft shadow.
+
+The roses come from `assets-src/closing/ref-rose-bush.webp` and `ref-rose-garland.png`, by `python3 tools/build_roses.py` (into `public/assets/villa/roses/`). Each plant is keyed off its background, and every rose head on it is lifted off into an atlas, with a white-rose copy. The plant is kept whole as a base, its roses turned to the deep green of closed buds, so each rose opens over its own bud with no gap.
 
 **Before sharing:** the Villa Cetinale photograph appears to be a professional photographer's work, so you need their permission to show it on the site, or a photo of your own.
 
