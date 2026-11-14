@@ -233,6 +233,16 @@ export const wedding = {
   thankYou: {
     title: "Thank You",
     line: "Your love, blessings and presence made our celebration even more special.",
+    /**
+     * The photograph in the gold-framed arch standing on the garden path. Any ordinary photo
+     * works: it is cropped to the frame by itself. `focus` is the point that stays in view
+     * ("47% 38%": the joined hands, a little left of centre and above the middle).
+     */
+    photo: {
+      src: "/assets/img/thank-you-hands.webp",
+      alt: "The bride and groom holding hands, her hand decorated with mehndi and bridal bangles, garlanded in marigolds",
+      focus: "47% 38%",
+    },
   },
 };
 

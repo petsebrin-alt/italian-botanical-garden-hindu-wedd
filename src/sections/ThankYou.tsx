@@ -11,7 +11,8 @@ const V = "/assets/villa/";
 type Box = { x: number; y: number; w: number; h: number };
 const L = villa.layers as unknown as Record<string, Box>;
 /** The scene's pieces, back to front (tools/build_villa.py). */
-const PIECES = ["back", "row-l", "row-r", "lawn", "gate-l", "gate-r", "couple", "front-l", "front-r"] as const;
+const PIECES = ["back", "row-l", "row-r", "lawn", "gate-l", "gate-r", "front-l", "front-r"] as const;
+
 
 /* ------------------------------------------------------------------ the roses (tools/build_roses.py)
  * Each plant is its base (the plant with its roses still closed, in green bud) and its roses,
@@ -55,11 +56,11 @@ function rose(kind: "bush" | "garland", r: Sprite, white: boolean, style: React.
  * garden of Villa Cetinale is set together across the whole width by itself, once, as soon as it
  * comes into view (like a film, not tied to the scroll): each piece appears whole and solid, never
  * faded in, moves straight into its place and stays. The sky and the hills with the hermitage at
- * the avenue's end; the two rows of cypresses; the grass path between them; the couple, standing on
- * the path greeting the guests with joined hands; the two brick gateways, one and then the other;
+ * the avenue's end; the two rows of cypresses; the grass path between them; the couple's photograph in a
+ * gold-framed arch, standing on the path; the two brick gateways, one and then the other;
  * and the trees in front. Then "Thank You", the last line and the date on the sky, and a button back
  * to the top on the lawn. Every piece is the photograph's own (when all have arrived it is the
- * photograph, whole, with the couple on the path). With reduced motion the finished scene stands.
+ * photograph, whole, with the couple's photograph on the path). With reduced motion the finished scene stands.
  */
 export default function ThankYou() {
   const { bride, groom } = wedding.couple;
@@ -72,7 +73,7 @@ export default function ThankYou() {
   const ref = useScene<HTMLElement>((root, q, tier) => {
     if (tier === "C") return;
     const P = (c: string) => q(`.ty-p--${c}`)[0];
-    gsap.set(q(".ty-p, .ty-plant, .ty-words > *, .ty-top-btn"), { autoAlpha: 0 });
+    gsap.set(q(".ty-p, .ty-frame, .ty-plant, .ty-words > *, .ty-top-btn"), { autoAlpha: 0 });
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
     /** A piece appears at `at`, `from` (percent of its own size) away, and moves into its place. */
@@ -87,8 +88,8 @@ export default function ThankYou() {
     appear(P("row-r"), 1.05, { y: 40 });
     // the grass path between them
     appear(P("lawn"), 1.55, { y: 30 });
-    // the couple, standing on the path
-    appear(P("couple"), 2.2, { y: 22 });
+    // the couple's photograph, in its frame on the path
+    appear(q(".ty-frame")[0], 2.2, { y: 22 });
     // the gateways, from either side, one and then the other
     appear(P("gate-l"), 2.9, { x: -110 });
     appear(P("gate-r"), 3.35, { x: 110 });
@@ -121,7 +122,7 @@ export default function ThankYou() {
   return (
     <section ref={ref} id="thank-you" className="ty" aria-labelledby="ty-title">
       <div className="ty-stage">
-        <div className="ty-scene" role="img" aria-label={`${bride.name} and ${groom.name} greeting their guests with joined hands, on the grass path of a cypress avenue between two brick gateways with statues, in a Tuscan garden, with the hermitage on the hill beyond`}>
+        <div className="ty-scene" role="img" aria-label={`A photograph of ${bride.name} and ${groom.name} holding hands, in a gold-framed arch on the grass path of a cypress avenue between two brick gateways with statues, in a Tuscan garden, with the hermitage on the hill beyond`}>
           {PIECES.map((p) => {
             const b = L[p];
             return (
@@ -137,6 +138,13 @@ export default function ThankYou() {
               />
             );
           })}
+
+          {/* the couple's photograph, in a gold-framed arch standing on the path */}
+          <figure className="ty-frame">
+            <div className="ty-frame-photo">
+              <img src={t.photo.src} alt={t.photo.alt} loading="lazy" decoding="async" draggable={false} style={{ objectPosition: t.photo.focus }} />
+            </div>
+          </figure>
 
           {/* the roses: the bushes at the gateways and the garland along the foot */}
           {PLANTS.map((pl) => {

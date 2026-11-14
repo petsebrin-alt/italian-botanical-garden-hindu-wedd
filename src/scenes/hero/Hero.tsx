@@ -9,7 +9,7 @@ import { heroAsset } from "@/lib/heroAsset";
 import { gatePhase, gateRevealed } from "@/lib/gate";
 import { CypressIcon, LotusDivider, Monogram, Sprig } from "@/components/Ornaments";
 import manifest from "../../../public/scenes/hero/manifest.json";
-import Arch, { ArchBackdrop, archBox } from "./Arch";
+import Arch, { ArchBackdrop, archBox, backdropBox } from "./Arch";
 import "./hero.css";
 
 type Box = { x: number; y: number; w: number; h: number };
@@ -237,7 +237,7 @@ export default function Hero() {
         const posterFit = Math.min(1, Math.max(0.6, (coupleTop - 0.015 * lvh - posterTop) / posterH));
 
         const origin = (n: string, p = CONTACT) => {
-          const L = n === "couple" ? ARCH : M.layers[n as LayerName];
+          const L = n === "couple" ? ARCH : n === "backdrop" ? backdropBox(portrait) : M.layers[n as LayerName];
           return `${(p.x - L.x) * k}px ${(p.y - L.y) * k}px`;
         };
 
@@ -276,20 +276,23 @@ export default function Hero() {
         tl.to(q(".hero-sky"), { y: -0.3 * lvh, duration: DESCENT }, d)
           .to(q(".hero-clouds"), { y: -0.55 * lvh, duration: DESCENT }, d)
           .to(layer("hills"), { y: -(S + DEPTH.hills * T), duration: DESCENT }, d)
-          .to([layer("far"), layer("backdrop")], { y: -(S + DEPTH.far * T), duration: DESCENT }, d)
+          .to(layer("far"), { y: -(S + DEPTH.far * T), duration: DESCENT }, d)
           .to([layer("cypress-l"), layer("cypress-r")], { y: -(S + DEPTH.cypress * T), duration: DESCENT }, d)
-          .to([layer("ground"), layer("couple")], { y: -(S + DEPTH.ground * T), duration: DESCENT }, d)
+          // (the avenue beyond the arch moves with it, so its villa always stands above the portrait)
+          .to([layer("ground"), layer("couple"), layer("backdrop")], { y: -(S + DEPTH.ground * T), duration: DESCENT }, d)
           // the arbour stays overhead, lifting a touch as the camera lowers
           .to([layer("frame-l"), layer("frame-r")], { y: -0.05 * lvh, scale: 1.04, duration: DESCENT }, d);
         // the flower arch comes up with the lawn: it opens out of the garden as it rises into view
         // (a little smaller and lighter, settling to its size at its feet), then the couple appear
         // in it; their photograph glides down into its seat in the opening all the way through, while the
         // jasmine strands and bells hanging in the arch lag a breath behind it
-        const pan = portrait ? 5 : 9;
-        tl.fromTo(q(".hero-arch-ring, .hero-arch-hang, .hero-arch-shadow"), { autoAlpha: 0, scale: 0.9 },
+        const pan = portrait ? 3 : 5;   // (% of the photo's height; it is 6% taller than its frame)
+        tl.fromTo(q(".hero-arch-inner"), { autoAlpha: 0, scale: 0.9 },
           { autoAlpha: 1, scale: 1, transformOrigin: "50% 95%", duration: DESCENT * 0.5, ease: "power2.out" }, d + DESCENT * 0.3)
-          .fromTo(q(".hero-arch-photo"), { autoAlpha: 0 }, { autoAlpha: 1, duration: DESCENT * 0.4, ease: "power1.out" }, d + DESCENT * 0.5)
-          .fromTo(q(".hero-arch-pan"), { yPercent: -pan }, { yPercent: 0, duration: DESCENT + STEP * 0.6 }, d);
+          .fromTo(q(".hero-arch-portrait"), { autoAlpha: 0 }, { autoAlpha: 1, duration: DESCENT * 0.4, ease: "power1.out" }, d + DESCENT * 0.5)
+          // (the photo starts a little high in its frame and glides down; it is taller than the frame
+          // at the top only, so its foot never lifts off the frame's floor)
+          .fromTo(q(".hero-arch-pan"), { yPercent: 0 }, { yPercent: pan, duration: DESCENT + STEP * 0.6 }, d);
         if (!portrait) tl.fromTo(q(".hero-arch-hang"), { yPercent: -1.2 }, { yPercent: 0.8, duration: DESCENT + STEP }, d);
         if (portrait) {
           // phones and upright tablets keep the poster: names above the couple, between the trees
@@ -310,7 +313,8 @@ export default function Hero() {
           .to(layer("ground"), { scale: 1.1, transformOrigin: origin("ground"), duration: STEP }, b)
           .to(layer("cypress-l"), { x: -0.035 * Wc * lite, scale: 1.06, transformOrigin: "50% 100%", duration: STEP }, b)
           .to(layer("cypress-r"), { x: 0.035 * Wc * lite, scale: 1.06, transformOrigin: "50% 100%", duration: STEP }, b)
-          .to([layer("far"), layer("hills"), layer("backdrop")], { scale: 1.04, transformOrigin: "50% 100%", duration: STEP }, b)
+          .to([layer("far"), layer("hills")], { scale: 1.04, transformOrigin: "50% 100%", duration: STEP }, b)
+          .to(layer("backdrop"), { scale: 1.1, transformOrigin: origin("backdrop"), duration: STEP }, b)
           .to(q(".hero-sky"), { y: "-=" + 0.03 * lvh, duration: STEP }, b);
         if (portrait) tl.to(titleEl, { autoAlpha: 0, y: "-=" + 0.06 * lvh, duration: STEP * 0.4, ease: "power1.in" }, b);
 

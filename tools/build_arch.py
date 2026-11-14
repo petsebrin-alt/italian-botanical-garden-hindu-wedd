@@ -183,26 +183,67 @@ meta = {
     # where its feet stand on the floor, as a fraction of its height
     "floor": round((FLOOR - y0) / (y1 - y0), 5),
 }
-# ------------------------------------------------------------------ the garden beyond
-# the view through the arch below its strands: the hills with the villa, the hedge and the lawn.
-# Its sky is keyed out (the opening scene's own sky carries on above the hills), its sides melt
-BX0, BX1, BY0, BY1 = 505, 1165, 430, 866
-view = rgb[BY0:BY1, BX0:BX1]
-bh, bw = view.shape[:2]
-# (the skyline: in each column, the first row of land, below the sky and the haze over the hills)
-vh, vs, vv = hh[BY0:BY1, BX0:BX1], ss[BY0:BY1, BX0:BX1], vv[BY0:BY1, BX0:BX1]
-airy = ((vh >= 85) & (vh <= 130)) | ((vs < 50) & (vv > 170))
-land = ~airy
+# ------------------------------------------------------------------ the avenue beyond
+# What is seen through the arch and at the far end of the opening scene's avenue: a straight,
+# clean cypress avenue (public/assets/img/cypress-avenue.webp), two rows of cypresses meeting at a
+# villa, with a mown grass path between them (the photograph's gravel road, turned to grass:
+# the grass beside it, with the trees' shadows still lying across it). Its sky is keyed out, so
+# the opening scene's own sky carries on above the trees.
+av = np.array(Image.open(os.path.join(ROOT, "public", "assets", "img", "cypress-avenue.webp")).convert("RGB"))
+AH, AW = av.shape[:2]
+ahsv = cv2.cvtColor(av, cv2.COLOR_RGB2HSV).astype(np.int32)
+a_h, a_s, a_v = ahsv[..., 0], ahsv[..., 1], ahsv[..., 2]
+# the road: between its two edges (from the villa down to the foot of the picture) ...
+road_l = [(578, 640), (490, 1000), (225, 1300), (15, 1500), (-160, AH)]
+road_r = [(600, 640), (690, 1000), (965, 1300), (1165, 1480), (1320, AH)]
+road = np.zeros((AH, AW), np.uint8)
+cv2.fillPoly(road, [np.array(road_l + road_r[::-1], np.int32)], 1)
+road = cv2.dilate(road, np.ones((9, 9), np.uint8)).astype(bool)
+# ... where it is not already grass
+grassy = (a_h >= 28) & (a_h <= 55) & (a_s >= 70)
+road &= ~grassy
+road = cv2.morphologyEx(road.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)).astype(bool)
+# the grass beside the road, row by row (its colour in the sun)
+lum = av.astype(np.float32) @ np.array([0.3, 0.55, 0.15], np.float32)
+sunny_grass = grassy & (a_v > 120) & (np.arange(AH)[:, None] > 600)
+green = np.zeros((AH, 3), np.float32)
+glum = np.ones(AH, np.float32)
+for y in range(AH):
+    m = sunny_grass[y]
+    if m.sum() > 20:
+        green[y] = av[y][m].mean(axis=0)
+        glum[y] = lum[y][m].mean()
+known = green.sum(axis=1) > 0
+for c in range(3):
+    green[:, c] = np.interp(np.arange(AH), np.nonzero(known)[0], green[known, c])
+glum = np.interp(np.arange(AH), np.nonzero(known)[0], glum[known])
+green = cv2.GaussianBlur(green[:, None, :], (0, 0), sigmaX=0.1, sigmaY=12)[:, 0, :]
+# the road's own light and shade (gravel speckle becomes the grass's texture, softened a little)
+rl = cv2.GaussianBlur(lum, (0, 0), 1.2)
+road_lum = np.where(road, rl, np.nan)
+ref = np.array([np.nanmedian(r) if np.isfinite(r).any() else 1 for r in road_lum], np.float32)
+ref = np.interp(np.arange(AH), np.nonzero(np.isfinite(ref))[0], ref[np.isfinite(ref)])
+shade = np.clip(rl / ref[:, None], 0.25, 1.35) ** 1.15
+mown = green[:, None, :] * shade[..., None] * (glum / np.maximum(green @ np.array([0.3, 0.55, 0.15], np.float32), 1))[:, None, None]
+# (mown short, a cooler, deeper green than the sunlit verges)
+mown *= np.array([0.8, 0.93, 0.74], np.float32)
+soft = cv2.GaussianBlur(road.astype(np.float32), (0, 0), 1.5)[..., None]
+avenue = np.clip(av * (1 - soft) + mown * soft, 0, 255).astype(np.uint8)
+# the sky: blue (and its pale haze) above the villa's roofline, keyed per column at the skyline
+skyish = ((a_h >= 88) & (a_h <= 130) & (a_s >= 20)) | ((a_s < 35) & (a_v > 200))
+skyish[700:, :] = False
+land = ~skyish
 run = land[:-3] & land[1:-2] & land[2:-1] & land[3:]
 line = np.argmax(run, axis=0).astype(np.float32)
-line = cv2.medianBlur(line.astype(np.uint8)[None, :], 9)[0].astype(np.float32) if line.max() < 256 else line
-line = cv2.GaussianBlur(line[None, :], (0, 0), 2)[0]
-open_sky = 1 - np.clip((np.arange(bh, dtype=np.float32)[:, None] - line[None, :]) / 3, 0, 1)
-ax = np.minimum(np.arange(bw), bw - 1 - np.arange(bw)).astype(np.float32)
-ba = (1 - open_sky) * (np.clip(ax / 40, 0, 1) ** 1.3)[None, :]
-Image.fromarray(np.dstack([view, (ba * 255).astype(np.uint8)])).save(
-    os.path.join(OUT, "backdrop.webp"), "WEBP", quality=86, method=6)
-meta["backdrop"] = {"w": bw, "h": bh, "lawn": round((bh - 1) / bh, 5)}
+line = cv2.GaussianBlur(line[None, :], (0, 0), 1.5)[0]
+aa = np.clip((np.arange(AH, dtype=np.float32)[:, None] - line[None, :]) / 2.5, 0, 1)
+# (and its sides melt into the opening scene's own rows of trees)
+ax_ = np.minimum(np.arange(AW), AW - 1 - np.arange(AW)).astype(np.float32)
+aa *= np.clip(ax_ / 60, 0, 1)[None, :]
+Image.fromarray(np.dstack([avenue, (aa * 255).astype(np.uint8)])).save(
+    os.path.join(OUT, "backdrop.webp"), "WEBP", quality=88, method=6)
+# where its path vanishes (at the villa), as a fraction of its height
+meta["backdrop"] = {"w": AW, "h": AH, "vanish": round(650 / AH, 5)}
 
 # (a short hash of the files, so browsers fetch them again whenever they change)
 import hashlib
@@ -306,7 +347,15 @@ print("opening scene layers cleaned; version", man["version"])
 # care and sharpened, so it stays crisp in the arch on wide screens.
 from PIL import ImageFilter  # noqa: E402
 
-ref = Image.open(os.path.join(ROOT, "assets-src", "ref-opening.webp")).convert("RGB").crop((0, 760, 941, 1560))
+ref = Image.open(os.path.join(ROOT, "assets-src", "ref-opening.webp")).convert("RGB").crop((0, 740, 941, 1560))
+# (the opening picture has its lettering, a small mountain mark and "SWITZERLAND", in the sky just
+# above the couple: painted out with the sky round it)
+r_ = np.array(ref)
+zone = np.zeros(r_.shape[:2], np.uint8)
+zone[0:52, 360:590] = 1
+ink = (cv2.cvtColor(r_, cv2.COLOR_RGB2GRAY) < 200) & zone.astype(bool)
+ink = cv2.dilate(ink.astype(np.uint8), np.ones((5, 5), np.uint8))
+ref = Image.fromarray(cv2.inpaint(r_, ink, 6, cv2.INPAINT_TELEA)).crop((0, 20, 941, 820))
 big = ref.resize((round(ref.width * 1.6), round(ref.height * 1.6)), Image.LANCZOS)
 big = big.filter(ImageFilter.UnsharpMask(radius=2.2, percent=70, threshold=2))
 big = big.filter(ImageFilter.UnsharpMask(radius=0.8, percent=45, threshold=1))

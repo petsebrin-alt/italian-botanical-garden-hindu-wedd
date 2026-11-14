@@ -38,7 +38,7 @@ Rules:
 Values in `[square brackets]` are placeholders still to confirm (PRD §24).
 
 ### The couple's photo in the flower arch
-The opening screen ends on a Hindu wedding arch of roses, jasmine strands, hydrangeas and brass bells, standing on the lawn of the cypress avenue. The couple's photograph shows through its opening. Any ordinary photo works; there is no need to remove its background. The couple sit low in the arch, on its floor and below its bells, so the flowers and bells never cover their faces. The photo is cropped to its place by itself, and its top and sides melt into the garden seen through the arch. It sits behind the flowers, so it never covers or stretches them. To use your own:
+The opening screen ends on a Hindu wedding arch of roses, jasmine strands, hydrangeas and brass bells, standing on the lawn of the cypress avenue. The couple's photograph stands inside it as a portrait in a gold-framed arch of its own, like the portraits of The Couple. It sits below the bells and between the hanging jasmine strands, so no flower or bell ever covers their faces. The whole photo is shown, sharp and nothing faded, so any ordinary photo works and there is no need to remove its background: it is cropped to the frame by itself. Behind it, the villa at the end of a cypress avenue stands just above the portrait. To use your own:
 
 1. Put the photo in `public/assets/img/` (a landscape or square photo, 1600px wide or more, fills the opening best).
 2. Change `archPhoto` in `src/content/wedding.ts`: `src` is its path, `focus` the point that always stays in view (`"50% 45%"` is the middle, a little above centre), and `zoom` brings it closer (`1.2` is 20% closer).
@@ -169,7 +169,7 @@ python3 tools/build_layers.py --debug /tmp/layers   # also writes inspection com
 
 The layers are sky (CSS), clouds, distant hills, far avenue, cypress left/right, ground, couple, flowers left/right and arbour left/right.
 
-The flower arch (`src/scenes/hero/Arch.tsx`) stands in the couple's place, with the couple's photograph in it. Its photograph (`assets-src/arch/ref-arch.webp`) is cut into the arch, the jasmine strands and bells hanging in it, the shape of its opening, and the garden seen through it, with no arch. That garden closes the far end of the avenue, behind the arch:
+The flower arch (`src/scenes/hero/Arch.tsx`) stands in the couple's place, with the couple's photograph in it. Its photograph (`assets-src/arch/ref-arch.webp`) is cut into the arch, the jasmine strands and bells hanging in it, and the shape of its opening. Behind it, the far end of the avenue is closed by a straight cypress avenue (`public/assets/img/cypress-avenue.webp`): two rows of cypresses meeting at a villa, with a mown grass path between them (the photo's gravel road, turned to grass, with the trees' shadows still across it). It is shown smaller than its photo, so it stays sharp, and its villa sits above the couple's heads, under the bell:
 
 ```bash
 python3 tools/build_arch.py            # writes public/assets/arch/*, cleans the far layers, and the sample photo
@@ -177,7 +177,7 @@ python3 tools/build_arch.py            # writes public/assets/arch/*, cleans the
 
 The arch is smaller than the cut-out couple it replaced. So the script also takes the couple's outline out of the far layers, which were never meant to be seen there. The cypress rows carry on with smaller trees, and the hills give way to the garden beyond. It keeps the original layers in `assets-src/arch/hero-orig/` and always starts from them. The arch has its own flowers at its feet, so the hydrangea beds in the corners have been taken out.
 
-As the garden rises, the arch opens out of it: it grows a little and comes into full colour, settling at its feet. Then the couple appear in it. Their photograph glides down into its seat in the arch, and the strands and bells lag a breath behind the arch. On phones the arch is a little narrower, so it fits, and the glide is shorter. With reduced motion, the finished scene simply stands. The script also cuts reusable sprites (wisteria, trees) that the other sections use, so the visual language stays consistent.
+As the garden rises, the arch opens out of it, together with the couple seated in it (as one piece, so the flowers never pass over them): it grows a little and comes into full colour, settling at its feet. Then the couple appear in it. Their photograph glides gently down inside its frame, and the strands and bells lag a breath behind the arch. On phones the arch is a little narrower, so it fits, and the glide is shorter. With reduced motion, the finished scene simply stands. The script also cuts reusable sprites (wisteria, trees) that the other sections use, so the visual language stays consistent.
 
 Wide screens are filled edge to edge at full sharpness. Nothing is blurred: the avenue, wall, lawn and flower beds continue past the photo's edges from the garden's own real pixels, and the arbour is pinned to the screen's corners.
 
@@ -250,7 +250,7 @@ The last section (`src/sections/ThankYou.tsx`) is the garden of Villa Cetinale, 
 1. The sky and the hills, with the hermitage at the avenue's end.
 2. The left row of cypresses, then the right.
 3. The grass path between them, and the lawn.
-4. The couple, standing on the path, greeting the guests with joined hands.
+4. The couple's photograph (the bride and groom holding hands), in a gold-framed arch standing on the path. It is `thankYou.photo` in `src/content/wedding.ts`: any ordinary photo works, cropped to the frame round its `focus`.
 5. The left gateway from the left, then the right one from the right.
 6. The trees in front.
 7. A rose bush at the foot of each gateway and a rose garland along the foot of the section, edge to edge, still in green bud; "Thank You", the last line and the date on the sky (the words are in `thankYou` in `src/content/wedding.ts`).
@@ -263,7 +263,7 @@ The pieces are cut from `assets-src/closing/ref-cetinale.webp` by `python3 tools
 - The photo's own small walking couple is taken out of the path.
 - Where a later piece will stand, the earlier ones carry the scene on: the photo's own sky, the hills mirrored in from either side, and below them a real garden's hedges and lawn, toned to this photograph. When all have arrived it is the photograph itself.
 - The photograph was taken on an overcast day, so every piece gets the same sunny grade, pixel by pixel, and they still meet without a seam. The pale sky becomes a soft blue with white clouds (one sky for the whole scene, from the overcast's own folds). The garden is lit by warm afternoon sun from the upper left: warmer, livelier greens, rosier brick, a little brighter.
-- The couple are cut from `assets-src/closing/ref-couple-garden.webp` by `tools/build_closing.py`. They are trimmed to their own outline and stand on the path in the same warm sun, with a soft shadow.
+- The photograph in the frame is `public/assets/img/thank-you-hands.webp` (from `assets-src/closing/ref-holding-hands.webp`, enlarged and sharpened). The frame is drawn in CSS, like the portraits in The Couple, with its shade on the grass.
 
 The roses come from `assets-src/closing/ref-rose-bush.webp` and `ref-rose-garland.png`, by `python3 tools/build_roses.py` (into `public/assets/villa/roses/`). Each plant is keyed off its background, and every rose head on it is lifted off into an atlas, with a white-rose copy. The plant is kept whole as a base, its roses turned to the deep green of closed buds, so each rose opens over its own bud with no gap.
 

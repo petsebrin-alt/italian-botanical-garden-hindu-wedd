@@ -17,8 +17,44 @@
 }
 @media (min-aspect-ratio: 3/4) { .ty-scene { -webkit-mask-image: none; mask-image: none; } }
 .ty-p { position: absolute; display: block; max-width: none; user-select: none; will-change: transform; }
-/* the couple stand on the grass: a soft shadow at their feet */
-.ty-p--couple { z-index: 2; filter: drop-shadow(0 calc(0.5vw) calc(0.6vw) rgb(20 30 15 / 0.35)); }
+/* the couple's photograph (ThankYou.tsx): a fine gold arch around it with a sliver of ivory
+ * between, like the portraits of The Couple, standing on the path with its shade on the grass */
+.ty-frame {
+  position: absolute;
+  z-index: 2;
+  /* (on the path where the avenue meets the gateways: its middle at 49.7% of the scene) */
+  left: 34.7%;
+  width: 30%;
+  bottom: 15%;
+  margin: 0;
+  padding: 0.55%;
+  border: 1px solid rgb(196 166 106 / 0.95);
+  border-radius: 999px 999px 4px 4px;
+  background: linear-gradient(180deg, #fffaf0, #f3e8cf);
+  box-shadow: 0 0 0 0.35vw rgb(248 244 233 / 0.55), 0 1.6vw 2.4vw -1vw rgb(20 30 15 / 0.55);
+  will-change: transform;
+}
+.ty-frame::after {
+  /* (its shade on the grass) */
+  content: "";
+  position: absolute;
+  left: 6%; right: 6%; bottom: -3.5%;
+  height: 7%;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(20 32 14 / 0.45), rgb(20 32 14 / 0));
+}
+.ty-frame-photo {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 999px 999px 2px 2px;
+  box-shadow: inset 0 0 0 1px rgb(196 166 106 / 0.6);
+}
+.ty-frame-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* phones: a little larger, and further up the path, clear of the button back to the top */
+@media (max-width: 600px) {
+  .ty-frame { left: 32.2%; width: 35%; bottom: 17%; }
+}
 .ty-p--front-l, .ty-p--front-r { z-index: 3; }
 
 /* the roses (ThankYou.tsx): the bushes at the gateways' feet (behind the couple) and the garland

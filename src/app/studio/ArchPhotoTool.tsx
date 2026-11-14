@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { wedding } from "@/content/wedding";
-import { ARCH_RATIO, FRAME, file } from "@/scenes/hero/Arch";
+import { ARCH_RATIO, PORTRAIT, file } from "@/scenes/hero/Arch";
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 /** "50% 45%" → [50, 45] */
@@ -82,28 +82,27 @@ export default function ArchPhotoTool() {
       </div>
       <p className="hint">
         Any ordinary photo works: there is no need to remove its background. It is cropped to the arch&rsquo;s opening by
-        itself and shown behind the flowers. The couple sit low in the arch, below its bells, and the top of the photo melts into the garden. Drag the picture to choose what stays in view, and zoom in if you are small in it.
+        itself and shown behind the flowers. It stands inside the arch in a gold-framed portrait of its own, below the bells and between the jasmine strands. Drag the picture to choose what stays in view, and zoom in if you are small in it.
       </p>
 
       <div className="studio-arch-stage" style={{ aspectRatio: ARCH_RATIO }}>
-        <div className="studio-arch-photo" style={{ WebkitMaskImage: `url(${file("opening.png")})`, maskImage: `url(${file("opening.png")})` }}>
+        <figure
+          className="studio-arch-portrait"
+          style={{ left: `${PORTRAIT.x * 100}%`, width: `${PORTRAIT.w * 100}%`, top: `${PORTRAIT.top * 100}%`, bottom: `${(1 - PORTRAIT.foot) * 100}%` }}
+        >
           <div
             ref={frame}
             className="studio-arch-frame"
-            style={{ left: `${FRAME.x * 100}%`, top: `${FRAME.y * 100}%`, width: `${FRAME.w * 100}%`, height: `${FRAME.h * 100}%` }}
             onPointerDown={onDown}
             onPointerMove={onMove}
             onPointerUp={onUp}
             onPointerCancel={onUp}
             role="img"
-            aria-label="The couple's photo in the arch; drag to move it, or use the arrow buttons"
+            aria-label="The couple's photo in its frame inside the arch; drag to move it, or use the arrow buttons"
           >
-            {/* (the couple's seat in the arch, as on the opening screen) */}
-            <div className="studio-arch-pan">
-              <img src={src} alt="" draggable={false} style={{ objectPosition: f, scale: String(zoom), transformOrigin: f }} />
-            </div>
+            <img src={src} alt="" draggable={false} style={{ objectPosition: f, scale: String(zoom), transformOrigin: f }} />
           </div>
-        </div>
+        </figure>
         <img className="studio-arch-layer" src={file("hang.webp")} alt="" />
         <img className="studio-arch-layer" src={file("ring.webp")} alt="" />
       </div>
