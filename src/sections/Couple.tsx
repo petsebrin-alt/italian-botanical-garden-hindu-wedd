@@ -25,11 +25,11 @@ function Blossom() {
 }
 
 /**
- * S03 · Couple: two arched portraits side by side in a garden frame (arbour vines above,
- * hydrangeas below, the photographed Tuscan fields on the horizon). With the scroll, the bride's
+ * S03 · Couple: two arched portraits side by side in a garden frame (arbour vines above, the
+ * photographed Tuscan fields and lawn along the foot). With the scroll, the bride's
  * portrait comes in from the left edge of the screen and the groom's from the right, to meet in
  * the middle, while every layer moves at its own depth: the vines come down, the hills lag, the
- * portraits float a little ahead and the hydrangeas rise. Scrolling back up plays it in reverse.
+ * portraits float a little ahead. Scrolling back up plays it in reverse.
  */
 export default function Couple() {
   const ref = useScene<HTMLElement>((root, q, tier) => {
@@ -41,8 +41,6 @@ export default function Couple() {
     const enter = { trigger: root, start: "top bottom", end: "top 20%", scrub: scrub() };
     gsap.fromTo(q(".cpl-vine--l"), { x: "-5vw", rotation: -3 }, { x: 0, rotation: 0, ease: "power2.out", scrollTrigger: enter });
     gsap.fromTo(q(".cpl-vine--r"), { x: "5vw", rotation: 3 }, { x: 0, rotation: 0, ease: "power2.out", scrollTrigger: enter });
-    gsap.fromTo(q(".cpl-bed--l"), { x: "-6vw" }, { x: 0, ease: "power2.out", scrollTrigger: { ...enter, start: "top 70%", end: "bottom bottom" } });
-    gsap.fromTo(q(".cpl-bed--r"), { x: "6vw" }, { x: 0, ease: "power2.out", scrollTrigger: { ...enter, start: "top 70%", end: "bottom bottom" } });
 
     // the depth layers, across the whole pass of the section (none ever uncovers an edge)
     const pass = { trigger: root, start: "top bottom", end: "bottom top", scrub: scrub() };
@@ -52,7 +50,6 @@ export default function Couple() {
     layer(".cpl-vine", -0.17, 0.02);
     layer(".couple-head", -0.05, 0.05);
     layer(".couple-grid", 0.07, -0.07);
-    layer(".cpl-bed", 0.22, -0.01);
 
     // the portraits come in from the edges of the screen to the middle, with the scroll
     const grid = q(".couple-grid")[0] as HTMLElement;
@@ -76,8 +73,6 @@ export default function Couple() {
         <div className="cpl-horizon"><Pic src="/assets/img/fields-hills" alt="" className="cpl-fields" /></div>
         <Sprite name="canopy-l" className="cpl-vine cpl-vine--l" />
         <Sprite name="canopy-r" className="cpl-vine cpl-vine--r" />
-        <Sprite name="bed-l" className="cpl-bed cpl-bed--l" />
-        <Sprite name="bed-r" className="cpl-bed cpl-bed--r" />
       </div>
 
       <header className="container center couple-head">

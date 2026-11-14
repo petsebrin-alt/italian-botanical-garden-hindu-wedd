@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { publishedEvents, wedding } from "@/content/wedding";
 import { isStudio, studioEnabled } from "@/lib/studio";
 import { getStore, type Rsvp, type Wish } from "@/lib/store";
+import ArchPhotoTool from "./ArchPhotoTool";
 import "./studio.css";
 
 export const dynamic = "force-dynamic";
@@ -117,6 +118,8 @@ export default async function Studio({ searchParams }: { searchParams: Promise<{
           ))}
         </ul>
       </section>
+
+      <ArchPhotoTool />
     </main>
   );
 }

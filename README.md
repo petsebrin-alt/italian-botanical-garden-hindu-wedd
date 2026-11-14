@@ -37,6 +37,14 @@ Rules:
 
 Values in `[square brackets]` are placeholders still to confirm (PRD §24).
 
+### The couple's photo in the flower arch
+The opening screen ends on a Hindu wedding arch of roses, jasmine strands, hydrangeas and brass bells, standing on the lawn of the cypress avenue. The couple's photograph shows through its opening. Any ordinary photo works; there is no need to remove its background. It is cropped to the opening by itself and sits behind the flowers and the hanging bells, so it never covers or stretches them. To use your own:
+
+1. Put the photo in `public/assets/img/` (a landscape or square photo, 1600px wide or more, fills the opening best).
+2. Change `archPhoto` in `src/content/wedding.ts`: `src` is its path, `focus` the point that always stays in view (`"50% 45%"` is the middle, a little above centre), and `zoom` brings it closer (`1.2` is 20% closer).
+
+To find the right `focus` and `zoom`, open **Couple photo in the flower arch** at the bottom of `/studio`. Choose the photo, drag it and zoom until it sits well in the arch, then copy the settings it shows. The photo stays on your computer; nothing is uploaded.
+
 ### Personal guest links
 The opening screen greets each guest by name under the monogram ("Dear Sharma Family"). Send each guest their own link with their name in it:
 
@@ -159,7 +167,17 @@ npm run layers                   # writes public/scenes/hero/* + manifest.json
 python3 tools/build_layers.py --debug /tmp/layers   # also writes inspection composites
 ```
 
-The layers are sky (CSS), clouds, distant hills, far avenue, cypress left/right, ground, couple, flowers left/right and arbour left/right. The script also cuts reusable sprites (wisteria, trees) that the other sections use, so the visual language stays consistent.
+The layers are sky (CSS), clouds, distant hills, far avenue, cypress left/right, ground, couple, flowers left/right and arbour left/right.
+
+The flower arch (`src/scenes/hero/Arch.tsx`) stands in the couple's place, with the couple's photograph in it. Its photograph (`assets-src/arch/ref-arch.webp`) is cut into the arch, the jasmine strands and bells hanging in it, the shape of its opening, and the garden seen through it, with no arch. That garden closes the far end of the avenue, behind the arch:
+
+```bash
+python3 tools/build_arch.py            # writes public/assets/arch/*, and cleans the far layers
+```
+
+The arch is smaller than the cut-out couple it replaced. So the script also takes the couple's outline out of the far layers, which were never meant to be seen there. The cypress rows carry on with smaller trees, and the hills give way to the garden beyond. It keeps the original layers in `assets-src/arch/hero-orig/` and always starts from them. The arch has its own flowers at its feet, so the hydrangea beds in the corners have been taken out.
+
+As the garden rises, the arch opens out of it: it grows a little and comes into full colour, settling at its feet. Then the couple appear in it. Their photograph glides down inside the opening all the way through, and the strands and bells lag a breath behind the arch. On phones the arch is a little narrower, so it fits, and the glide is shorter. With reduced motion, the finished scene simply stands. The script also cuts reusable sprites (wisteria, trees) that the other sections use, so the visual language stays consistent.
 
 Wide screens are filled edge to edge at full sharpness. Nothing is blurred: the avenue, wall, lawn and flower beds continue past the photo's edges from the garden's own real pixels, and the arbour is pinned to the screen's corners.
 
@@ -200,7 +218,7 @@ The countdown is four tear-off calendar pads on gold rings: days, hours, minutes
 
 ## The Couple
 
-As the section scrolls in, the bride's arched portrait comes in from the left edge of the screen and the groom's from the right, to meet in the middle (`src/sections/Couple.tsx`). Every layer moves at its own depth at the same time: the vines come down, the hills lag, the portraits float a little ahead and the hydrangeas rise. It is tied to the scroll, so scrolling back up plays it in reverse.
+As the section scrolls in, the bride's arched portrait comes in from the left edge of the screen and the groom's from the right, to meet in the middle (`src/sections/Couple.tsx`). Every layer moves at its own depth at the same time: the vines come down, the hills lag and the portraits float a little ahead. Along the foot there is only the garden: the fields, the hills and the lawn. It is tied to the scroll, so scrolling back up plays it in reverse.
 
 ## Our Families
 
@@ -266,7 +284,7 @@ The roses come from `assets-src/closing/ref-rose-bush.webp` and `ref-rose-garlan
 - `POST /api/rsvp` validates the response, filters unknown events, and applies a honeypot and rate limit. It returns a private edit token, which the guest's device keeps so they can update their reply.
 - `GET/POST /api/wishes`: new wishes are pending; only approved wishes are ever public.
 - `/calendar/<eventId>` and `/calendar/all`: RFC 5545 `.ics` files in UTC (the ceremony is 08:00Z, which is 10:00 in Italy).
-- `/studio`: after signing in with `STUDIO_TOKEN`, shows totals per celebration, the response table, CSV export, and approve / hide / pin / delete for wishes.
+- `/studio`: after signing in with `STUDIO_TOKEN`, shows totals per celebration, the response table, CSV export, and approve / hide / pin / delete for wishes. At the bottom, the couple's photo can be tried in the flower arch, placed and zoomed (see "The couple's photo in the flower arch").
 
 ### Storage
 RSVPs, wishes and rate limits go through one interface (`src/lib/stores/types.ts`) with two implementations. `src/lib/store.ts` picks one:

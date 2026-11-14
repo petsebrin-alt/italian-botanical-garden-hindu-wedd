@@ -52,6 +52,22 @@ export const wedding = {
    * e.g. https://<site>/?to=Sharma%20Family  ("?guest=" works too). Without one, `fallback` shows.
    */
   greeting: { dear: "Dear", fallback: "Family & Friends" },
+  /**
+   * The couple's photograph in the flower arch of the opening screen. Any ordinary photo works:
+   * there is no need to remove its background. It is cropped to the arch's opening by itself and
+   * shown behind the flowers, so it never covers them. For your own photo, put it in
+   * public/assets/img/ and change `src` (a landscape or square photo, 1600px wide or more, fills
+   * the opening best).
+   *   focus  the point that always stays in view: "50% 45%" is the middle, a little above centre;
+   *          "50% 30%" keeps faces near the top of a tall photo in view
+   *   zoom   1 shows as much of the photo as fits; 1.2 comes 20% closer (round `focus`)
+   */
+  archPhoto: {
+    src: "/assets/img/gallery-garland.webp",
+    alt: "Janvi and Rohit seated in the garden, exchanging garlands of roses and jasmine",
+    focus: "50% 45%",
+    zoom: 1,
+  } as { src: string; alt: string; focus?: string; zoom?: number },
   couple: {
     bride: { name: "Janvi", role: "The Bride", line: "Daughter of Kapoor & Lalitha" },
     groom: { name: "Rohit", role: "The Groom", line: "Son of Vasu & Jansi" },
@@ -202,9 +218,9 @@ export const wedding = {
    */
   help: {
     contacts: [
-      { side: "The Groom's Family", name: "Mr. Vasu", role: "Father of the groom", phone: "", whatsapp: "" },
-      { side: "The Bride's Family", name: "Mr. Kapoor", role: "Father of the bride", phone: "", whatsapp: "" },
-      { side: "Event Coordinator", name: "[Coordinator's name]", role: "Wedding & event coordinator", phone: "", whatsapp: "" },
+      { side: "The Groom's Family", name: "Mr. Vasu", role: "Father of the groom", phone: "97856423110", whatsapp: "" },
+      { side: "The Bride's Family", name: "Mr. Kapoor", role: "Father of the bride", phone: "97856423110", whatsapp: "" },
+      { side: "Event Coordinator", name: "[Coordinator's name]", role: "Wedding & event coordinator", phone: "97856423110", whatsapp: "" },
     ],
   },
   rsvp: {

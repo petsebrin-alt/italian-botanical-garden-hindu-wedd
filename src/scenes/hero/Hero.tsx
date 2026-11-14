@@ -9,6 +9,7 @@ import { heroAsset } from "@/lib/heroAsset";
 import { gatePhase, gateRevealed } from "@/lib/gate";
 import { CypressIcon, LotusDivider, Monogram, Sprig } from "@/components/Ornaments";
 import manifest from "../../../public/scenes/hero/manifest.json";
+import Arch, { ArchBackdrop, archBox } from "./Arch";
 import "./hero.css";
 
 type Box = { x: number; y: number; w: number; h: number };
@@ -121,32 +122,6 @@ function Layer({ name, priority = false, anchor = "world" }: {
   );
 }
 
-/**
- * The flower beds in the bottom corners. They keep the manifest boxes (and so every tween) of the
- * photo's own flower layers, but show sharp hydrangeas cut from an in-focus photograph: the
- * photo's corner flowers were soft, out-of-focus foreground. A long border runs off-screen
- * behind a bed whose inner edge is the plant's own outline.
- */
-function BedLayer({ side }: { side: "l" | "r" }) {
-  const name = `bloom-${side}` as LayerName;
-  const L = M.layers[name];
-  const style = {
-    "--fx": L.x / SRC_W, "--fy": L.y / SRC_W, "--fw": L.w / SRC_W, "--fh": L.h / SRC_W,
-  } as React.CSSProperties;
-  const img = (file: string, cls: string) => (
-    <picture className={cls}>
-      <source srcSet={`/assets/botanical/${file}.avif`} type="image/avif" />
-      <img src={`/assets/botanical/${file}.webp`} alt="" decoding="async" draggable={false} />
-    </picture>
-  );
-  return (
-    <div className={`hl hl--${name} hl--world hero-bed hero-bed--${side}`} data-layer={name} style={style} aria-hidden="true">
-      {img("bed-wide", "hero-bed-border")}
-      {img(`bed-${side}`, "hero-bed-main")}
-    </div>
-  );
-}
-
 /** Without scripts there is no scroll camera: show the names and the composed garden. */
 const NO_SCRIPT = `<style>
 .hero-stage { height: calc(var(--yStart) + var(--Hw)); --S: 0px; }
@@ -242,7 +217,6 @@ export default function Hero() {
         const yStart = Math.max(0, yEnd + 0.42 * lvh);
         const T = yStart - yEnd;
         const lite = tier === "B" ? 0.7 : 1;
-        const rise = 0.14 * lvh;
 
         // where the title block goes: centred in the sky, then (phones) the poster position
         const stageTop = stage.getBoundingClientRect().top;
@@ -256,13 +230,14 @@ export default function Hero() {
         const poster = posterTop - titleTop;
         // the sky left above the couple's heads once the garden has risen: if the title block is
         // taller than that on some screen, it shrinks to fit rather than overlap the couple
-        const coupleTop = yEnd + (M.layers.couple.y / SRC_W) * Wc;
+        const ARCH = archBox(portrait);
+        const coupleTop = yEnd + (ARCH.y / SRC_W) * Wc;
         // (on phones the greeting folds away during the descent, so the poster is shorter)
         const posterH = titleH - greetH - rowGap;
         const posterFit = Math.min(1, Math.max(0.6, (coupleTop - 0.015 * lvh - posterTop) / posterH));
 
         const origin = (n: string, p = CONTACT) => {
-          const L = M.layers[n];
+          const L = n === "couple" ? ARCH : M.layers[n as LayerName];
           return `${(p.x - L.x) * k}px ${(p.y - L.y) * k}px`;
         };
 
@@ -301,12 +276,21 @@ export default function Hero() {
         tl.to(q(".hero-sky"), { y: -0.3 * lvh, duration: DESCENT }, d)
           .to(q(".hero-clouds"), { y: -0.55 * lvh, duration: DESCENT }, d)
           .to(layer("hills"), { y: -(S + DEPTH.hills * T), duration: DESCENT }, d)
-          .to(layer("far"), { y: -(S + DEPTH.far * T), duration: DESCENT }, d)
+          .to([layer("far"), layer("backdrop")], { y: -(S + DEPTH.far * T), duration: DESCENT }, d)
           .to([layer("cypress-l"), layer("cypress-r")], { y: -(S + DEPTH.cypress * T), duration: DESCENT }, d)
           .to([layer("ground"), layer("couple")], { y: -(S + DEPTH.ground * T), duration: DESCENT }, d)
-          .fromTo([layer("bloom-l"), layer("bloom-r")], { y: rise * lite }, { y: -(S + T), duration: DESCENT }, d)
           // the arbour stays overhead, lifting a touch as the camera lowers
           .to([layer("frame-l"), layer("frame-r")], { y: -0.05 * lvh, scale: 1.04, duration: DESCENT }, d);
+        // the flower arch comes up with the lawn: it opens out of the garden as it rises into view
+        // (a little smaller and lighter, settling to its size at its feet), then the couple appear
+        // in it; their photograph glides down inside the opening all the way through, while the
+        // jasmine strands and bells hanging in the arch lag a breath behind it
+        const pan = portrait ? 4 : 7;
+        tl.fromTo(q(".hero-arch-ring, .hero-arch-hang, .hero-arch-shadow"), { autoAlpha: 0, scale: 0.9 },
+          { autoAlpha: 1, scale: 1, transformOrigin: "50% 95%", duration: DESCENT * 0.5, ease: "power2.out" }, d + DESCENT * 0.3)
+          .fromTo(q(".hero-arch-photo"), { autoAlpha: 0 }, { autoAlpha: 1, duration: DESCENT * 0.4, ease: "power1.out" }, d + DESCENT * 0.5)
+          .fromTo(q(".hero-arch-pan"), { yPercent: -pan }, { yPercent: pan, duration: DESCENT + STEP }, d);
+        if (!portrait) tl.fromTo(q(".hero-arch-hang"), { yPercent: -1.2 }, { yPercent: 0.8, duration: DESCENT + STEP }, d);
         if (portrait) {
           // phones and upright tablets keep the poster: names above the couple, between the trees
           // the greeting has been read: it folds away so the names sit close under the monogram
@@ -322,13 +306,11 @@ export default function Hero() {
         const b = d + DESCENT;
         tl.to(layer("frame-l"), { scale: 1.6, x: -0.12 * vw, y: "-=" + 0.06 * lvh, transformOrigin: "0% 0%", duration: STEP }, b)
           .to(layer("frame-r"), { scale: 1.6, x: 0.12 * vw, y: "-=" + 0.06 * lvh, transformOrigin: "100% 0%", duration: STEP }, b)
-          .to(layer("bloom-l"), { scale: 1.5, x: -0.04 * vw, transformOrigin: "0% 100%", duration: STEP }, b)
-          .to(layer("bloom-r"), { scale: 1.5, x: 0.04 * vw, transformOrigin: "100% 100%", duration: STEP }, b)
           .to(layer("couple"), { scale: 1.1, transformOrigin: origin("couple"), duration: STEP }, b)
           .to(layer("ground"), { scale: 1.1, transformOrigin: origin("ground"), duration: STEP }, b)
           .to(layer("cypress-l"), { x: -0.035 * Wc * lite, scale: 1.06, transformOrigin: "50% 100%", duration: STEP }, b)
           .to(layer("cypress-r"), { x: 0.035 * Wc * lite, scale: 1.06, transformOrigin: "50% 100%", duration: STEP }, b)
-          .to([layer("far"), layer("hills")], { scale: 1.04, transformOrigin: "50% 100%", duration: STEP }, b)
+          .to([layer("far"), layer("hills"), layer("backdrop")], { scale: 1.04, transformOrigin: "50% 100%", duration: STEP }, b)
           .to(q(".hero-sky"), { y: "-=" + 0.03 * lvh, duration: STEP }, b);
         if (portrait) tl.to(titleEl, { autoAlpha: 0, y: "-=" + 0.06 * lvh, duration: STEP * 0.4, ease: "power1.in" }, b);
 
@@ -387,6 +369,8 @@ export default function Hero() {
 
         <Layer name="hills" />
         <Layer name="far" />
+        {/* the garden beyond the arch, closing the far end of the avenue */}
+        <ArchBackdrop srcW={SRC_W} />
 
         <div className="hero-title" style={customFont ? ({ "--font-couple-calligraphy": customFont } as React.CSSProperties) : undefined}>
           <Monogram className="hero-mono" size={128} />
@@ -419,9 +403,8 @@ export default function Hero() {
         <Layer name="cypress-l" priority />
         <Layer name="cypress-r" priority />
         <Layer name="ground" />
-        <Layer name="couple" priority />
-        <BedLayer side="l" />
-        <BedLayer side="r" />
+        {/* the flower arch, with the couple's photograph in it (in the couple's place) */}
+        <Arch srcW={SRC_W} />
         <Layer name="frame-l" priority anchor="edge-l" />
         <Layer name="frame-r" priority anchor="edge-r" />
 

@@ -16,3 +16,27 @@
 .studio-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .studio-actions .btn { min-height: 38px; padding: 0 16px; font-size: 0.75rem; }
 .studio-alert { padding: 14px 18px; border-color: var(--error); color: var(--error); }
+
+/* the couple's photo in the opening screen's flower arch (ArchPhotoTool.tsx) */
+.studio-arch { display: grid; gap: 14px; }
+.studio-arch-pick { position: relative; overflow: hidden; cursor: pointer; }
+.studio-arch-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.studio-arch-stage {
+  position: relative;
+  width: min(100%, 760px);
+  margin-inline: auto;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #a9cbec, #d9e9f4 60%, #b9d58f 61%, #9cc46b);
+  overflow: hidden;
+}
+.studio-arch-photo { position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.studio-arch-frame { position: absolute; overflow: hidden; cursor: grab; touch-action: none; background: #cfe0c8; }
+.studio-arch-frame:active { cursor: grabbing; }
+.studio-arch-pan { position: absolute; left: 0; right: 0; top: -8%; bottom: -8%; }
+.studio-arch-pan img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; }
+.studio-arch-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.studio-arch-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 24px; }
+.studio-arch-zoom { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; }
+.studio-arch-zoom span { min-width: 3.5em; font-variant-numeric: tabular-nums; }
+.studio-arch-out { padding: 16px 18px; display: grid; gap: 10px; justify-items: start; }
+.studio-arch-out pre { margin: 0; padding: 12px 14px; max-width: 100%; overflow-x: auto; background: rgb(255 255 255 / 0.6); border-radius: 6px; font-size: 0.8125rem; user-select: all; }

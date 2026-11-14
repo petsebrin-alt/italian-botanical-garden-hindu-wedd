@@ -2,7 +2,7 @@
 /* the fields band (--fields tall) lies below the names, never behind them */
 .couple { overflow: clip; --fields: clamp(150px, 19vw, 300px); padding-bottom: calc(var(--fields) * 0.82 + clamp(1.5rem, 3vw, 3rem)); }
 
-/* the garden frame: arbour vines above, hydrangea beds below, hills on the horizon */
+/* the garden frame: arbour vines above, the fields and lawn along the foot */
 .cpl-frame { position: absolute; inset: 0; pointer-events: none; }
 .cpl-frame > * { z-index: 0; }
 /* the photographed fields along the foot of the section: the skyline sits on the paper, the
@@ -22,9 +22,6 @@
 .cpl-hang { top: -10px; height: auto; transform-origin: 50% 0%; }
 .cpl-hang--l { left: clamp(4px, 3vw, 60px); width: clamp(46px, 5vw, 86px); }
 .cpl-hang--r { right: clamp(4px, 3vw, 60px); width: clamp(54px, 6vw, 104px); }
-.couple .cpl-bed { bottom: -2%; width: clamp(210px, 27vw, 470px); height: auto; aspect-ratio: 562 / 423; }
-.cpl-bed--l { left: -3vw; transform-origin: 0% 100%; }
-.cpl-bed--r { right: -3vw; transform-origin: 100% 100%; }
 
 .couple-head { position: relative; z-index: 2; display: grid; justify-items: center; gap: 2px; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
 .couple-ornament { color: var(--gold-ink); }
@@ -83,7 +80,4 @@
 @media (max-width: 560px) {
   .person-line { min-height: 3.2em; }   /* both cards end level when a parents' line wraps */
   .cpl-vine { width: 46vw; }
-  .couple .cpl-bed { width: 46vw; }
-  .cpl-bed--l { left: -6vw; }
-  .cpl-bed--r { right: -6vw; }
 }
