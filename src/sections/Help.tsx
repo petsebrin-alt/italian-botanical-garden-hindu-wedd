@@ -1,7 +1,6 @@
 "use client";
 
 import { wedding } from "@/content/wedding";
-import { useMotion } from "@/lib/motion";
 import { useScene } from "@/lib/scene";
 import "./help.css";
 
@@ -9,11 +8,9 @@ type Contact = (typeof wedding.help.contacts)[number];
 
 /** "+91 98765 43210" → "+919876543210" (for tel: and wa.me links). */
 const digits = (p: string) => p.replace(/[^\d+]/g, "");
-/** Each set of cards is repeated so one pass of the ticker is wider than any screen. */
-const COPIES = 4;
-/** The small tilts and heights the cards are pinned at, like notes on a board. */
-const TILT = [-3, 2.2, -1.4, 2.8, -2.2, 1.6];
-const RISE = [0, 16, -8, 10, -4, 14];
+/** The small tilts and heights the three cards are pinned at, like notes on a board. */
+const TILT = [-2.2, 1.6, -1.2];
+const RISE = [0, 14, -6];
 
 function PhoneIcon() {
   return (
@@ -32,16 +29,17 @@ function ChatIcon() {
   );
 }
 
-/** One contact card. Copies in the ticker are hidden from screen readers and the keyboard. */
-function Card({ c, k, copy }: { c: Contact; k: number; copy: boolean }) {
+/** One contact card. */
+function Card({ c, k }: { c: Contact; k: number }) {
   const name = c.name.replace(/^\[|\]$/g, "");
   const initial = name.replace(/^(mr|mrs|ms|dr)\.?\s+/i, "").charAt(0).toUpperCase();
   const tel = digits(c.phone);
+  // (WhatsApp goes to its own number when one is given, otherwise to the phone number)
+  const wa = digits(c.whatsapp || c.phone).replace(/^\+/, "");
   const ready = tel.replace(/\D/g, "").length >= 6;
-  const tab = copy ? -1 : undefined;
   const style = { "--tilt": `${TILT[k % TILT.length]}deg`, "--rise": `${RISE[k % RISE.length]}px` } as React.CSSProperties;
   return (
-    <li className="help-card" style={style} aria-hidden={copy || undefined}>
+    <li className="help-card" style={style} data-item>
       <div className="help-card-who">
         <span className="help-mono" aria-hidden="true">{initial}</span>
         <span className="help-card-names">
@@ -55,8 +53,8 @@ function Card({ c, k, copy }: { c: Contact; k: number; copy: boolean }) {
       <div className="help-card-actions">
         {ready ? (
           <>
-            <a className="help-btn help-btn--call" href={`tel:${tel}`} tabIndex={tab} aria-label={`Call ${name}`}><PhoneIcon />Call</a>
-            <a className="help-btn help-btn--wa" href={`https://wa.me/${tel.replace(/^\+/, "")}`} target="_blank" rel="noopener noreferrer" tabIndex={tab} aria-label={`WhatsApp ${name}`}><ChatIcon />WhatsApp</a>
+            <a className="help-btn help-btn--call" href={`tel:${tel}`} aria-label={`Call ${name}`}><PhoneIcon />Call</a>
+            <a className="help-btn help-btn--wa" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${name}`}><ChatIcon />WhatsApp</a>
           </>
         ) : (
           <>
@@ -71,17 +69,14 @@ function Card({ c, k, copy }: { c: Contact; k: number; copy: boolean }) {
 
 /**
  * Need help? Three cards (the groom's family, the bride's family, the event coordinator), each
- * with a number to call or message on WhatsApp. They glide past in a slow ticker, pinned at small
- * tilts like notes on a board; a card the pointer (or a tap, or the keyboard) is on straightens,
- * lifts and turns forest green, and the ticker waits. With reduced motion the three simply stand
- * in a row.
+ * with a number to call or message on WhatsApp. All three stand together in a row (one under
+ * another on phones), pinned at small tilts like notes on a board, and rise in one after another
+ * as the section comes into view; a card the pointer (or a tap, or the keyboard) is on
+ * straightens, lifts and turns forest green.
  */
 export default function Help() {
   const { contacts } = wedding.help;
-  const { tier } = useMotion();
   const ref = useScene<HTMLElement>();
-  const still = tier === "C";
-  const set = Array.from({ length: COPIES }, () => contacts).flat();
 
   return (
     <section ref={ref} id="help" className="help section paper" aria-labelledby="help-title" data-stage>
@@ -91,21 +86,9 @@ export default function Help() {
         <p className="body-s help-sub" data-reveal="fade">Questions about travel, the celebrations or anything at all? Call or message the families, or our event coordinator.</p>
       </header>
 
-      {still ? (
-        <ul className="help-still" role="list">
-          {contacts.map((c, i) => <Card key={i} c={c} k={i} copy={false} />)}
-        </ul>
-      ) : (
-        <div className="help-ticker" data-reveal="fade">
-          <div className="help-track" style={{ "--dur": `${set.length * 6}s` } as React.CSSProperties}>
-            {[0, 1].map((half) => (
-              <ul key={half} className="help-row" role="list" aria-hidden={half === 1 || undefined}>
-                {set.map((c, i) => <Card key={i} c={c} k={i} copy={half === 1 || i >= contacts.length} />)}
-              </ul>
-            ))}
-          </div>
-        </div>
-      )}
+      <ul className="help-cards" role="list" data-reveal="stagger">
+        {contacts.map((c, i) => <Card key={i} c={c} k={i} />)}
+      </ul>
     </section>
   );
 }

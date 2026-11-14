@@ -195,15 +195,16 @@ export const wedding = {
     ] as { name: string; relation?: string; message: string }[],
   },
   /**
-   * "Need help?": three cards guests can call or message on WhatsApp, gliding past in a ticker.
+   * "Need help?": three cards guests can call or message on WhatsApp, all shown together.
    * Fill in each `phone` with its country code (e.g. "+91 98765 43210"): until a card has a number
-   * it says the number is on its way, and its Call and WhatsApp buttons wait.
+   * it says the number is on its way, and its Call and WhatsApp buttons wait. If someone's WhatsApp
+   * is on a different number, put it in `whatsapp`; leave it "" to use the same `phone`.
    */
   help: {
     contacts: [
-      { side: "The Groom's Family", name: "Mr. Vasu", role: "Father of the groom", phone: "" },
-      { side: "The Bride's Family", name: "Mr. Kapoor", role: "Father of the bride", phone: "" },
-      { side: "Event Coordinator", name: "[Coordinator's name]", role: "Wedding & event coordinator", phone: "" },
+      { side: "The Groom's Family", name: "Mr. Vasu", role: "Father of the groom", phone: "", whatsapp: "" },
+      { side: "The Bride's Family", name: "Mr. Kapoor", role: "Father of the bride", phone: "", whatsapp: "" },
+      { side: "Event Coordinator", name: "[Coordinator's name]", role: "Wedding & event coordinator", phone: "", whatsapp: "" },
     ],
   },
   rsvp: {

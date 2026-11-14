@@ -138,7 +138,7 @@ python3 tools/build_crystals.py        # writes public/assets/img/crystal-atlas.
 
 - **Venue:** the villa garden in a wide arch (`public/assets/img/venue-garden`, the Save the Date garden at full sharpness, from `python3 tools/build_venue.py`) with a Location button, and the travel notes as tiles. Set `venue.name` and `venue.address` and the Location buttons (here and in Celebrations) point at the villa.
 - **RSVP:** posts to `/api/rsvp`; replies appear in `/studio`. Guests can come back and edit theirs from the same device.
-- **Need Help:** three contact cards (the groom's family, the bride's family and the event coordinator, under `help.contacts`), each with a name, a role, a number and Call and WhatsApp buttons. They glide past in a slow ticker, pinned at small tilts like notes on a board; the card under the pointer (or a tap, or the keyboard) straightens, lifts and turns forest green, and the ticker waits. Fill in each `phone` with its country code; until then the card says the number is coming soon. With reduced motion the three stand still in a row.
+- **Need Help:** three contact cards (the groom's family, the bride's family and the event coordinator, under `help.contacts`), each with a name, a role, a number and Call and WhatsApp buttons. All three are on the screen together, in a row (one under another on phones), pinned at small tilts like notes on a board, and rise in one after another as the section comes into view; the card under the pointer (or a tap, or the keyboard) straightens, lifts and turns forest green. Fill in each `phone` with its country code, and `whatsapp` only if that person's WhatsApp is on a different number; until a card has a number it says the number is coming soon.
 
 ## Celebrations
 

@@ -1,52 +1,25 @@
-/* Need help? Three contact cards in a slow ticker (Help.tsx). */
+/* Need help? Three contact cards, all on the screen together (Help.tsx). */
 .help { overflow: clip; }
 .help-head { position: relative; z-index: 2; display: grid; gap: 6px; margin-bottom: clamp(1.5rem, 4vw, 2.5rem); max-width: 680px; }
 .help-sub { color: var(--botanical); }
 
-/* ------------------------------------------------------------------ the ticker */
-.help-ticker {
-  position: relative;
-  /* room for the cards' tilt, their staggered heights and the lift of the one in focus */
-  padding-block: 34px 44px;
-  /* the cards fade in and out at the screen's edges */
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
-}
-.help-track {
-  display: flex;
-  width: max-content;
-  animation: help-tick var(--dur, 72s) linear infinite;
-}
-/* the ticker waits while a card is pointed at, tapped or focused */
-.help-ticker:hover .help-track,
-.help-ticker:focus-within .help-track,
-.motion-paused .help-track { animation-play-state: paused; }
-@keyframes help-tick { to { transform: translateX(-50%); } }
-.help-row {
-  display: flex;
-  gap: var(--gap);
-  margin: 0;
-  /* (the gap after the last card, so the two halves join seamlessly) */
-  padding: 0 var(--gap) 0 0;
-  list-style: none;
-  --gap: clamp(18px, 2.4vw, 30px);
-}
-
-/* with reduced motion: the three cards simply stand in a row */
-.help-still {
+/* ------------------------------------------------------------------ the three cards */
+.help-cards {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 24px;
+  align-items: flex-start;
+  gap: clamp(18px, 2.6vw, 34px);
   margin: 0 auto;
-  padding: 16px;
+  /* room for the cards' tilt, their staggered heights and the lift of the one in focus */
+  padding: 20px 16px 40px;
   list-style: none;
 }
 
 /* ------------------------------------------------------------------ a card */
 .help-card {
   flex: none;
-  width: clamp(250px, 21vw, 300px);
+  width: clamp(260px, 24vw, 330px);
   display: grid;
   gap: 14px;
   padding: 22px 22px 20px;
@@ -127,7 +100,10 @@
 .help-card:hover .help-btn--call, .help-card:focus-within .help-btn--call { color: var(--forest); background: linear-gradient(180deg, #e2c78e, #c9a764); }
 .help-card:hover .help-btn--wa, .help-card:focus-within .help-btn--wa { color: var(--ivory); border-color: rgb(248 244 233 / 0.55); }
 
+/* on phones: one under another, a little less tilted */
 @media (max-width: 520px) {
-  .help-card { width: 250px; padding: 18px 18px 16px; gap: 12px; }
+  .help-cards { flex-direction: column; align-items: center; gap: 22px; }
+  .help-card { width: min(320px, 100%); padding: 18px 18px 16px; gap: 12px; rotate: calc(var(--tilt, 0deg) * 0.6); translate: none; }
+  .help-card:hover, .help-card:focus-within { translate: 0 -6px; }
   .help-card-phone { font-size: 1.2rem; }
 }
