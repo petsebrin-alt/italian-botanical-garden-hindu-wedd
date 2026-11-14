@@ -32,17 +32,6 @@ const PLANTS: { key: string; kind: "bush" | "garland"; x: number; y: number; w: 
 /** Where each plant stands: its foot (photo px) — the bushes on the gateways' feet, the garland
  *  hanging a little below the section's edge. */
 const FOOT: Record<string, number> = { "bush-l": 1088, "bush-r": 1046, "garland-1": 1352, "garland-2": 1356 };
-/** The loose roses at the couple's feet, pink and white: [x, y (centre), size] in photo px. */
-const LOOSE: [number, number, number, "p" | "w"][] = [
-  [292, 1200, 50, "w"], [334, 1214, 58, "p"], [378, 1204, 48, "w"], [420, 1222, 54, "p"], [460, 1210, 44, "w"],
-  [540, 1214, 50, "w"], [582, 1200, 46, "p"], [624, 1216, 56, "w"], [668, 1202, 50, "p"], [708, 1214, 46, "w"],
-];
-/** Single, round roses from the bush, for the loose ones. */
-const SINGLES = roses.bush.roses
-  .filter((r) => r.a[2] / r.a[3] > 0.78 && r.a[2] / r.a[3] < 1.28)
-  .sort((a, b) => b.a[2] * b.a[3] - a.a[2] * a.a[3])
-  .slice(2, 2 + LOOSE.length);
-
 /** A rose: its sprite from the atlas, filling its box. */
 function rose(kind: "bush" | "garland", r: Sprite, white: boolean, style: React.CSSProperties, key: string) {
   const at = roses[kind].atlas;
@@ -83,7 +72,7 @@ export default function ThankYou() {
   const ref = useScene<HTMLElement>((root, q, tier) => {
     if (tier === "C") return;
     const P = (c: string) => q(`.ty-p--${c}`)[0];
-    gsap.set(q(".ty-p, .ty-plant:not(.ty-plant--loose), .ty-words > *, .ty-top-btn"), { autoAlpha: 0 });
+    gsap.set(q(".ty-p, .ty-plant, .ty-words > *, .ty-top-btn"), { autoAlpha: 0 });
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
     /** A piece appears at `at`, `from` (percent of its own size) away, and moves into its place. */
@@ -149,7 +138,7 @@ export default function ThankYou() {
             );
           })}
 
-          {/* the roses: the bushes, the garland, and the loose roses at the couple's feet */}
+          {/* the roses: the bushes at the gateways and the garland along the foot */}
           {PLANTS.map((pl) => {
             const pdata = roses[pl.kind];
             const h = (pl.w * pdata.h) / pdata.w;
@@ -166,13 +155,6 @@ export default function ThankYou() {
               </div>
             );
           })}
-          <div className="ty-plant ty-plant--loose" aria-hidden="true">
-            {LOOSE.map(([x, y, s, c], i) => {
-              const r = SINGLES[i % SINGLES.length];
-              const w = s, h = (s * r.a[3]) / r.a[2];
-              return rose("bush", r, c === "w", { left: pct(x - w / 2, PW), top: pct(y - h / 2, PH), width: pct(w, PW), height: pct(h, PH) }, `loose-${i}`);
-            })}
-          </div>
         </div>
 
         <div className="ty-words">

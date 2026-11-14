@@ -236,7 +236,7 @@ The last section (`src/sections/ThankYou.tsx`) is the garden of Villa Cetinale, 
 5. The left gateway from the left, then the right one from the right.
 6. The trees in front.
 7. A rose bush at the foot of each gateway and a rose garland along the foot of the section, edge to edge, still in green bud; "Thank You", the last line and the date on the sky (the words are in `thankYou` in `src/content/wedding.ts`).
-8. Then, slowly, every rose opens: on the bushes, along the garland (a few of its roses white), and the loose pink and white roses at the couple's feet. Each starts as a small deep-pink bud and turns as it unfolds to full bloom. Last, a Return to top button resting on the garland.
+8. Then, slowly, every rose opens: on the bushes and along the garland (a few of its roses white). Each starts as a small deep-pink bud and turns as it unfolds to full bloom. Last, a Return to top button resting on the garland.
 
 The scene is the photograph at the screen's full width, so on laptops the section is as tall as the picture. On phones it stands at the foot of a screen-tall section, with the sky above it for the words. With reduced motion the finished scene simply stands.
 

@@ -21,11 +21,10 @@
 .ty-p--couple { z-index: 2; filter: drop-shadow(0 calc(0.5vw) calc(0.6vw) rgb(20 30 15 / 0.35)); }
 .ty-p--front-l, .ty-p--front-r { z-index: 3; }
 
-/* the roses (ThankYou.tsx): the bushes at the gateways' feet (behind the couple), the loose roses
- * at the couple's feet and the garland along the foot (in front); each rose opens over its bud */
+/* the roses (ThankYou.tsx): the bushes at the gateways' feet (behind the couple) and the garland
+ * along the foot (in front); each rose opens over its bud */
 .ty-plant { position: absolute; z-index: 1; will-change: transform; }
 .ty-plant.is-flipped { scale: -1 1; }
-.ty-plant--loose { inset: 0; z-index: 4; pointer-events: none; }
 .ty-plant--garland { z-index: 5; }
 .ty-plant-base { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; }
 .ty-plant--bush .ty-plant-base { filter: drop-shadow(0 0.4vw 0.5vw rgb(20 30 15 / 0.3)); }
