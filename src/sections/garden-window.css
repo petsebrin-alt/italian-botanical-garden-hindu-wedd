@@ -189,7 +189,7 @@
 }
 .gw-card-vine { position: absolute; top: -13%; left: 0; right: 0; margin-inline: auto; width: 96%; pointer-events: none; filter: drop-shadow(0 3px 4px rgb(41 52 35 / 0.18)); }
 .gw-card-eyebrow { font-family: var(--font-body), sans-serif; font-size: clamp(0.55rem, 2.4cqw, 0.66rem); letter-spacing: 0.22em; text-transform: uppercase; color: var(--botanical); }
-.gw-card-dear { font-family: var(--font-script), serif; font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.2rem); line-height: 1; color: var(--gold-ink); }
+.gw-card-dear { font-family: var(--font-script), serif; font-size: clamp(1.35rem, 10.5cqw, 2.1rem); line-height: 1.1; color: var(--gold-ink); max-width: 100%; overflow-wrap: anywhere; }
 .gw-card-names { font-family: var(--font-names), serif; font-size: clamp(1.6rem, 11.5cqw, 2.6rem); line-height: 1.05; letter-spacing: 0.04em; white-space: nowrap; color: var(--forest); }
 .gw-card-names span { font-family: var(--font-script), serif; color: var(--gold-ink); padding-inline: 0.15em; }
 .gw-card-line { font-family: var(--font-head), serif; font-style: italic; font-size: clamp(0.92rem, 0.82rem + 0.4vw, 1.08rem); color: var(--forest); max-width: 26ch; }
@@ -197,17 +197,19 @@
 .gw-card-rule { width: 46%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin-block: 4px; }
 .gw-card-rsvp { font-family: var(--font-body), sans-serif; font-size: 0.66rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--botanical); }
 
-.gw-accept-wrap { position: relative; margin-top: 4px; }
+.gw-accept-wrap { position: relative; margin-top: 4px; max-width: 100%; }
 .gw-accept {
   position: relative;
+  max-width: 100%;
   min-height: 46px;
-  padding: 0 26px;
+  /* (sized to the card, so it always sits inside it, however narrow the card is) */
+  padding: 0 clamp(14px, 6.5cqw, 26px);
   border: 0;
   border-radius: 999px;
   font-family: var(--font-body), sans-serif;
-  font-size: 0.78rem;
+  font-size: clamp(0.68rem, 4.8cqw, 0.78rem);
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: clamp(0.08em, 0.55cqw, 0.16em);
   white-space: nowrap;
   text-transform: uppercase;
   color: #fffdf6;
@@ -265,11 +267,13 @@
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 1.6cqw;
+  gap: 1.1cqw;
   text-align: center;
 }
-.gw-thanks-title { font-family: var(--font-script), serif; font-size: 9.5cqw; line-height: 1; color: var(--gold-ink); }
-.gw-thanks-line { font-family: var(--font-head), serif; font-style: italic; font-size: 4.3cqw; line-height: 1.35; color: var(--forest); max-width: 24ch; }
+/* (the guest's name, from their personal link, before the thank you) */
+.gw-thanks-guest { font-family: var(--font-head), serif; font-style: italic; font-size: 4.2cqw; line-height: 1.1; color: var(--botanical); margin-bottom: -0.6cqw; }
+.gw-thanks-title { font-family: var(--font-script), serif; font-size: 8.4cqw; line-height: 1; color: var(--gold-ink); }
+.gw-thanks-line { font-family: var(--font-head), serif; font-style: italic; font-size: 4cqw; line-height: 1.28; color: var(--forest); max-width: 26ch; }
 .gw-replay {
   margin-top: 1.2cqw;
   padding: 1.1cqw 3.6cqw;
@@ -311,7 +315,7 @@
 @keyframes gw-flutter { from { scale: 1 1; } 50% { scale: 0.45 1; } to { scale: 1 0.7; } }
 .motion-paused .gw-bf-wings, .motion-paused .gw-petal { animation-play-state: paused; }
 @media (max-width: 520px) {
-  .gw-accept { font-size: 0.7rem; letter-spacing: 0.1em; padding: 0 20px; }
+  .gw-accept { font-size: clamp(0.66rem, 4.6cqw, 0.72rem); letter-spacing: 0.1em; padding: 0 clamp(14px, 6cqw, 20px); }
   .gw-card-eyebrow { letter-spacing: 0.2em; }
 }
 
@@ -319,5 +323,5 @@
  * The envelope is a little smaller than the window here, so its frame and flowers stay in view. */
 @media (min-width: 900px) {
   .gw-env { width: 48%; bottom: 17%; }
-  .gw-card { padding-top: clamp(2.2rem, 5vh, 3.2rem); }
+  .gw-card { padding-top: clamp(2.7rem, 6.2vh, 3.7rem); }
 }

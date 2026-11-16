@@ -6,6 +6,7 @@ import { useMotion } from "@/lib/motion";
 import { wedding } from "@/content/wedding";
 import { longDate, longDateParts } from "@/lib/dates";
 import { heroAsset } from "@/lib/heroAsset";
+import { useGuest } from "@/lib/guest";
 import { gatePhase, gateRevealed } from "@/lib/gate";
 import { CypressIcon, LotusDivider, Monogram, Sprig } from "@/components/Ornaments";
 import manifest from "../../../public/scenes/hero/manifest.json";
@@ -59,16 +60,7 @@ const HOLD = 0.4;
 const DESCENT = 5;
 const STEP = 3;
 
-/**
- * The guest's name comes from their personal link (?to=Sharma%20Family, or ?guest=). It is read
- * after hydration, so the static page stays the same for everyone; the greeting is still hidden
- * until the first scroll, so the swap is never seen.
- */
 const noSubscribe = () => () => {};
-const readGuest = () => {
-  const p = new URLSearchParams(window.location.search);
-  return (p.get("to") ?? p.get("guest") ?? "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 48);
-};
 
 const FONT_MAP: Record<string, string> = {
   "great-vibes": "var(--font-calligraphy-great-vibes)",
@@ -137,7 +129,7 @@ export default function Hero() {
   const pausedNow = useRef(paused);
   pausedNow.current = paused;
   const { bride, groom } = wedding.couple;
-  const guest = useSyncExternalStore(noSubscribe, readGuest, () => "") || wedding.greeting.fallback;
+  const guest = useGuest();
   const customFont = useSyncExternalStore(noSubscribe, readFont, () => "");
 
   useEffect(() => {

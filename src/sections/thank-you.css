@@ -88,6 +88,8 @@
   text-align: center;
   background: radial-gradient(closest-side, rgb(248 245 236 / 0.62), rgb(248 245 236 / 0.38) 55%, rgb(248 245 236 / 0));
 }
+/* (the guest's name, from their personal link, before the thank you) */
+.ty-guest { font-family: var(--font-head), serif; font-style: italic; font-size: clamp(1.15rem, 0.95rem + 0.8vw, 1.6rem); line-height: 1.2; color: #5e4719; margin-bottom: -2px; text-shadow: 0 0 2px rgb(255 252 244 / 0.95), 0 0 12px rgb(255 252 244 / 0.95), 0 0 24px rgb(255 252 244 / 0.8); }
 .ty-title { font-family: var(--font-script), serif; font-weight: 400; font-size: clamp(2.8rem, 1.8rem + 3.6vw, 5rem); line-height: 1; color: #7f3a40; text-shadow: 0 0 2px rgb(255 252 244 / 0.9), 0 1px 14px rgb(255 252 244 / 0.95), 0 0 28px rgb(255 252 244 / 0.8); }
 .ty-line { font-family: var(--font-names), serif; font-style: italic; font-size: clamp(1.05rem, 0.9rem + 0.6vw, 1.4rem); line-height: 1.4; color: #1f3427; max-width: 38ch; text-shadow: 0 0 2px rgb(255 252 244 / 0.95), 0 0 12px rgb(255 252 244 / 0.95), 0 0 24px rgb(255 252 244 / 0.8); }
 .ty-date { display: grid; justify-items: center; gap: 2px; margin-top: 4px; }

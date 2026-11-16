@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import { useMotion } from "@/lib/motion";
+import { useGuest } from "@/lib/guest";
 import { wedding } from "@/content/wedding";
 import { weekdayDate } from "@/lib/dates";
 import "./garden-window.css";
@@ -23,11 +24,6 @@ import "./garden-window.css";
  */
 const A = "/assets/window/";
 
-const noSubscribe = () => () => {};
-const readGuest = () => {
-  const p = new URLSearchParams(window.location.search);
-  return (p.get("to") ?? p.get("guest") ?? "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 48);
-};
 
 /** An elegant pointing hand (ivory, gold outline), the tip of its finger at the top left. */
 function Hand() {
@@ -47,7 +43,7 @@ export default function GardenWindow() {
   const { tier, paused } = useMotion();
   const pausedNow = useRef(paused);
   pausedNow.current = paused;
-  const guest = useSyncExternalStore(noSubscribe, readGuest, () => "");
+  const guest = useGuest();
   const [accepted, setAccepted] = useState(false);
   const acceptedRef = useRef(false);
   const api = useRef<{ start: () => void; accept: () => void; replay: () => void } | null>(null);
@@ -382,8 +378,8 @@ export default function GardenWindow() {
       <div className="gw-card-slot">
       <div className="gw-card" role="group" aria-label="Invitation">
         <img className="gw-card-vine" src={`${A}vine-real-arch.webp`} alt="" aria-hidden="true" />
+        <p className="gw-reveal gw-card-dear">Dear {guest},</p>
         <p className="gw-reveal gw-card-eyebrow">Together with their families</p>
-        {guest && <p className="gw-reveal gw-card-dear">Dear {guest},</p>}
         <p className="gw-reveal gw-card-names">{bride.name} <span>&amp;</span> {groom.name}</p>
         <p className="gw-reveal gw-card-line">joyfully invite you to celebrate their wedding</p>
         {ceremony?.date && <p className="gw-reveal gw-card-date">{weekdayDate(ceremony.date)} · {wedding.destination.label}</p>}
@@ -402,6 +398,7 @@ export default function GardenWindow() {
       {accepted && (
         <div className="gw-thanks" role="status">
           <div className="gw-thanks-text">
+            <p className="gw-thanks-guest">{guest},</p>
             <p className="gw-thanks-title">{thanks.title}</p>
             <p className="gw-thanks-line">{thanks.line}</p>
             <button type="button" className="gw-replay" onClick={onReplay} aria-label="Replay the invitation">↺ Replay</button>

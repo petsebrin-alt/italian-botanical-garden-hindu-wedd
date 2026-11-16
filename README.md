@@ -52,7 +52,7 @@ The opening screen greets each guest by name under the monogram ("Dear Sharma Fa
 https://<your-site>/?to=Sharma%20Family
 ```
 
-(`?guest=` works too; spaces can be `%20` or `+`.) Without a name, the greeting reads "Dear Family & Friends"; change both words in `greeting` in `src/content/wedding.ts`.
+(`?guest=` works too; spaces can be `%20` or `+`.) The same name opens the invitation card in the ceremony window ("Dear Sharma Family,"), and comes first in both thank-yous: the letter after "Accept" ("Sharma Family, Thank you!") and the closing screen ("Sharma Family, Thank You"). Without a name in the link, they all read "Family & Friends"; change both words in `greeting` in `src/content/wedding.ts`. (The name is read in `src/lib/guest.ts`.)
 
 ## The garden gate (splash screen)
 

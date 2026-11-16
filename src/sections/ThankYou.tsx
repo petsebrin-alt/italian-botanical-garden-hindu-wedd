@@ -3,6 +3,7 @@
 import { wedding } from "@/content/wedding";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useScene } from "@/lib/scene";
+import { useGuest } from "@/lib/guest";
 import villa from "../../public/assets/villa/villa.json";
 import roses from "../../public/assets/villa/roses/roses.json";
 import "./thank-you.css";
@@ -58,13 +59,14 @@ function rose(kind: "bush" | "garland", r: Sprite, white: boolean, style: React.
  * faded in, moves straight into its place and stays. The sky and the hills with the hermitage at
  * the avenue's end; the two rows of cypresses; the grass path between them; the couple's photograph in a
  * gold-framed arch, standing on the path; the two brick gateways, one and then the other;
- * and the trees in front. Then "Thank You", the last line and the date on the sky, and a button back
+ * and the trees in front. Then the guest's name (from their link, or "Family & Friends"), "Thank You", the last line and the date on the sky, and a button back
  * to the top on the lawn. Every piece is the photograph's own (when all have arrived it is the
  * photograph, whole, with the couple's photograph on the path). With reduced motion the finished scene stands.
  */
 export default function ThankYou() {
   const { bride, groom } = wedding.couple;
   const t = wedding.thankYou;
+  const guest = useGuest();
   const date = new Date(`${wedding.date}T12:00:00Z`);
   const [y, m, d] = wedding.date.split("-");
   const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(date);
@@ -166,6 +168,7 @@ export default function ThankYou() {
         </div>
 
         <div className="ty-words">
+          <p className="ty-guest">{guest},</p>
           <h2 id="ty-title" className="ty-title">{t.title}</h2>
           <p className="ty-line">{t.line}</p>
           <p className="ty-date" aria-label={`${weekday}, ${Number(d)} ${month} ${y}, ${wedding.destination.label}`}>
