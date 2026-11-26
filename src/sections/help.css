@@ -62,9 +62,9 @@
   box-shadow: inset 0 0 0 1px rgb(196 166 106 / 0.8), 0 3px 6px -2px rgb(60 44 20 / 0.3);
 }
 .help-card-names { display: grid; gap: 1px; min-width: 0; }
-.help-card-side { font-family: var(--font-body), sans-serif; font-size: 0.64rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-ink); transition: color 0.45s; }
+.help-card-side { font-family: var(--font-body), sans-serif; font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-ink); transition: color 0.45s; }
 .help-card-name { font-family: var(--font-head), serif; font-size: 1.12rem; line-height: 1.2; }
-.help-card-role { font-family: var(--font-body), sans-serif; font-size: 0.78rem; color: var(--botanical); transition: color 0.45s; }
+.help-card-role { font-family: var(--font-body), sans-serif; font-size: 0.9rem; color: var(--botanical); transition: color 0.45s; }
 .help-card-rule { height: 1px; background: linear-gradient(90deg, rgb(196 166 106 / 0.7), rgb(196 166 106 / 0)); }
 .help-card-phone { font-family: var(--font-names), serif; font-size: 1.32rem; letter-spacing: 0.04em; font-variant-numeric: lining-nums; }
 .help-card-phone.is-soon { font-family: var(--font-head), serif; font-style: italic; font-size: 1rem; letter-spacing: 0; color: var(--botanical); transition: color 0.45s; }
@@ -76,19 +76,19 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 40px;
+  min-height: 48px;
   padding: 0 12px;
   border-radius: 999px;
   font-family: var(--font-body), sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.84rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
   transition: background 0.3s, color 0.3s, border-color 0.3s, opacity 0.3s;
 }
-.help-btn svg { width: 16px; height: 16px; flex: none; }
+.help-btn svg { width: 18px; height: 18px; flex: none; }
 .help-btn--call { color: #fffaf0; background: var(--forest); }
 .help-btn--wa { color: var(--forest); border: 1px solid rgb(64 90 67 / 0.45); }
 .help-btn.is-off { opacity: 0.45; cursor: default; }

@@ -241,7 +241,7 @@ aa = np.clip((np.arange(AH, dtype=np.float32)[:, None] - line[None, :]) / 2.5, 0
 ax_ = np.minimum(np.arange(AW), AW - 1 - np.arange(AW)).astype(np.float32)
 aa *= np.clip(ax_ / 60, 0, 1)[None, :]
 Image.fromarray(np.dstack([avenue, (aa * 255).astype(np.uint8)])).save(
-    os.path.join(OUT, "backdrop.webp"), "WEBP", quality=88, method=6)
+    os.path.join(OUT, "backdrop.webp"), "WEBP", quality=80, method=6)
 # where its path vanishes (at the villa), as a fraction of its height
 meta["backdrop"] = {"w": AW, "h": AH, "vanish": round(650 / AH, 5)}
 
@@ -359,5 +359,7 @@ ref = Image.fromarray(cv2.inpaint(r_, ink, 6, cv2.INPAINT_TELEA)).crop((0, 20, 9
 big = ref.resize((round(ref.width * 1.6), round(ref.height * 1.6)), Image.LANCZOS)
 big = big.filter(ImageFilter.UnsharpMask(radius=2.2, percent=70, threshold=2))
 big = big.filter(ImageFilter.UnsharpMask(radius=0.8, percent=45, threshold=1))
-big.save(os.path.join(ROOT, "public", "assets", "img", "arch-couple.webp"), "WEBP", quality=85, method=6)
+# (shown at up to ~560px wide in its frame: 1200px stays sharp on high-density screens)
+big = big.resize((1200, round(big.height * 1200 / big.width)), Image.LANCZOS)
+big.save(os.path.join(ROOT, "public", "assets", "img", "arch-couple.webp"), "WEBP", quality=82, method=6)
 print("sample couple photo", big.size)

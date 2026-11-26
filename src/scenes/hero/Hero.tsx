@@ -149,7 +149,8 @@ export default function Hero() {
       const nameEls = q(".hero-name");
       const split = new SplitText(nameEls, { type: "words", mask: "words" });
 
-      const images = q("img") as HTMLImageElement[];
+      // (the intro waits for the sky's own pictures, not the arch further down the garden)
+      const images = (q("img") as HTMLImageElement[]).filter((i) => !i.closest(".hero-arch, .hero-backdrop"));
       const decoded = Promise.race([
         Promise.all(images.map((i) => i.decode().catch(() => undefined))),
         new Promise((r) => setTimeout(r, 2500)),

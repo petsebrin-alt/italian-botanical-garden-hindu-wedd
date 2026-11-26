@@ -73,7 +73,7 @@
   .fam-grid { grid-template-columns: var(--frame) var(--frame); column-gap: clamp(10px, 4vw, 20px); }
   .fam-link { display: none; }
   .fam-names { display: grid; justify-items: center; gap: 0; font-size: 1.15rem; }
-  .fam-body .eyebrow { font-size: 0.56rem; letter-spacing: 0.1em; }
+  .fam-body .eyebrow { font-size: 0.72rem; letter-spacing: 0.06em; }
   .fam-vine { width: 40vw; }
   .fam-bloom { width: 42vw; }
   .fam-bloom--l { left: -6vw; }

@@ -57,7 +57,7 @@ export function ArchBackdrop({ srcW }: { srcW: number }) {
   const style = { ...v(backdropBox(false), ""), ...v(backdropBox(true), "-u") } as React.CSSProperties;
   return (
     <div className="hl hl--world hero-backdrop" data-layer="backdrop" style={style} aria-hidden="true">
-      <img src={file("backdrop.webp")} alt="" decoding="async" draggable={false} />
+      <img src={file("backdrop.webp")} alt="" decoding="async" fetchPriority="low" draggable={false} />
     </div>
   );
 }
@@ -84,12 +84,12 @@ export default function Arch({ srcW }: { srcW: number }) {
         <figure className="hero-arch-portrait">
           <div className="hero-arch-portrait-photo">
             <div className="hero-arch-pan">
-              <img src={p.src} alt={p.alt} decoding="async" draggable={false} />
+              <img src={p.src} alt={p.alt} decoding="async" fetchPriority="low" draggable={false} />
             </div>
           </div>
         </figure>
-        <img className="hero-arch-hang" src={file("hang.webp")} alt="" aria-hidden="true" decoding="async" draggable={false} />
-        <img className="hero-arch-ring" src={file("ring.webp")} alt="" aria-hidden="true" decoding="async" draggable={false} />
+        <img className="hero-arch-hang" src={file("hang.webp")} alt="" aria-hidden="true" decoding="async" fetchPriority="low" draggable={false} />
+        <img className="hero-arch-ring" src={file("ring.webp")} alt="" aria-hidden="true" decoding="async" fetchPriority="low" draggable={false} />
       </div>
     </div>
   );

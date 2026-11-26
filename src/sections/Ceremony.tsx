@@ -68,7 +68,7 @@ export default function Ceremony() {
           <Sprite name="cloud-1" className="cer-cloud cer-cloud--1" />
           <Sprite name="cloud-2" className="cer-cloud cer-cloud--2" />
           <Sprite name="cloud-3" className="cer-cloud cer-cloud--3" />
-          <img className="cer-lawn" src="/assets/window/garden-ground.webp" alt="" />
+          <img className="cer-lawn" loading="lazy" decoding="async" src="/assets/window/garden-ground.webp" alt="" />
         </div>
         <div className="cer-window-wrap">
           <GardenWindow />

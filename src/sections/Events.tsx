@@ -170,7 +170,7 @@ export default function Events() {
                 </div>
               ))}
             </div>
-            <img src={FRAME} className="ev-frame-overlay" alt="" aria-hidden="true" />
+            <img src={FRAME} className="ev-frame-overlay" loading="lazy" decoding="async" alt="" aria-hidden="true" />
             <div className="ev-corner-bloom" aria-hidden="true">
               <Bloom src="/assets/img/corner-blossom.webp" className="ev-stage-bloom" />
             </div>
@@ -209,7 +209,7 @@ export default function Events() {
                   <div className="ev-inline-inner">
                     <Pic src={photo.src} alt={photo.alt} className="ev-inline-photo" />
                   </div>
-                  <img src={FRAME} className="ev-frame-overlay" alt="" aria-hidden="true" />
+                  <img src={FRAME} className="ev-frame-overlay" loading="lazy" decoding="async" alt="" aria-hidden="true" />
                   <div className="ev-corner-bloom" aria-hidden="true">
                     <Bloom src="/assets/img/corner-blossom.webp" className="ev-inline-bloom" />
                   </div>

@@ -301,6 +301,16 @@ npm run db:local  # an in-memory Postgres on port 5433, to try the database path
 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5433/postgres npm run dev
 ```
 
+## Easy to read, quick to load
+
+The invitation is meant to be comfortable for every guest, grandparents included:
+
+- Text: body text is at least 16px. Small capital labels are at least 14px; a few are 11–12px where the space is tight (a card's top line, a family's name on phones). All text colours are at least 4.5 : 1 against their background (the forest green is 9.6 : 1).
+- Buttons and links are at least 44px tall, so they are easy to tap, including the photo dots in Sweet Memories, Call and WhatsApp, and Return to top.
+- No section scrolls sideways on phones, tablets or laptops.
+- Only the gate and the opening sky load first. The opening arch loads at low priority behind them, and every picture further down loads as the guest nears it. The first load went from about 4.5 MB to under 1 MB.
+- The heaviest pictures are re-encoded at the size they are shown by `python3 tools/optimize_images.py`. It keeps each original in `assets-src/optimized-orig/` and always starts from it, so running it again never loses quality.
+
 ## Deploying
 
 ### GitHub

@@ -246,7 +246,7 @@
   align-items: center;
   gap: 12px;
   color: var(--forest);
-  font-size: clamp(0.75rem, calc(var(--Wc) * 0.0145), 0.95rem);
+  font-size: clamp(0.875rem, calc(var(--Wc) * 0.0155), 1rem);
   margin-top: 0.25em;
   margin-bottom: 0.1em;
 }
@@ -293,8 +293,8 @@
   justify-items: center;
   gap: 4px;
   color: var(--forest);
-  font-size: clamp(0.75rem, calc(var(--Wc) * 0.015), 0.95rem);
-  letter-spacing: 0.32em;
+  font-size: clamp(0.875rem, calc(var(--Wc) * 0.016), 1rem);
+  letter-spacing: 0.24em;
 }
 .hero-place-icon { color: var(--botanical); }
 
@@ -312,7 +312,7 @@
   z-index: 3;
 }
 .hero-cue .caption {
-  padding: 6px 14px;
+  padding: 9px 18px;
   border-radius: 999px;
   background: rgb(248 244 233 / 0.82);
   box-shadow: 0 6px 20px -10px rgb(41 69 53 / 0.4);

@@ -125,7 +125,7 @@
 .wb-card-msg {
   font-family: var(--font-head), serif;
   font-style: italic;
-  font-size: max(11px, 5.4cqw);
+  font-size: max(13px, 5.6cqw);
   line-height: 1.42;
   color: var(--forest);
   display: -webkit-box;
@@ -135,7 +135,7 @@
 }
 .wb-card-rule { width: 46%; height: 1px; margin-top: 1cqw; background: linear-gradient(90deg, transparent, #7f9a6b, transparent); flex: none; }
 .wb-card-name { font-family: var(--font-script), serif; font-size: max(17px, 8.6cqw); line-height: 1.1; color: var(--rose-ink); }
-.wb-card-rel { font-family: var(--font-body), sans-serif; font-size: max(8px, 2.7cqw); letter-spacing: 0.2em; text-transform: uppercase; color: var(--botanical); }
+.wb-card-rel { font-family: var(--font-body), sans-serif; font-size: max(11px, 3.3cqw); letter-spacing: 0.14em; text-transform: uppercase; color: var(--botanical); }
 .wb-card-tag {
   margin-top: 1cqw;
   padding: 2px 8px;
@@ -173,12 +173,12 @@
   border-radius: 999px;
   background: rgb(232 238 223 / 0.75);
   font-family: var(--font-body), sans-serif;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--forest);
   outline: none;
   transition: background 0.2s, box-shadow 0.2s;
 }
-.wb-input::placeholder { color: #7d8a74; }
+.wb-input::placeholder { color: #5c6a55; }
 .wb-input:focus-visible { background: #fdfdf8; box-shadow: inset 0 0 0 1.5px #7f9a6b; }
 .wb-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px #b0473b; }
 .wb-input--name { flex: 0 0 30%; }
@@ -193,9 +193,9 @@
   border: 0;
   border-radius: 999px;
   font-family: var(--font-body), sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
   color: #fffaf0;
@@ -212,15 +212,16 @@
 .wb-btn.is-folding svg { opacity: 0; }
 .wb-btn.is-delivered { background: linear-gradient(180deg, #4b8d60, #357049); }
 .wb-msgs { min-height: 1.2em; text-align: center; }
-.wb-error { color: #a8402f; font-size: 0.85rem; }
-.wb-note { color: var(--botanical); font-size: 0.85rem; max-width: 52ch; }
+.wb-error { color: #a8402f; font-size: 0.95rem; }
+.wb-note { color: var(--botanical); font-size: 0.95rem; max-width: 52ch; }
 .wb-view {
   border: 0;
   background: none;
-  padding: 6px 4px;
+  min-height: 44px;
+  padding: 10px 4px;
   font-family: var(--font-body), sans-serif;
-  font-size: 0.78rem;
-  letter-spacing: 0.22em;
+  font-size: 0.875rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--forest);
   border-bottom: 1px solid rgb(64 90 67 / 0.5);

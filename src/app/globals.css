@@ -119,9 +119,9 @@ section[id] { scroll-margin-top: var(--nav-h); }
 .eyebrow {
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  letter-spacing: 0.28em;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--gold-ink);
 }
@@ -164,11 +164,11 @@ section[id] { scroll-margin-top: var(--nav-h); }
   text-transform: uppercase;
   line-height: 1.2;
 }
-.body-s { font-size: 0.9375rem; line-height: 1.6; }
+.body-s { font-size: 1rem; line-height: 1.6; }
 .caption {
   font-weight: 500;
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  font-size: 0.875rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .measure { max-width: 60ch; }

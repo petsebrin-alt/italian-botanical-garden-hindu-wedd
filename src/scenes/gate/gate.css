@@ -56,14 +56,14 @@
   bottom: max(22px, 5cqh);
   translate: -50% 0;
   margin: 0;
-  padding: 9px 20px;
+  padding: 12px 24px;
   border-radius: 999px;
-  background: rgb(248 244 233 / 0.86);
+  background: rgb(248 244 233 / 0.9);
   box-shadow: 0 8px 24px -12px rgb(41 52 35 / 0.45);
   color: var(--forest);
   font-family: var(--font-body), system-ui, sans-serif;
-  font-size: 0.75rem;
-  letter-spacing: 0.24em;
+  font-size: 0.9rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   pointer-events: none;
   opacity: 0;

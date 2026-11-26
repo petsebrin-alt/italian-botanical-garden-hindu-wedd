@@ -11,10 +11,10 @@ import { gsap } from "@/lib/gsap";
 export default function Bloom({ src, className = "" }: { src: string; className?: string }) {
   return (
     <span className={`bloom ${className}`} aria-hidden="true">
-      <img className="bloom-l bloom-l--outer" src={src} alt="" draggable={false} decoding="async" />
-      <img className="bloom-l bloom-l--mid" src={src} alt="" draggable={false} decoding="async" />
-      <img className="bloom-l bloom-l--core" src={src} alt="" draggable={false} decoding="async" />
-      <img className="bloom-l bloom-l--whole" src={src} alt="" draggable={false} decoding="async" />
+      <img className="bloom-l bloom-l--outer" src={src} alt="" draggable={false} loading="lazy" decoding="async" />
+      <img className="bloom-l bloom-l--mid" src={src} alt="" draggable={false} loading="lazy" decoding="async" />
+      <img className="bloom-l bloom-l--core" src={src} alt="" draggable={false} loading="lazy" decoding="async" />
+      <img className="bloom-l bloom-l--whole" src={src} alt="" draggable={false} loading="lazy" decoding="async" />
     </span>
   );
 }

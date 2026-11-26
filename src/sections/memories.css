@@ -67,14 +67,14 @@
 }
 .mem-arrow:hover { background: var(--beige); transform: scale(1.05); }
 .mem-count { font-size: 1.05rem; letter-spacing: 0.1em; font-variant-numeric: lining-nums; min-width: 4.4em; text-align: center; }
-.mem-dots { display: flex; gap: 6px; }
+.mem-dots { display: flex; gap: 0; }
 .mem-dot {
-  width: 22px; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; position: relative;
+  width: 32px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; position: relative;
 }
 .mem-dot::after {
   content: "";
   position: absolute; left: 50%; top: 50%;
-  width: 7px; height: 7px; translate: -50% -50%;
+  width: 9px; height: 9px; translate: -50% -50%;
   border-radius: 50%;
   border: 1px solid var(--gold);
   transition: background 0.35s, width 0.35s, border-radius 0.35s;

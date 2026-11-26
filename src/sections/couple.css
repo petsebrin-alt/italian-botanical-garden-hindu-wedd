@@ -72,7 +72,7 @@
   font-size: clamp(1.35rem, 1rem + 1.4vw, 2.1rem);
   color: var(--gold-ink);
 }
-.person-line { color: var(--botanical); font-size: clamp(0.78rem, 0.7rem + 0.3vw, 0.9375rem); }
+.person-line { color: var(--botanical); font-size: clamp(0.9rem, 0.82rem + 0.3vw, 1.0625rem); line-height: 1.45; }
 .person-flourish { display: flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--gold-ink); }
 .person-flourish .sprig { width: clamp(26px, 3.4vw, 40px); height: auto; }
 .person-blossom { width: clamp(16px, 2vw, 24px); height: auto; color: var(--gold); }

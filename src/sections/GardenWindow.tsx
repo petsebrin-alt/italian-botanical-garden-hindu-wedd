@@ -350,34 +350,34 @@ export default function GardenWindow() {
       <div className="gw-window">
         {/* inside the window: warm light, the envelope, and (once accepted) the couple */}
         <div className="gw-recess">
-          <img className="gw-couple" src={photo.src} alt={photo.alt} style={{ objectPosition: photo.focus }} />
+          <img loading="lazy" decoding="async" className="gw-couple" src={photo.src} alt={photo.alt} style={{ objectPosition: photo.focus }} />
           <div className="gw-glow" aria-hidden="true" />
           <div className="gw-env" aria-hidden="true">
             <div className="gw-env-back" />
             <div className="gw-env-peek"><span className="gw-peek-mono">{bride.name[0]} · {groom.name[0]}</span></div>
             <div className="gw-env-front" />
             <div className="gw-env-flap" />
-            <img className="gw-env-rose" src={`${A}flower-real.webp`} alt="" />
+            <img loading="lazy" decoding="async" className="gw-env-rose" src={`${A}flower-real.webp`} alt="" />
           </div>
         </div>
         <div className="gw-doors" aria-hidden="true">
-          <div className="gw-door gw-door--l"><img src={`${A}door-l-painted.webp`} alt="" draggable={false} /></div>
-          <div className="gw-door gw-door--r"><img src={`${A}door-r-painted.webp`} alt="" draggable={false} /></div>
+          <div className="gw-door gw-door--l"><img loading="lazy" decoding="async" src={`${A}door-l-painted.webp`} alt="" draggable={false} /></div>
+          <div className="gw-door gw-door--r"><img loading="lazy" decoding="async" src={`${A}door-r-painted.webp`} alt="" draggable={false} /></div>
         </div>
-        <img className="gw-frame" src={`${A}frame-painted.webp`} alt="" aria-hidden="true" draggable={false} />
+        <img loading="lazy" decoding="async" className="gw-frame" src={`${A}frame-painted.webp`} alt="" aria-hidden="true" draggable={false} />
         <div className="gw-sun" aria-hidden="true"><span className="gw-sun-band" /></div>
         {/* a real climbing rose: over the top and down the left side, up the right side, and
             hanging under the sill */}
-        <img className="gw-vine gw-vine--top" src={`${A}vine-real.webp`} alt="" aria-hidden="true" />
-        <img className="gw-vine gw-vine--side" src={`${A}vine-real-stem.webp`} alt="" aria-hidden="true" />
-        <img className="gw-vine gw-vine--bottom" src={`${A}vine-real-arch.webp`} alt="" aria-hidden="true" />
+        <img loading="lazy" decoding="async" className="gw-vine gw-vine--top" src={`${A}vine-real.webp`} alt="" aria-hidden="true" />
+        <img loading="lazy" decoding="async" className="gw-vine gw-vine--side" src={`${A}vine-real-stem.webp`} alt="" aria-hidden="true" />
+        <img loading="lazy" decoding="async" className="gw-vine gw-vine--bottom" src={`${A}vine-real-arch.webp`} alt="" aria-hidden="true" />
       </div>
 
       {/* the invitation card, risen out of the envelope: centred on the window (its slot centres
           it, so GSAP can own its transform) */}
       <div className="gw-card-slot">
       <div className="gw-card" role="group" aria-label="Invitation">
-        <img className="gw-card-vine" src={`${A}vine-real-arch.webp`} alt="" aria-hidden="true" />
+        <img loading="lazy" decoding="async" className="gw-card-vine" src={`${A}vine-real-arch.webp`} alt="" aria-hidden="true" />
         <p className="gw-reveal gw-card-dear">Dear {guest},</p>
         <p className="gw-reveal gw-card-eyebrow">Together with their families</p>
         <p className="gw-reveal gw-card-names">{bride.name} <span>&amp;</span> {groom.name}</p>
